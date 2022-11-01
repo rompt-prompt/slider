@@ -48,8 +48,12 @@ class SliderView {
     }
 
     test() {
-        this.bar.elem.onclick = event => console.log('pos on bar: ', this.bar.getRelativePosition(event));
-        this.handle_1.elem.onclick = event => console.log('handle', this.handle_1.getCenterOffset(event))
+        this.bar.elem.onclick = event => console.log('pos on bar: ', this.bar.getRelativeCoords(event));
+        this.handle_1.elem.onclick = event => 
+            this.handle_1.getCoordsShiftedToCenter(
+                this.bar.getRelativeCoords(event).x, 
+                this.bar.getRelativeCoords(event).y
+                )
     }
 }
 
@@ -59,7 +63,7 @@ class SliderElement {
         this.elem.classList.add(...classes)
     }
 
-    getRelativePosition(event) {
+    getRelativeCoords(event) {
         return {
             x: Math.min(1, Math.max(0,
                 (event.pageX - (window.pageXOffset + this.elem.getBoundingClientRect().left) - this.elem.clientLeft) 
@@ -69,18 +73,35 @@ class SliderElement {
                 / this.elem.clientHeight)) * 100
         };
     }
+    
+    getCoordsShiftedToCenter(x, y) {
+        let relCenterPositionX = (this.elem.offsetLeft + this.elem.offsetWidth /2) / this.elem.parentElement.clientWidth * 100;
+        let relCenterPositionY = (this.elem.offsetTop + this.elem.offsetHeight /2) / this.elem.parentElement.clientHeight * 100;
 
-    moveLeftEdgeTo(x, y) {
-        if(x) this.elem.style.left = x + '%';
-        if(y) this.elem.style.top = y + '%'
+        return {
+            x: relCenterPositionX - x,
+            y: relCenterPositionY - y,
+        }
     }
 
-    moveCenterTo(x, y) {
+    moveLeftEdgeTo(x, y) {
+        if(x || x === 0) this.elem.style.left = x + '%';
+        if(y || y === 0) this.elem.style.top = y + '%'
+    }
+
+    shiftToCenter(x, y) {
         const relativeMiddleX = this.elem.offsetWidth / this.elem.offsetParent.clientWidth * 100 / 2;
         const relativeMiddleY = this.elem.offsetHeight / this.elem.offsetParent.clientHeight * 100 / 2;
 
-        if(x) this.elem.style.left = x - relativeMiddleX + '%';
-        if(y) this.elem.style.top = y - relativeMiddleY + '%'
+        return {
+            x: (x || x === 0) ? x - relativeMiddleX : '',
+            y: (y || y === 0) ? y - relativeMiddleY : '',
+        }
+    }
+
+    moveCenterTo(x, y) {
+        const shift = this.shiftToCenter(x, y);
+        this.moveLeftEdgeTo(shift.x, shift.y);
     }
 }
 
