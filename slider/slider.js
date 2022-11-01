@@ -10,10 +10,22 @@ class SliderController {
 
         this.view = new SliderView(this.root, this.isVertical, this.useRange);
         this.model = new SliderModel();
+
+        this.view.renderModel(this.model.cores)
     }
 }
 
-class SliderModel {}
+class SliderModel {
+    constructor() {
+        this.cores = [
+            {
+                handleID: 1,
+                abs: 70,
+                pcnt: 45,
+            }
+        ]
+    }
+}
 class SliderView {
     constructor(root, isVertical, useRange) {
         this.root = root;
@@ -45,6 +57,14 @@ class SliderView {
         this.root.innerHTML = ''
         this.root.append(this.sliderElem);
 
+    }
+
+    renderModel(cores) {
+        let swapArgs = arg => this.isVertical ? ['', arg] : [arg, ''];
+
+        cores.forEach(core => {
+            this.handle_1.moveCenterTo(...swapArgs(core.pcnt))
+        });
     }
 
     test() {
