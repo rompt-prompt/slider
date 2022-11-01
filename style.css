@@ -1,0 +1,21 @@
+* {
+    font-family: 'Roboto', sans-serif;
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+.part {    
+    display: flex;
+    outline: 1px dotted red;
+}
+
+.result {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

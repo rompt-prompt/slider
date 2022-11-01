@@ -1,0 +1,50 @@
+$slider-main-axis: 500px;
+$slider-second-axis: 150px;
+
+$bar-color : #fff;
+$bar-border-radius: 20px;
+$bar-border-color: blue;
+$bar-border-width: 50px;
+
+$handle-width: 100px;
+$handle-height: 100px;
+$handle-border-radius: 50%;
+$handle-border-color: black;
+$handle-border-width: 10px;
+$handle1-bg: red;
+
+
+
+.slider {
+    * {box-sizing: border-box;}
+    &__bar {
+        cursor: pointer;
+        height: 100%;
+        width: 100%;
+        background-color: $bar-color;
+        border-radius: $bar-border-radius;
+        border: $bar-border-width solid $bar-border-color;
+        position: relative;
+    }
+    &__handle {
+        cursor: pointer;
+        border: $handle-border-width solid $handle-border-color;
+        border-radius: $handle-border-radius;
+        position: absolute;
+        &_1 {
+            background-color: $handle1-bg;
+        }
+    }
+    &.slider_h {
+        width: $slider-main-axis;
+        height: $slider-second-axis;
+    
+        .slider__handle {
+            width: $handle-width;
+            height: $handle-height;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    }
+}
+

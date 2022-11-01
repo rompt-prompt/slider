@@ -1,0 +1,31 @@
+.slider * {
+  box-sizing: border-box;
+}
+.slider__bar {
+  cursor: pointer;
+  height: 100%;
+  width: 100%;
+  background-color: #fff;
+  border-radius: 20px;
+  border: 50px solid blue;
+  position: relative;
+}
+.slider__handle {
+  cursor: pointer;
+  border: 10px solid black;
+  border-radius: 50%;
+  position: absolute;
+}
+.slider__handle_1 {
+  background-color: red;
+}
+.slider.slider_h {
+  width: 500px;
+  height: 150px;
+}
+.slider.slider_h .slider__handle {
+  width: 100px;
+  height: 100px;
+  top: 50%;
+  transform: translateY(-50%);
+}/*# sourceMappingURL=slider.css.map */
