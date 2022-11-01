@@ -59,9 +59,8 @@ $handle1-bg: red;
         border: $handle-border-width solid $handle-border-color;
         border-radius: $handle-border-radius;
         position: absolute;
-        &_1 {
-            background-color: $handle1-bg;
-        }
+        background-color: $handle1-bg;
+
     }
     &.slider_h {
         width: $slider-main-axis;
