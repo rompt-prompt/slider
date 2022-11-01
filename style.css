@@ -7,9 +7,12 @@
 body {
     display: flex;
     flex-direction: column;
+
+    width: 2000px;
+    height: 2000px;
 }
 
-.part {    
+.part {
     display: flex;
     outline: 1px dotted red;
 }
