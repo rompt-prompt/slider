@@ -38,9 +38,6 @@ $handle1-bg: red;
     z-index: 10000;
 }
 .slider {
-    position: relative;
-    top: 300px;
-    left: 200px;
 
     * {box-sizing: border-box;}
     &__bar {
@@ -83,8 +80,33 @@ $handle1-bg: red;
         .slider__handle {
             width: $handle-width;
             height: $handle-height;
-            top: 50%;
-            transform: translateY(-50%);
+            top: -50%;
+
+            //JS
+            left: 37.5%;
+        }
+    }
+    &.slider_v {
+        width: $slider-second-axis;
+        height: $slider-main-axis;
+
+        .slider__range {
+            width: $slider-second-axis;
+            left: 50%;
+            transform: translateX(-50%);
+            
+            //JS
+            top: 20%;
+            height: 60%;
+        }
+    
+        .slider__handle {
+            width: $handle-width;
+            height: $handle-height;
+            left: -50%;
+
+            //JS
+            top: 37.5%;
         }
     }
 }
