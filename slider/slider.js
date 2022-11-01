@@ -48,7 +48,8 @@ class SliderView {
     }
 
     test() {
-        this.bar.elem.onclick = event => console.log(this.bar.getRelativePosition(event));
+        this.bar.elem.onclick = event => console.log('pos on bar: ', this.bar.getRelativePosition(event));
+        this.handle_1.elem.onclick = event => console.log('handle', this.handle_1.getCenterOffset(event))
     }
 }
 
@@ -61,9 +62,11 @@ class SliderElement {
     getRelativePosition(event) {
         return {
             x: Math.min(1, Math.max(0,
-                (event.pageX - this.elem.offsetLeft - this.elem.clientLeft) / this.elem.clientWidth)) * 100,
+                (event.pageX - (window.pageXOffset + this.elem.getBoundingClientRect().left) - this.elem.clientLeft) 
+                / this.elem.clientWidth)) * 100,
             y: Math.min(1, Math.max(0,
-                (event.pageY - this.elem.offsetTop - this.elem.clientTop) / this.elem.clientHeight)) * 100
+                (event.pageY - (window.pageYOffset + this.elem.getBoundingClientRect().top) - this.elem.clientTop) 
+                / this.elem.clientHeight)) * 100
         };
     }
 
