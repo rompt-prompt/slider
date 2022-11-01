@@ -6,6 +6,8 @@ $bar-border-radius: 20px;
 $bar-border-color: blue;
 $bar-border-width: 50px;
 
+$range-bg: yellow;
+
 $handle-width: 100px;
 $handle-height: 100px;
 $handle-border-radius: 50%;
@@ -46,6 +48,11 @@ $handle1-bg: red;
         border: $bar-border-width solid $bar-border-color;
         position: relative;
     }
+    &__range {
+        background: $range-bg;
+        border-radius: $bar-border-radius;
+        position: absolute;
+    }
     &__handle {
         cursor: pointer;
         border: $handle-border-width solid $handle-border-color;
@@ -58,6 +65,16 @@ $handle1-bg: red;
     &.slider_h {
         width: $slider-main-axis;
         height: $slider-second-axis;
+
+        .slider__range {
+            height: $slider-second-axis;
+            top: 50%;
+            transform: translateY(-50%);
+            
+            //JS
+            left: 0%;
+            width: 60%;
+        }
     
         .slider__handle {
             width: $handle-width;

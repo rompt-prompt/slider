@@ -32,6 +32,11 @@
   border: 50px solid blue;
   position: relative;
 }
+.slider__range {
+  background: yellow;
+  border-radius: 20px;
+  position: absolute;
+}
 .slider__handle {
   cursor: pointer;
   border: 10px solid black;
@@ -44,6 +49,13 @@
 .slider.slider_h {
   width: 500px;
   height: 150px;
+}
+.slider.slider_h .slider__range {
+  height: 150px;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0%;
+  width: 60%;
 }
 .slider.slider_h .slider__handle {
   width: 100px;
