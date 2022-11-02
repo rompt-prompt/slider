@@ -42,7 +42,7 @@
   border: 10px solid black;
   border-radius: 50%;
   position: absolute;
-  background-color: red;
+  background-color: rgba(1, 1, 1, 0.5);
 }
 .slider.slider_h {
   width: 500px;

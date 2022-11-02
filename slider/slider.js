@@ -196,18 +196,15 @@ class SliderElement {
         if(y || y === 0) this.elem.style.top = y + '%'
     }
 
-    shiftToCenter(x, y) {
+    moveCenterTo(x, y) {
         const relativeMiddleX = this.elem.offsetWidth / this.elem.offsetParent.clientWidth * 100 / 2;
         const relativeMiddleY = this.elem.offsetHeight / this.elem.offsetParent.clientHeight * 100 / 2;
 
-        return {
+        const shift = {
             x: (x || x === 0) ? x - relativeMiddleX : '',
             y: (y || y === 0) ? y - relativeMiddleY : '',
-        }
-    }
+        };
 
-    moveCenterTo(x, y) {
-        const shift = this.shiftToCenter(x, y);
         this.moveLeftEdgeTo(shift.x, shift.y);
     }
 }
