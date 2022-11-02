@@ -14,12 +14,61 @@ class SliderController {
             this.view = new SliderView(this.root, options.handles, this.isVertical, this.useRange);
             this.model = new SliderModel(options.handles);
 
-            this.view.renderModel(this.model.cores)
+            this.view.renderModel(this.model.cores);
+            this.watchEvents();
         }
     }
 
     isValidOptions() {
         return true;
+    }
+
+    watchEvents() {
+        this.view.sliderElem.onpointerdown = event => {
+            event.preventDefault();
+            let type = event.target.dataset.type
+            if(type === 'bar' || type === 'range') this.onClick();
+            if(type === 'handle') this.onMove(event);
+        }
+    }
+
+    onClick() {
+        let clickHandler = event => {
+            const value = this.isVertical ? 
+                            this.view.bar.getRelativeCoords(event).y
+                            : this.view.bar.getRelativeCoords(event).x;
+            this.requestModelChange('zzz', 'pcnt', value).then(cores => this.view.renderModel(cores))
+        }
+
+        this.view.bar.elem.addEventListener('pointerup', clickHandler, {once: true})
+    }
+
+    onMove(startEvent) {
+        const handleID = startEvent.target.dataset.id;
+        const shift = this.view.handles[handleID].getCoordsShiftedToCenter(
+            this.view.bar.getRelativeCoords(startEvent).x,
+            this.view.bar.getRelativeCoords(startEvent).y
+        )
+
+        let moveHandler = event => {
+            const value = this.isVertical ?
+                            this.view.bar.getRelativeCoords(event).y + shift.y
+                            : this.view.bar.getRelativeCoords(event).x + shift.x;
+            
+            this.requestModelChange(handleID, 'pcnt', value).then(cores => {
+                console.log(cores)
+                this.view.renderModel(cores)
+            })
+        }
+
+        document.addEventListener('pointermove', moveHandler);
+        document.addEventListener('pointerup', () => {
+            document.removeEventListener('pointermove', moveHandler)
+        }, {once: true});
+    }
+
+    requestModelChange(id, type, value) {
+        return this.model.dummySetNewValue(id, type, value)
     }
 }
 
@@ -41,6 +90,17 @@ class SliderModel {
     getPcntFromValue(value) {
         return value;
     }
+
+    dummySetNewValue(id, type, value) {
+        return new Promise(resolve=> {
+            let cores = {
+                [id]: {
+                    pcnt: value
+                }
+            }
+            resolve(cores)
+        })
+    }
 }
 class SliderView {
     constructor(root, handles, isVertical, useRange) {
@@ -60,7 +120,10 @@ class SliderView {
             this.handles[id] = new Handle(
                 handles[id].value, 
                 ['slider__handle', 'js-slider-handle', `slider__handle_${id}`]
-        );}
+            );
+            this.handles[id].elem.dataset.type = 'handle';
+            this.handles[id].elem.dataset.id = id;
+        }
     }
 
     renderTamplate() {
@@ -72,6 +135,7 @@ class SliderView {
 
 
         this.bar = new Bar(['slider__bar', 'js-slider-bar']);
+        this.bar.elem.dataset.type = 'bar'
 
         for(let handle in this.handles) {
             this.bar.elem.append(this.handles[handle].elem)
@@ -79,6 +143,7 @@ class SliderView {
 
         if(this.useRange) {
             this.range = new SelectedRange(['slider__range', 'js-slider-range']);
+            this.range.elem.dataset.type = 'range'
             this.bar.elem.prepend(this.range.elem);
         }
 

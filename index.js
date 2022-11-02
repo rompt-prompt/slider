@@ -4,7 +4,7 @@ const container2 = document.querySelectorAll('.js-res')[1];
 const slider1 = new SliderController({
     root: container1, 
     handles: {
-        1: {value: 20},
+        'zzz': {value: 20},
         2: {value: 80},
     },
     isVertical: false,
