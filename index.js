@@ -16,7 +16,7 @@ const slider2 = new SliderController({
     handles: {
         'y': {value: 10},
         'yy': {value: 50},
-        'yyy': {value: 90}
+        'zzz': {value: 90}
     },
     isVertical: 1,
     useRange: 0,

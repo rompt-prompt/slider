@@ -35,8 +35,8 @@ class SliderController {
     onClick() {
         let clickHandler = event => {
             const value = this.isVertical ? 
-                            this.view.bar.getRelativeCoords(event).y
-                            : this.view.bar.getRelativeCoords(event).x;
+                            this.view.bar.getRelativeCoords(event, true).y
+                            : this.view.bar.getRelativeCoords(event, true).x;
             this.requestModelChange('zzz', 'pcnt', value).then(cores => this.view.renderModel(cores))
         }
 
@@ -45,16 +45,16 @@ class SliderController {
 
     onMove(startEvent) {
         const handleID = startEvent.target.dataset.id;
-        const shift = this.view.handles[handleID].getCoordsShiftedToCenter(
+        const shift = this.view.handles[handleID].getDeltaToCenter(
             this.view.bar.getRelativeCoords(startEvent).x,
             this.view.bar.getRelativeCoords(startEvent).y
         )
-
+            console.log(shift)
         let moveHandler = event => {
             const value = this.isVertical ?
-                            this.view.bar.getRelativeCoords(event).y + shift.y
-                            : this.view.bar.getRelativeCoords(event).x + shift.x;
-            
+                            Math.min(100, Math.max(0, this.view.bar.getRelativeCoords(event).y + shift.y))
+                            : Math.min(100, Math.max(0, this.view.bar.getRelativeCoords(event).x + shift.x));
+            console.log(value)
             this.requestModelChange(handleID, 'pcnt', value).then(cores => {
                 console.log(cores)
                 this.view.renderModel(cores)
@@ -169,18 +169,19 @@ class SliderElement {
         this.elem.classList.add(...classes)
     }
 
-    getRelativeCoords(event) {
-        return {
-            x: Math.min(1, Math.max(0,
-                (event.pageX - (window.pageXOffset + this.elem.getBoundingClientRect().left) - this.elem.clientLeft) 
-                / this.elem.clientWidth)) * 100,
-            y: Math.min(1, Math.max(0,
-                (event.pageY - (window.pageYOffset + this.elem.getBoundingClientRect().top) - this.elem.clientTop) 
-                / this.elem.clientHeight)) * 100
-        };
+    getRelativeCoords(event, normalize) {
+        let x = (event.pageX - (window.pageXOffset + this.elem.getBoundingClientRect().left) - this.elem.clientLeft) / this.elem.clientWidth * 100;
+        let y = (event.pageY - (window.pageYOffset + this.elem.getBoundingClientRect().top) - this.elem.clientTop) / this.elem.clientHeight * 100;
+
+        if(normalize) {
+            x = Math.min(100, Math.max(0, x));
+            y = Math.min(100, Math.max(0, y));
+        }
+
+        return {x, y};
     }
     
-    getCoordsShiftedToCenter(x, y) {
+    getDeltaToCenter(x, y) {
         let relCenterPositionX = (this.elem.offsetLeft + this.elem.offsetWidth /2) / this.elem.parentElement.clientWidth * 100;
         let relCenterPositionY = (this.elem.offsetTop + this.elem.offsetHeight /2) / this.elem.parentElement.clientHeight * 100;
 
