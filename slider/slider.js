@@ -8,66 +8,59 @@ class SliderController {
             useRange: this.useRange
         } = options)
 
-        this.createHandleInstances(options.handles)
-        this.view = new SliderView(this.root, this.handles, this.isVertical, this.useRange);
-        this.model = new SliderModel(this.handles);
+        if(!this.isValidOptions) {
+            throw new Error('not valid options');
+        } else {
+            this.view = new SliderView(this.root, options.handles, this.isVertical, this.useRange);
+            this.model = new SliderModel(options.handles);
 
-        this.view.renderModel(this.model.cores)
+            this.view.renderModel(this.model.cores)
+        }
     }
 
     isValidOptions() {
         return true;
-    }
-
-    createHandleInstances(handles) {
-        if(!this.isValidOptions) {
-            throw new Error('not valid options');
-        } else {
-            this.handles = {};
-            for(let id in handles) {
-                this.handles[id] = new Handle(
-                    id, 
-                    handles[id].pcnt, 
-                    ['slider__handle', 'js-slider-handle', `slider__handle_${id}`]
-                );
-            }
-        }
     }
 }
 
 class SliderModel {
     constructor(handles) {
         this.initCores(handles)
-
-        // this.cores = [
-        //     {
-        //         handleID: 1,
-        //         abs: 70,
-        //         pcnt: 45,
-        //     }
-        // ]
     }
 
     initCores(handles) {
         this.cores = {};
-        console.log(handles)
         for(let id in handles) {
             this.cores[id] = {
-                handle: handles[id],
-                pcnt: handles[id].pcnt
+                value: handles[id].value,
+                pcnt: this.getPcntFromValue(handles[id].value),
             }
         }
+    }
+
+    getPcntFromValue(value) {
+        return value;
     }
 }
 class SliderView {
     constructor(root, handles, isVertical, useRange) {
         this.root = root;
-        this.handles = handles;
         this.isVertical = isVertical;
         this.useRange = useRange;
+
+        this.createHandleInstances(handles);
         this.renderTamplate();
 
         this.test()
+    }
+
+    createHandleInstances(handles) {
+        this.handles = {};
+        for(let id in handles) {
+            this.handles[id] = new Handle(
+                handles[id].value, 
+                ['slider__handle', 'js-slider-handle', `slider__handle_${id}`]
+        );}
     }
 
     renderTamplate() {
@@ -98,9 +91,7 @@ class SliderView {
     renderModel(cores) {
         let swapArgs = arg => this.isVertical ? ['', arg] : [arg, ''];
 
-        for(let id in cores) {
-            cores[id].handle.moveCenterTo(...swapArgs(cores[id].pcnt))
-        }
+        for(let id in cores) {this.handles[id].moveCenterTo(...swapArgs(cores[id].pcnt))}
     }
 
     test() {
@@ -177,9 +168,8 @@ class SelectedRange extends SliderElement {
 }
 
 class Handle extends SliderElement {
-    constructor(id, pcnt, classes) { 
+    constructor(initValue, classes) { 
         super(classes);
-        this.id = id;
-        this.pcnt = pcnt;
+        this.initValue = initValue;
     }
 }
