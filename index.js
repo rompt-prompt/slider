@@ -5,7 +5,7 @@ const slider1 = new SliderController({
     root: container1,
     mode: 'select',
     dataType: 'number',
-    range: [0, 100],
+    range: [0, 1000],
     step: 10,
     handles: {
         'zzz': {value: 42},

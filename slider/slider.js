@@ -37,7 +37,7 @@ class SliderController {
             const value = this.isVertical ? 
                             this.view.bar.getRelativeCoords(event, true).y
                             : this.view.bar.getRelativeCoords(event, true).x;
-            this.requestModelChange('zzz', 'pcnt', value);
+            this.requestModelChange('zzz', 'pcnt', value); //TODO get closest handle
         }
 
         this.view.bar.elem.addEventListener('pointerup', clickHandler, {once: true})
@@ -64,7 +64,7 @@ class SliderController {
 
     requestModelChange(id, type, value) {
         this.model.setValue(id, type, value)
-            .then(cores => this.view.renderModel(cores)) // TODO render from here
+            .then(cores => this.view.renderModel(cores))
     }
 }
 
@@ -90,17 +90,26 @@ class SliderModel {
 
     setValue(id, type, value) {
         if(this.mode === 'select') {
+            let currentValue = this.cores[id].value;
+
             if(type === 'pcnt') {
                 let pcnt = value;
-                let currentValue = this.cores[id].value;
                 let requestedValue = (this.max - this.min) * value / 100;
                 let permittedValue = this.calcNewValueByStep(currentValue, requestedValue);
 
                 this.cores[id].value = permittedValue;
                 this.cores[id].pcnt = pcnt;
             }
+            if(type === 'value') {
+                let requestedValue = value;
+                let permittedValue = this.calcNewValueByStep(currentValue, requestedValue);
+                let pcnt = permittedValue / (this.max - this.min) * 100;
+
+                this.cores[id].value = permittedValue;
+                this.cores[id].pcnt = pcnt;
+            }
         }
-        console.log(id, '=', this.cores[id].value, ':', this.cores[id].pcnt)
+        console.log(id, '= value: ', this.cores[id].value, ', pcnt:', this.cores[id].pcnt)
         return new Promise(resolve => {
             resolve(this.cores)
         })
