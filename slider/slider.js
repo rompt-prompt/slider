@@ -12,7 +12,7 @@ class SliderController {
             throw new Error('not valid options');
         } else {
             this.view = new SliderView(this.root, options.handles, this.isVertical, this.useRange);
-            this.model = new SliderModel(options.handles);
+            this.model = new SliderModel(options);
 
             this.view.renderModel(this.model.cores);
             this.watchEvents();
@@ -49,14 +49,11 @@ class SliderController {
             this.view.bar.getRelativeCoords(startEvent).x,
             this.view.bar.getRelativeCoords(startEvent).y
         )
-            console.log(shift)
         let moveHandler = event => {
             const value = this.isVertical ?
                             Math.min(100, Math.max(0, this.view.bar.getRelativeCoords(event).y + shift.y))
                             : Math.min(100, Math.max(0, this.view.bar.getRelativeCoords(event).x + shift.x));
-            console.log(value)
             this.requestModelChange(handleID, 'pcnt', value).then(cores => {
-                console.log(cores)
                 this.view.renderModel(cores)
             })
         }
@@ -68,13 +65,18 @@ class SliderController {
     }
 
     requestModelChange(id, type, value) {
-        return this.model.dummySetNewValue(id, type, value)
+        return this.model.setValue(id, type, value)
     }
 }
 
 class SliderModel {
-    constructor(handles) {
-        this.initCores(handles)
+    constructor(options) {
+        this.initCores(options.handles);
+        this.mode = options.mode;
+        this.step = options.step || 1;
+        this.min = options.range[0];
+        this.max = options.range[1];
+
     }
 
     initCores(handles) {
@@ -82,24 +84,36 @@ class SliderModel {
         for(let id in handles) {
             this.cores[id] = {
                 value: handles[id].value,
-                pcnt: this.getPcntFromValue(handles[id].value),
+                pcnt: handles[id].value,
             }
         }
     }
 
-    getPcntFromValue(value) {
-        return value;
+    setValue(id, type, value) {
+        if(this.mode === 'select') {
+            if(type === 'pcnt') {
+                let pcnt = value;
+                let currentValue = this.cores[id].value;
+                let requestedValue = (this.max - this.min) * value / 100;
+                let permittedValue = this.calcNewValueByStep(currentValue, requestedValue);
+
+                this.cores[id].value = permittedValue;
+                this.cores[id].pcnt = pcnt;
+            }
+        }
+        console.log(id, '=', this.cores[id].value, ':', this.cores[id].pcnt)
+        return new Promise(resolve => {
+            resolve(this.cores)
+        })
     }
 
-    dummySetNewValue(id, type, value) {
-        return new Promise(resolve=> {
-            let cores = {
-                [id]: {
-                    pcnt: value
-                }
-            }
-            resolve(cores)
-        })
+    calcNewValueByStep(currentValue, requestedValue) {
+        const steps = Math.round((requestedValue - currentValue) / this.step);
+        let newValue = currentValue + (this.step * steps);
+
+        if(newValue < this.min) return this.min;
+        if(newValue > this.max) return this.max;
+        return newValue
     }
 }
 class SliderView {
