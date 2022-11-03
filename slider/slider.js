@@ -37,7 +37,7 @@ class SliderController {
             const value = this.isVertical ? 
                             this.view.bar.getRelativeCoords(event, true).y
                             : this.view.bar.getRelativeCoords(event, true).x;
-            this.requestModelChange('zzz', 'pcnt', value).then(cores => this.view.renderModel(cores))
+            this.requestModelChange('zzz', 'pcnt', value);
         }
 
         this.view.bar.elem.addEventListener('pointerup', clickHandler, {once: true})
@@ -53,9 +53,7 @@ class SliderController {
             const value = this.isVertical ?
                             Math.min(100, Math.max(0, this.view.bar.getRelativeCoords(event).y + shift.y))
                             : Math.min(100, Math.max(0, this.view.bar.getRelativeCoords(event).x + shift.x));
-            this.requestModelChange(handleID, 'pcnt', value).then(cores => {
-                this.view.renderModel(cores)
-            })
+            this.requestModelChange(handleID, 'pcnt', value);
         }
 
         document.addEventListener('pointermove', moveHandler);
@@ -65,7 +63,8 @@ class SliderController {
     }
 
     requestModelChange(id, type, value) {
-        return this.model.setValue(id, type, value)
+        this.model.setValue(id, type, value)
+            .then(cores => this.view.renderModel(cores)) // TODO render from here
     }
 }
 
