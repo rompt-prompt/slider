@@ -48,13 +48,15 @@ class SliderController {
         const shift = this.view.handles[handleID].getDeltaToCenter(
             this.view.bar.getRelativeCoords(startEvent).x,
             this.view.bar.getRelativeCoords(startEvent).y
-        )
+        );
         let moveHandler = event => {
             const value = this.isVertical ?
                             Math.min(100, Math.max(0, this.view.bar.getRelativeCoords(event).y + shift.y))
                             : Math.min(100, Math.max(0, this.view.bar.getRelativeCoords(event).x + shift.x));
             this.requestModelChange(handleID, 'pcnt', value);
         }
+
+        this.view.showAbove(handleID);
 
         document.addEventListener('pointermove', moveHandler);
         document.addEventListener('pointerup', () => {
@@ -217,8 +219,6 @@ class SliderView {
 
         this.createHandleInstances(handles);
         this.renderTamplate();
-
-        this.test()
     }
 
     createHandleInstances(handles) {
@@ -266,7 +266,9 @@ class SliderView {
         for(let id in cores) {this.handles[id].moveCenterTo(...swapArgs(cores[id].pcnt))} // TODO check fool 0-100%
     }
 
-    test() {
+    showAbove(handleID) {
+        for(let id in this.handles) {this.handles[id].elem.style.zIndex = ''}
+        this.handles[handleID].elem.style.zIndex = 1000;
     }
 }
 
