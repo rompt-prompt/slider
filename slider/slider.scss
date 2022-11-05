@@ -1,5 +1,5 @@
 $slider-main-axis: 500px;
-$slider-second-axis: 150px;
+$slider-second-axis: 250px;
 
 $bar-color : #fff;
 $bar-border-radius: 20px;
@@ -15,6 +15,7 @@ $handle-border-color: black;
 $handle-border-width: 10px;
 $handle1-bg: rgba(1, 1, 1, 0.5);
 
+// helper
 .slider__handle_a80 {
     background-color: rgba(255, 0, 0, 0.5) !important;
 }
@@ -81,7 +82,8 @@ $handle1-bg: rgba(1, 1, 1, 0.5);
         .slider__handle {
             width: $handle-width;
             height: $handle-height;
-            top: -50%;
+            top: 50%;
+            transform: translateY(-50%);
 
             //JS
             left: 37.5%;
@@ -104,7 +106,8 @@ $handle1-bg: rgba(1, 1, 1, 0.5);
         .slider__handle {
             width: $handle-width;
             height: $handle-height;
-            left: -50%;
+            left: 50%;
+            transform: translateX(-50%);
 
             //JS
             top: 37.5%;
