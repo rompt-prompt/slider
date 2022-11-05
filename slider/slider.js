@@ -37,7 +37,7 @@ class SliderController {
             const value = this.isVertical ? 
                             this.view.bar.getRelativeCoords(event, true).y
                             : this.view.bar.getRelativeCoords(event, true).x;
-            this.requestModelChange('a30', 'pcnt', value); //TODO get closest handle
+            this.requestModelChange(undefined, 'pcnt', value);
         }
 
         this.view.bar.elem.addEventListener('pointerup', clickHandler, {once: true})
@@ -172,7 +172,20 @@ class SliderModel {
         return {value, pcnt}
     }
 
+    getClosestId(pcnt) {
+        const coresArr = Object.entries(this.cores);
+
+        if(coresArr.length === 1) return coresArr[0][0];
+
+        const closestCore = coresArr.reduce((prev, curr)  => 
+            Math.abs(curr[1].pcnt - pcnt) < Math.abs(prev[1].pcnt - pcnt) ? curr : prev)
+
+        return closestCore[0]
+    }
+
     setValue(id, type, value) {
+        if(id == undefined && type === 'pcnt') id = this.getClosestId(value);
+
         if(this.mode === 'select') {
             let requestedValue, requestedPcnt;
             switch (type) {

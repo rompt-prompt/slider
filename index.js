@@ -9,9 +9,9 @@ const slider1 = new SliderController({
     range: [0, 1000],
     step: 10,
     handles: {
-        'a30': {value: 400},
+        'a30': {value: 200},
         // 'a50': {value: 500},
-        'a80': {value: 600},
+        'a80': {value: 800},
     },
     neighborHandles: 'move', // 'move' 'stop' 'jumpover // TODO add z-index
     isVertical: false,
