@@ -37,7 +37,7 @@ class SliderController {
             const value = this.isVertical ? 
                             this.view.bar.getRelativeCoords(event, true).y
                             : this.view.bar.getRelativeCoords(event, true).x;
-            this.requestModelChange('zzz', 'pcnt', value); //TODO get closest handle
+            this.requestModelChange('a30', 'pcnt', value); //TODO get closest handle
         }
 
         this.view.bar.elem.addEventListener('pointerup', clickHandler, {once: true})
@@ -97,36 +97,35 @@ class SliderModel {
         if(this.dataType === 'number') return value * 100 / (this.max - this.min);
     }
 
-    sortCores() {
+    getSortedCores() {
         return Object.entries(this.cores).sort((a, b) => {
             return a[1].pcnt > a[1].pcnt ? 1 : a[1].pcnt < b[1].pcnt ? -1 : 0});
     }
 
-    getNeighbors(id) {
-        let sortedCores = this.sortCores();
-        let thisIndex = sortedCores.findIndex(element => element[0] === id);
+    getNeighbors(id, sortedCores) {
+        const thisIndex = sortedCores.findIndex(element => element[0] === id);
+        const prevIndex = thisIndex === 0 ? null : thisIndex - 1;
+        const prevId = prevIndex === null ? null :  sortedCores[prevIndex][0];
+        const nextIndex = thisIndex === sortedCores.length - 1 ? null : thisIndex + 1;
+        const nextId = nextIndex === null ? null :  sortedCores[nextIndex][0];
 
-        return {
-            prevId: sortedCores[thisIndex - 1][0],
-            nextId: sortedCores[thisIndex + 1][0],
-            sortedCores
-        }
+        return {thisIndex, prevIndex, prevId, nextIndex, nextId}        
     }
 
-    calcLimits(id) { //TODO refactor this
-        let sortedCores = Object.entries(this.cores).sort((a, b) => {
-            return a[1].pcnt > a[1].pcnt ? 1 : a[1].pcnt < b[1].pcnt ? -1 : 0});
-        let thisIndex = sortedCores.findIndex(element => element[0] === id);
-            console.log(sortedCores[thisIndex][0])
-        let min = thisIndex !== 0 ? {
-            value: sortedCores[thisIndex - 1][1].value,
-            pcnt: sortedCores[thisIndex - 1][1].pcnt
+    calcLimits(id) {
+        const sortedCores = this.getSortedCores();
+        const neighbors = this.getNeighbors(id, sortedCores);
+
+        let min = neighbors.thisIndex !== 0 ? {
+            value: sortedCores[neighbors.prevIndex][1].value,
+            pcnt: sortedCores[neighbors.prevIndex][1].pcnt
         } : {value: this.min, pcnt: 0}
 
-        let max = thisIndex !== sortedCores.length - 1 ? {
-            value: sortedCores[thisIndex + 1][1].value,
-            pcnt: sortedCores[thisIndex + 1][1].pcnt
+        let max = neighbors.thisIndex !== sortedCores.length - 1 ? {
+            value: sortedCores[neighbors.nextIndex][1].value,
+            pcnt: sortedCores[neighbors.nextIndex][1].pcnt
         } : {value: this.max, pcnt: 100}
+
         return {min, max}
     }
 
@@ -138,28 +137,36 @@ class SliderModel {
         let value, pcnt;
         if(this.dataType === 'number') {
             const currentValue = this.cores[id].value;
+            const currentPcnt = this.cores[id].pcnt;
             const steps = Math.round((requestedValue - currentValue) / this.step);
 
-            if(this.neighborHandles === 'jumpover') {
-                value = this.inRange(currentValue + (this.step * steps), this.min, this.max);
-                pcnt = this.inRange(requestedPcnt, 0, 100);
+            switch(this.neighborHandles) {
+                case 'jumpover':
+                case 'move':
+                    value = this.inRange(currentValue + (this.step * steps), this.min, this.max);
+                    pcnt = this.inRange(requestedPcnt, 0, 100);
+                    break;
+                    
+                case 'stop':
+                    value = this.inRange(currentValue + (this.step * steps), localLimits.min.value, localLimits.max.value);
+                    pcnt = this.inRange(requestedPcnt, localLimits.min.pcnt, localLimits.max.pcnt);
+                    break;
             }
 
-            if(this.neighborHandles === 'stop') {
-                value = this.inRange(currentValue + (this.step * steps), localLimits.min.value, localLimits.max.value);
-                pcnt = this.inRange(requestedPcnt, localLimits.min.pcnt, localLimits.max.pcnt)
+            if(this.neighborHandles === 'move') {
+                const neighbors = this.getNeighbors(id, this.getSortedCores());
+
+                switch(requestedPcnt < currentPcnt) {
+                    case true:
+                        if(requestedPcnt <= localLimits.min.pcnt && neighbors.prevId !== null) {
+                            this.setValue(neighbors.prevId, 'pcnt', pcnt)}
+                        break;
+                    case false:
+                        if(requestedPcnt >= localLimits.max.pcnt && neighbors.nextId !== null) {
+                            this.setValue(neighbors.nextId, 'pcnt', pcnt)}
+                        break;
+                }
             }
-
-            // if(this.neighborHandles === 'move') {
-            //     value = this.inRange(currentValue + (this.step * steps), this.min, this.max);
-            //     pcnt = this.inRange(requestedPcnt, 0, 100);
-
-            //     this.setValue(
-            //         this.getNeighbors(id).prevId,
-            //         'value',
-            //         value - this.step)
-            // }
-
         }
 
         return {value, pcnt}
@@ -179,61 +186,15 @@ class SliderModel {
             }
             const localLimits = this.calcLimits(id)
             const permittedCore = this.calcCore(id, requestedValue, requestedPcnt, localLimits);
+
             this.cores[id].value = permittedCore.value;
             this.cores[id].pcnt = permittedCore.pcnt;
         }
-        console.log(id, '= value: ', this.cores[id].value, ', pcnt:', this.cores[id].pcnt)
+console.log(id, '= value: ', this.cores[id].value, ', pcnt:', this.cores[id].pcnt)
         return new Promise(resolve => {
             resolve(this.cores)
         })
     }
-
-    // calcNewValueByStep(currentValue, requestedValue, id) {
-    //     const steps = Math.round((requestedValue - currentValue) / this.step);
-    //     let newValue = currentValue + (this.step * steps);
-
-    //     if(this.neighborHandles === 'jumpover') {
-    //         if(newValue < this.min) return this.min;
-    //         if(newValue > this.max) return this.max;
-    //         return newValue
-    //     }
-
-    //     if(this.neighborHandles === 'abut') {
-    //         let sortedCores = Object.entries(this.cores)
-    //             .sort((a, b) => {
-    //                 if(a[1].pcnt > a[1].pcnt) {
-    //                     return 1
-    //                 } else if(a[1].pcnt < b[1].pcnt) {
-    //                     return -1
-    //                 } else return 0;
-    //             });
-
-    //         let thisIndex = sortedCores.findIndex( element => element[0] === id)
-    //         let prevIndex = thisIndex === 0 ? null :  thisIndex - 1;
-    //         let nextIndex = thisIndex === sortedCores.length - 1 ? null :  thisIndex + 1;
-
-    //         let min = prevIndex !== null ? sortedCores[prevIndex][1].value : this.min;
-    //         let max = nextIndex !== null ? sortedCores[nextIndex][1].value : this.max;
-
-    //             console.group()
-    //                 console.log(newValue)
-    //                 console.log('min:', min, 'max:', max)
-    //                 console.log(this.cores)
-    //                 console.log(sortedCores)
-    //             console.groupEnd()
-
-    //         let newPrevPcnt = sortedCores[prevIndex][1].pcnt
-    //         let newNextPcnt = sortedCores[nextIndex][1].pcnt
-    //         console.log(newPrevPcnt, newNextPcnt)
-
-    //         if(newValue <= min) return {min, newPrevPcnt};
-    //         if(newValue >= max) return {max, newNextPcnt};
-    //         return {newValue}
-    //     }
-
-
-
-    // }
 }
 class SliderView {
     constructor(root, handles, isVertical, useRange) {
