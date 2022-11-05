@@ -1,3 +1,7 @@
+.slider__handle_a80 {
+  background-color: rgba(255, 0, 0, 0.5) !important;
+}
+
 .slider::before, .slider::after {
   content: "";
   background-color: black;
