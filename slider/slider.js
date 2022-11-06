@@ -5,13 +5,13 @@ class SliderController {
         ({
             root: this.root, 
             isVertical: this.isVertical,
-            useRange: this.useRange
+            useRange: this.useRange,
         } = options)
 
         if(!this.isValidOptions) {
             throw new Error('not valid options');
         } else {
-            this.view = new SliderView(this.root, options.handles, this.isVertical, this.useRange);
+            this.view = new SliderView(this.root, options.handles, this.isVertical, this.useRange, options.ranges);
             this.model = new SliderModel(options);
 
             this.view.renderModel(this.model.cores);
@@ -212,12 +212,13 @@ console.log(id, '= value: ', this.cores[id].value, ', pcnt:', this.cores[id].pcn
     }
 }
 class SliderView {
-    constructor(root, handles, isVertical, useRange) {
+    constructor(root, handles, isVertical, useRange, ranges) {
         this.root = root;
         this.isVertical = isVertical;
         this.useRange = useRange;
 
         this.createHandleInstances(handles);
+        this.createRangeInstances(ranges)
         this.renderTamplate();
     }
 
@@ -233,6 +234,20 @@ class SliderView {
         }
     }
 
+    createRangeInstances(ranges) {
+        if(!ranges) return;
+        this.ranges = []
+        ranges.forEach(rangeAnchorsId => {
+            const range = new SelectedRange(
+                rangeAnchorsId, 
+                ['slider__range', `js-range-${rangeAnchorsId[0]}_${rangeAnchorsId[1]}`]
+            );
+            this.ranges.push(range)
+            range.elem.dataset.type = 'range';
+            range.elem.dataset.id = `${rangeAnchorsId[0]}_${rangeAnchorsId[1]}`;
+        })
+    }
+
     renderTamplate() {
         this.sliderElem = document.createElement('div');
         this.sliderElem.classList.add('slider');
@@ -244,14 +259,12 @@ class SliderView {
         this.bar = new Bar(['slider__bar', 'js-slider-bar']);
         this.bar.elem.dataset.type = 'bar'
 
+        this.ranges?.forEach(range => {
+            this.bar.elem.append(range.elem);
+        })
+
         for(let handle in this.handles) {
             this.bar.elem.append(this.handles[handle].elem)
-        }
-
-        if(this.useRange) {
-            this.range = new SelectedRange(['slider__range', 'js-slider-range']);
-            this.range.elem.dataset.type = 'range'
-            this.bar.elem.prepend(this.range.elem);
         }
 
         this.sliderElem.append(this.bar.elem);
@@ -264,6 +277,19 @@ class SliderView {
         let swapArgs = arg => this.isVertical ? ['', arg] : [arg, ''];
 
         for(let id in cores) {this.handles[id].moveCenterTo(...swapArgs(cores[id].pcnt))} // TODO check fool 0-100%
+        this.ranges?.forEach(range => {
+            console.log(range)
+            let startPcnt = cores[range.startId].pcnt;
+            let endPcnt = cores[range.endId].pcnt;
+            if(startPcnt > endPcnt) [startPcnt, endPcnt] = [endPcnt, startPcnt]
+            let length = Math.abs(endPcnt - startPcnt);
+            console.log(
+                startPcnt,
+                endPcnt,
+                length)
+            range.moveLeftEdgeTo(...swapArgs(startPcnt));
+            range.setRelativeSize(...swapArgs(length));
+        });
     }
 
     showAbove(handleID) {
@@ -325,8 +351,10 @@ class Bar extends SliderElement {
 }
 
 class SelectedRange extends SliderElement {
-    constructor(classes) {
+    constructor(anchorsId, classes) {
         super(classes);
+        this.startId = anchorsId[0];
+        this.endId = anchorsId[1];
     }
 
     moveCenterTo(x, y) {
@@ -334,8 +362,13 @@ class SelectedRange extends SliderElement {
     }
 
     setRelativeSize(width, height) {
-        if(height) this.elem.style.height = height + '%'
-        if(width) this.elem.style.width = width + '%';
+        if(height || height === 0) this.elem.style.height = height + '%'
+        if(width || width === 0) this.elem.style.width = width + '%';
+    }
+
+    renderRange(start, end) {
+        let length = end - start;
+        
     }
 }
 
