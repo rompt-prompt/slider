@@ -54,9 +54,9 @@ class SliderController {
             this.view.bar.getRelativeCoords(startEvent).y
         );
         let moveHandler = event => {
-            const value = this.isVertical ?
-                            Math.min(100, Math.max(0, this.view.bar.getRelativeCoords(event).y + shift.y))
-                            : Math.min(100, Math.max(0, this.view.bar.getRelativeCoords(event).x + shift.x));
+            const value = this.isVertical 
+                            ? inRange(this.view.bar.getRelativeCoords(event).y + shift.y, 0, 100)
+                            : inRange( this.view.bar.getRelativeCoords(event).x + shift.x, 0, 100)
             this.requestModelChange(handleID, 'pcnt', value);
         }
 
@@ -135,10 +135,6 @@ class SliderModel {
         return {min, max}
     }
 
-    inRange(value, min, max) {
-        return Math.min(max, Math.max(min, value)) // TODO check others in view
-    }
-
     calcCore(id, requestedValue, requestedPcnt, localLimits) {
         let value, pcnt;
         if(this.dataType === 'number') {
@@ -149,13 +145,14 @@ class SliderModel {
             switch(this.neighborHandles) {
                 case 'jumpover':
                 case 'move':
-                    value = this.inRange(currentValue + (this.step * steps), this.min, this.max);
-                    pcnt = this.inRange(requestedPcnt, 0, 100);
+                    value = inRange(currentValue + (this.step * steps), this.min, this.max);
+                    pcnt = inRange(requestedPcnt, 0, 100);
+                    console.log(currentValue + (this.step * steps), this.min, this.max)
                     break;
                     
                 case 'stop':
-                    value = this.inRange(currentValue + (this.step * steps), localLimits.min.value, localLimits.max.value);
-                    pcnt = this.inRange(requestedPcnt, localLimits.min.pcnt, localLimits.max.pcnt);
+                    value = inRange(currentValue + (this.step * steps), localLimits.min.value, localLimits.max.value);
+                    pcnt = inRange(requestedPcnt, localLimits.min.pcnt, localLimits.max.pcnt);
                     break;
             }
 
@@ -337,8 +334,8 @@ class SliderElement {
         let y = (event.pageY - (window.pageYOffset + this.elem.getBoundingClientRect().top) - this.elem.clientTop) / this.elem.clientHeight * 100;
 
         if(normalize) {
-            x = Math.min(100, Math.max(0, x));
-            y = Math.min(100, Math.max(0, y));
+            x = inRange(x, 0, 100);
+            y = inRange(y, 0, 100);
         }
 
         return {x, y};
@@ -429,4 +426,8 @@ class Tag extends SliderElement {
     displayValue(value) {
         this.elem.querySelector('.js-tag-value').textContent = value;
     }
+}
+
+function inRange(value, min, max) {
+    return Math.min(max, Math.max(min, value))
 }
