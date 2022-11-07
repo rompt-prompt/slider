@@ -6,13 +6,13 @@ const slider1 = new SliderController({
     root: container1,
     mode: 'select',
     dataType: 'number',
-    range: [0, 1000],
+    range: [-1000, 1000],
     step: 10,
     handles: {
-        'a30': {value: 200},
-        'a50': {value: 500},
-        'a80': {value: 800},
-        'a90': {value: 900},
+        'a30': {value: 0},
+        // 'a50': {value: 500},
+        // 'a80': {value: 800},
+        // 'a90': {value: 900},
     },
     neighborHandles: 'move', // 'move' 'stop' 'jumpover
     isVertical: false,

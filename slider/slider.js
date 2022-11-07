@@ -96,11 +96,11 @@ class SliderModel {
         }
     }
     calcValueFromPcnt(pcnt) {
-        if(this.dataType === 'number') return (this.max - this.min) * pcnt / 100;
+        if(this.dataType === 'number') return (pcnt * (this.max - this.min) / 100) + this.min;
     }
 
     calcPcntFromValue(value) {
-        if(this.dataType === 'number') return value * 100 / (this.max - this.min);
+        if(this.dataType === 'number') return (value - this.min) * 100 / (this.max - this.min);
     }
 
     getSortedCores() {
