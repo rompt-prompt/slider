@@ -1,7 +1,3 @@
-.slider__handle_a80 {
-  background-color: rgba(255, 0, 0, 0.5) !important;
-}
-
 .slider::before, .slider::after {
   content: "";
   background-color: black;
@@ -22,6 +18,22 @@
   left: 0;
   top: 50%;
   z-index: 10000;
+}
+
+.slider .slider__handle:nth-child(1) {
+  background-color: green !important;
+}
+
+.slider .slider__range:nth-child(1) {
+  background: rgba(255, 0, 0, 0.7);
+}
+
+.slider .slider__range:nth-child(2) {
+  background: rgba(9, 255, 0, 0.7);
+}
+
+.slider .slider__range:nth-child(3) {
+  background: rgba(238, 255, 0, 0.7);
 }
 
 .slider * {

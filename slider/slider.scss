@@ -15,10 +15,7 @@ $handle-border-color: black;
 $handle-border-width: 10px;
 $handle1-bg: rgba(1, 1, 1, 0.5);
 
-// helper
-.slider__handle_a80 {
-    background-color: rgba(255, 0, 0, 0.5) !important;
-}
+// helper Start
 .slider::before, .slider::after {
     content: "";
     background-color: black;
@@ -40,6 +37,23 @@ $handle1-bg: rgba(1, 1, 1, 0.5);
     top: 50%;
     z-index: 10000;
 }
+.slider .slider__handle:nth-child(1) {
+    background-color: green !important;
+}
+
+.slider .slider__range:nth-child(1) {
+    background: rgba(255, 0, 0, 0.7)
+}
+
+.slider .slider__range:nth-child(2) {
+    background: rgba(9, 255, 0, 0.7)
+}
+
+.slider .slider__range:nth-child(3) {
+    background: rgba(238, 255, 0, 0.7)
+}
+//helper END
+
 .slider {
 
     * {box-sizing: border-box;}
