@@ -10,13 +10,14 @@ const slider1 = new SliderController({
     step: 10,
     handles: {
         'a30': {value: 200},
-        // 'a50': {value: 500},
+        'a50': {value: 500},
         'a80': {value: 800},
+        'a90': {value: 900},
     },
-    neighborHandles: 'jumpover', // 'move' 'stop' 'jumpover // TODO add z-index
+    neighborHandles: 'jumpover', // 'move' 'stop' 'jumpover
     isVertical: false,
     ranges: [
-        ['a30', 'a80']
+        ['a30', 'a50'], ['a50', 'a80'], ['a80', 'a90']
     ],
 
 })
@@ -29,13 +30,13 @@ const slider2 = new SliderController({
     step: 1,
     handles: {
         'y': {value: 10},
-        'yy': {value: 50},
+        // 'yy': {value: 50},
         // 'a80': {value: 80}
     },
     neighborHandles: 'jumpover',
     isVertical: 1,
     ranges: [
-        ['y', 'yy']
+        ['sliderstart', 'y']
     ],
 })
 

@@ -276,17 +276,20 @@ class SliderView {
     renderModel(cores) {
         let swapArgs = arg => this.isVertical ? ['', arg] : [arg, ''];
 
-        for(let id in cores) {this.handles[id].moveCenterTo(...swapArgs(cores[id].pcnt))} // TODO check fool 0-100%
+        for(let id in cores) {
+            this.handles[id].moveCenterTo(...swapArgs(cores[id].pcnt))
+        } // TODO check fool 0-100%
         this.ranges?.forEach(range => {
-            console.log(range)
-            let startPcnt = cores[range.startId].pcnt;
-            let endPcnt = cores[range.endId].pcnt;
+            const calcStartEndPcnt = id => {switch(id) {
+                case 'sliderstart': return 0;
+                case 'sliderend': return 100;
+                default: return cores[id].pcnt
+            }}
+            let startPcnt = calcStartEndPcnt(range.startId);
+            let endPcnt = calcStartEndPcnt(range.endId);
             if(startPcnt > endPcnt) [startPcnt, endPcnt] = [endPcnt, startPcnt]
-            let length = Math.abs(endPcnt - startPcnt);
-            console.log(
-                startPcnt,
-                endPcnt,
-                length)
+            const length = Math.abs(endPcnt - startPcnt);
+            
             range.moveLeftEdgeTo(...swapArgs(startPcnt));
             range.setRelativeSize(...swapArgs(length));
         });
@@ -334,7 +337,6 @@ class SliderElement {
     moveCenterTo(x, y) {
         const relativeMiddleX = this.elem.offsetWidth / this.elem.offsetParent.clientWidth * 100 / 2;
         const relativeMiddleY = this.elem.offsetHeight / this.elem.offsetParent.clientHeight * 100 / 2;
-
         const shift = {
             x: (x || x === 0) ? x - relativeMiddleX : '',
             y: (y || y === 0) ? y - relativeMiddleY : '',
@@ -364,11 +366,6 @@ class SelectedRange extends SliderElement {
     setRelativeSize(width, height) {
         if(height || height === 0) this.elem.style.height = height + '%'
         if(width || width === 0) this.elem.style.width = width + '%';
-    }
-
-    renderRange(start, end) {
-        let length = end - start;
-        
     }
 }
 
