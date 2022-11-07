@@ -14,11 +14,11 @@ const slider1 = new SliderController({
         'a80': {value: 800},
         'a90': {value: 900},
     },
-    neighborHandles: 'jumpover', // 'move' 'stop' 'jumpover
+    neighborHandles: 'move', // 'move' 'stop' 'jumpover
     isVertical: false,
-    ranges: [
-        ['a30', 'a50'], ['a50', 'a80'], ['a80', 'a90'] // 'sliderstart', 'sliderend', handleId
-    ],
+    // ranges: [
+    //     ['a30', 'a50'], ['a50', 'a80'], ['a80', 'a90'] // 'sliderstart', 'sliderend', handleId
+    // ],
     tagsPositions: 'top', // 'top', 'right' 'left', 'bottom' {id: position}
 })
 

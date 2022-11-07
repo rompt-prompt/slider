@@ -244,7 +244,9 @@ class SliderView {
             this.handles[id].elem.dataset.id = id;
 
             if(tagsPositions) {
-                this.handles[id].elem.append(new Tag(getTagPosition(tagsPositions, id)).elem);
+                const tag = new Tag(getTagPosition(tagsPositions, id));
+                this.handles[id].tag = tag;
+                this.handles[id].elem.append(tag.elem)
             }
         }
     }
@@ -261,10 +263,6 @@ class SliderView {
             range.elem.dataset.type = 'range';
             range.elem.dataset.id = `${rangeAnchorsId[0]}_${rangeAnchorsId[1]}`;
         })
-    }
-
-    createTagInstances(tagPosition) {
-        return new Tag(tagPosition)
     }
 
     renderTamplate() {
@@ -296,7 +294,8 @@ class SliderView {
         let swapArgs = arg => this.isVertical ? ['', arg] : [arg, ''];
 
         for(let id in cores) {
-            this.handles[id].moveCenterTo(...swapArgs(cores[id].pcnt))
+            this.handles[id].moveCenterTo(...swapArgs(cores[id].pcnt));
+            this.handles[id].tag ? this.handles[id].tag.displayValue(cores[id].value) : null;
         } // TODO check fool 0-100%
         this.ranges?.forEach(range => {
             const calcStartEndPcnt = id => {switch(id) {
@@ -411,13 +410,16 @@ class Tag extends SliderElement {
             case 'top':
                 positionClass = 'slider__tag-container_top';
         }
-
         super(['slider__tag-container', positionClass]);
-
+        
         this.elem.innerHTML = `
             <div class="tag">
-                <div class="tag__value"></div>
+                <div class="tag__value js-tag-value"></div>
             </div>
         `
+    }
+
+    displayValue(value) {
+        this.elem.querySelector('.js-tag-value').textContent = value;
     }
 }
