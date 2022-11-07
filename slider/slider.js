@@ -11,7 +11,7 @@ class SliderController {
         if(!this.isValidOptions) {
             throw new Error('not valid options');
         } else {
-            this.view = new SliderView(this.root, options.handles, this.isVertical, this.useRange, options.ranges);
+            this.view = new SliderView(this.root, options.handles, this.isVertical, this.useRange, options.ranges, options.tagsPositions);
             this.model = new SliderModel(options);
 
             this.view.renderModel(this.model.cores);
@@ -212,18 +212,29 @@ console.log(id, '= value: ', this.cores[id].value, ', pcnt:', this.cores[id].pcn
     }
 }
 class SliderView {
-    constructor(root, handles, isVertical, useRange, ranges) {
+    constructor(root, handles, isVertical, useRange, ranges, tagsPositions) {
         this.root = root;
         this.isVertical = isVertical;
         this.useRange = useRange;
 
-        this.createHandleInstances(handles);
-        this.createRangeInstances(ranges)
+        this.createHandleInstances(handles, tagsPositions);
+        this.createRangeInstances(ranges);
         this.renderTamplate();
     }
 
-    createHandleInstances(handles) {
+    createHandleInstances(handles, tagsPositions) {
         this.handles = {};
+        
+        function getTagPosition(tagsPositions, id) {
+            switch(tagsPositions.constructor.name) {
+                case 'String': return tagsPositions;
+                case 'Array':
+                    const defaultPosotion = tagsPositions.find(item => item.constructor.name === 'String');
+                    const privatePosition = tagsPositions.find(item => item.constructor.name === 'Object')?.[id];
+                    return privatePosition || defaultPosotion;
+            }
+        }
+
         for(let id in handles) {
             this.handles[id] = new Handle(
                 handles[id].value, 
@@ -231,6 +242,10 @@ class SliderView {
             );
             this.handles[id].elem.dataset.type = 'handle';
             this.handles[id].elem.dataset.id = id;
+
+            if(tagsPositions) {
+                this.handles[id].elem.append(new Tag(getTagPosition(tagsPositions, id)).elem);
+            }
         }
     }
 
@@ -246,6 +261,10 @@ class SliderView {
             range.elem.dataset.type = 'range';
             range.elem.dataset.id = `${rangeAnchorsId[0]}_${rangeAnchorsId[1]}`;
         })
+    }
+
+    createTagInstances(tagPosition) {
+        return new Tag(tagPosition)
     }
 
     renderTamplate() {
@@ -264,7 +283,7 @@ class SliderView {
         })
 
         for(let handle in this.handles) {
-            this.bar.elem.append(this.handles[handle].elem)
+            this.bar.elem.append(this.handles[handle].elem);
         }
 
         this.sliderElem.append(this.bar.elem);
@@ -289,7 +308,7 @@ class SliderView {
             let endPcnt = calcStartEndPcnt(range.endId);
             if(startPcnt > endPcnt) [startPcnt, endPcnt] = [endPcnt, startPcnt]
             const length = Math.abs(endPcnt - startPcnt);
-            
+
             range.moveLeftEdgeTo(...swapArgs(startPcnt));
             range.setRelativeSize(...swapArgs(length));
         });
@@ -373,5 +392,32 @@ class Handle extends SliderElement {
     constructor(initValue, classes) { 
         super(classes);
         this.initValue = initValue;
+    }
+}
+
+class Tag extends SliderElement {
+    constructor(position) {
+        let positionClass;
+        switch(position) {
+            case 'right':
+                positionClass = 'slider__tag-container_right';
+                break;
+            case 'left':
+                positionClass = 'slider__tag-container_left';
+                break;
+            case 'bottom':
+                positionClass = 'slider__tag-container_bottom';
+                break;
+            case 'top':
+                positionClass = 'slider__tag-container_top';
+        }
+
+        super(['slider__tag-container', positionClass]);
+
+        this.elem.innerHTML = `
+            <div class="tag">
+                <div class="tag__value"></div>
+            </div>
+        `
     }
 }

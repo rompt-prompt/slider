@@ -9,11 +9,14 @@ $bar-border-width: 70px;
 $range-bg: yellow;
 
 $handle-width: 100px;
-$handle-height: 100px;
+$handle-height: 100px; 
 $handle-border-radius: 50%;
 $handle-border-color: black;
 $handle-border-width: 10px;
 $handle1-bg: rgba(1, 1, 1, 0.5);
+
+$tag-bg-color: rgb(0, 255, 0);
+$tag-color: #fff;
 
 // helper Start
 .slider::before, .slider::after {
@@ -79,6 +82,94 @@ $handle1-bg: rgba(1, 1, 1, 0.5);
         background-color: $handle1-bg;
 
     }
+
+    &__tag-container {
+        cursor: default;
+        position: absolute;
+        z-index: 10000;
+
+        &.slider__tag-container_top {
+            bottom: calc(100% + 20px);
+            left: 50%;
+            transform: translate(-50%, 0);
+    
+            .tag {
+                &::after {
+                    border-top-color: $tag-bg-color;        
+                    top: 100%;
+                    left: 50%;
+                    transform: translate(-50%, 0);
+                }            
+            }
+        }
+        &.slider__tag-container_bottom {
+            top: calc(100% + 20px);
+            left: 50%;
+            transform: translate(-50%, 0);
+    
+            .tag {
+                &::after {
+                    border-bottom-color: $tag-bg-color;        
+                    bottom: 100%;
+                    left: 50%;
+                    transform: translate(-50%, 0);
+                }            
+            }
+        }
+        &.slider__tag-container_right {
+            left: calc(100% + 20px);
+            top: 50%;
+            transform: translate(0, -50%);
+    
+            .tag {
+                &::after {
+                    border-right-color: $tag-bg-color;        
+                    right: 100%;
+                    top: 50%;
+                    transform: translateY(-50%);
+                }            
+            }
+        }
+
+        &.slider__tag-container_left {
+            right: calc(100% + 20px);
+            top: 50%;
+            transform: translate(0, -50%);
+    
+            .tag {
+                &::after {
+                    border-left-color: $tag-bg-color;        
+                    left: 100%;
+                    top: 50%;
+                    transform: translateY(-50%);
+                }            
+            }
+        }
+        .tag {
+            position: relative;
+
+            &::after {
+                position: absolute;
+                content: '';
+                border: 5px solid transparent;
+            }
+            
+            &__value {
+                height: 20px;
+                min-width: 30px;
+                padding: 0 8px;
+                border-radius: 5px;
+                background-color: $tag-bg-color;
+                color: $tag-color;
+                font-size: 14px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                box-shadow: 0px 0px 14px 0px $tag-bg-color;
+            }
+        }
+    }
+
     &.slider_h {
         width: $slider-main-axis;
         height: $slider-second-axis;
