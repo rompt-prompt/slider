@@ -156,7 +156,7 @@ $tag-color: #fff;
             
             &__value {
                 height: 20px;
-                min-width: 30px;
+                width: max-content;
                 padding: 0 8px;
                 border-radius: 5px;
                 background-color: $tag-bg-color;

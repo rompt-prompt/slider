@@ -20,6 +20,7 @@ const slider1 = new SliderController({
     //     ['a30', 'a50'], ['a50', 'a80'], ['a80', 'a90'] // 'sliderstart', 'sliderend', handleId
     // ],
     tagsPositions: 'top', // 'top', 'right' 'left', 'bottom' {id: position}
+    tagsPostfix: ' ₽',
 })
 
 const slider2 = new SliderController({
@@ -40,7 +41,9 @@ const slider2 = new SliderController({
     ranges: [
         ['sliderstart', 'y1'], ['sliderend', 'y5']
     ],
-    tagsPositions: ['left', {'y2': 'right', 'y4': 'right'}]
+    tagsPositions: ['left', {'y2': 'right', 'y4': 'right'}],
+    tagsPrefix: '$ ',
+
 })
 
 const slider3 = new SliderController({

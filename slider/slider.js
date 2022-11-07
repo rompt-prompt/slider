@@ -11,7 +11,11 @@ class SliderController {
         if(!this.isValidOptions) {
             throw new Error('not valid options');
         } else {
-            this.view = new SliderView(this.root, options.handles, this.isVertical, this.useRange, options.ranges, options.tagsPositions);
+            this.view = new SliderView(this.root, options.handles,
+                 this.isVertical, this.useRange, options.ranges, options.tagsPositions,
+                 options.tagsPrefix,
+                 options.tagsPostfix,
+                 );
             this.model = new SliderModel(options);
 
             this.view.renderModel(this.model.cores);
@@ -212,10 +216,12 @@ console.log(id, '= value: ', this.cores[id].value, ', pcnt:', this.cores[id].pcn
     }
 }
 class SliderView {
-    constructor(root, handles, isVertical, useRange, ranges, tagsPositions) {
+    constructor(root, handles, isVertical, useRange, ranges, tagsPositions, tagsPrefix, tagsPostfix) {
         this.root = root;
         this.isVertical = isVertical;
         this.useRange = useRange;
+        this.tagsPrefix = tagsPrefix || '';
+        this.tagsPostfix = tagsPostfix || '';
 
         this.createHandleInstances(handles, tagsPositions);
         this.createRangeInstances(ranges);
@@ -295,7 +301,8 @@ class SliderView {
 
         for(let id in cores) {
             this.handles[id].moveCenterTo(...swapArgs(cores[id].pcnt));
-            this.handles[id].tag ? this.handles[id].tag.displayValue(cores[id].value) : null;
+            this.handles[id].tag ? this.handles[id].tag.displayValue(
+                this.tagsPrefix + cores[id].value + this.tagsPostfix) : null;
         } // TODO check fool 0-100%
         this.ranges?.forEach(range => {
             const calcStartEndPcnt = id => {switch(id) {
