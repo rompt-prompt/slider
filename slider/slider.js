@@ -138,20 +138,18 @@ class SliderModel {
     calcCore(id, requestedValue, requestedPcnt, localLimits) {
         let value, pcnt;
         if(this.dataType === 'number') {
-            const currentValue = this.cores[id].value;
-            const currentPcnt = this.cores[id].pcnt;
-            const steps = Math.round((requestedValue - currentValue) / this.step);
+            const steps = Math.round((requestedValue - this.min) / this.step);
+            value = requestedValue === this.max ? this.max : this.min + (this.step * steps);
 
             switch(this.neighborHandles) {
                 case 'jumpover':
                 case 'move':
-                    value = inRange(currentValue + (this.step * steps), this.min, this.max);
+                    value = inRange(value, this.min, this.max);
                     pcnt = inRange(requestedPcnt, 0, 100);
-                    console.log(currentValue + (this.step * steps), this.min, this.max)
                     break;
                     
                 case 'stop':
-                    value = inRange(currentValue + (this.step * steps), localLimits.min.value, localLimits.max.value);
+                    value = inRange(value, localLimits.min.value, localLimits.max.value);
                     pcnt = inRange(requestedPcnt, localLimits.min.pcnt, localLimits.max.pcnt);
                     break;
             }
@@ -159,7 +157,7 @@ class SliderModel {
             if(this.neighborHandles === 'move') {
                 const neighbors = this.getNeighbors(id, this.getSortedCores());
 
-                switch(requestedPcnt < currentPcnt) {
+                switch(requestedPcnt < this.cores[id].pcnt) {
                     case true:
                         if(requestedPcnt <= localLimits.min.pcnt && neighbors.prevId !== null) {
                             this.setValue(neighbors.prevId, 'pcnt', pcnt)}
@@ -170,8 +168,9 @@ class SliderModel {
                         break;
                 }
             }
+            let stepCapicityDigs = this.step.toString().match(/\.(\d+)/)?.[1].length;
+            value = +value.toFixed(stepCapicityDigs)
         }
-
         return {value, pcnt}
     }
 
@@ -206,7 +205,7 @@ class SliderModel {
             this.cores[id].value = permittedCore.value;
             this.cores[id].pcnt = permittedCore.pcnt;
         }
-console.log(id, '= value: ', this.cores[id].value, ', pcnt:', this.cores[id].pcnt)
+// console.log(id, '= value: ', this.cores[id].value, ', pcnt:', this.cores[id].pcnt)
         return new Promise(resolve => {
             resolve(this.cores)
         })
