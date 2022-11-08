@@ -139,13 +139,25 @@ class SliderModel {
         let value, pcnt;
         if(this.dataType === 'number') {
             const steps = Math.round((requestedValue - this.min) / this.step);
-            value = requestedValue === this.max ? this.max : this.min + (this.step * steps);
-
+            value = inRange(
+                requestedValue === this.max ? this.max : this.min + (this.step * steps),
+                this.min,
+                this.max);
+            pcnt = inRange(requestedPcnt, 0, 100);
             switch(this.neighborHandles) {
-                case 'jumpover':
                 case 'move':
-                    value = inRange(value, this.min, this.max);
-                    pcnt = inRange(requestedPcnt, 0, 100);
+                    const neighbors = this.getNeighbors(id, this.getSortedCores());
+        
+                    if(
+                        requestedPcnt < this.cores[id].pcnt &&
+                        requestedPcnt <= localLimits.min.pcnt && 
+                        neighbors.prevId !== null
+                    ) this.setValue(neighbors.prevId, 'pcnt', pcnt);
+                    else if(
+                        requestedPcnt >= this.cores[id].pcnt &&
+                        requestedPcnt >= localLimits.max.pcnt &&
+                        neighbors.nextId !== null
+                    ) this.setValue(neighbors.nextId, 'pcnt', pcnt)
                     break;
                     
                 case 'stop':
@@ -154,20 +166,6 @@ class SliderModel {
                     break;
             }
 
-            if(this.neighborHandles === 'move') {
-                const neighbors = this.getNeighbors(id, this.getSortedCores());
-
-                switch(requestedPcnt < this.cores[id].pcnt) {
-                    case true:
-                        if(requestedPcnt <= localLimits.min.pcnt && neighbors.prevId !== null) {
-                            this.setValue(neighbors.prevId, 'pcnt', pcnt)}
-                        break;
-                    case false:
-                        if(requestedPcnt >= localLimits.max.pcnt && neighbors.nextId !== null) {
-                            this.setValue(neighbors.nextId, 'pcnt', pcnt)}
-                        break;
-                }
-            }
             let stepCapicityDigs = this.step.toString().match(/\.(\d+)/)?.[1].length;
             value = +value.toFixed(stepCapicityDigs)
         }

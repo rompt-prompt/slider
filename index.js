@@ -10,11 +10,11 @@ const slider1 = new SliderController({
     step: 0.3,
     handles: {
         'a30': {value: 0},
-        // 'a50': {value: 500},
-        // 'a80': {value: 8},
+        'a50': {value: 5},
+        'a80': {value: 8},
         // 'a90': {value: 900},
     },
-    neighborHandles: 'move', // 'move' 'stop' 'jumpover // TODO undefined
+    neighborHandles: 'move', // 'move' 'stop' 'jumpover === any, default
     isVertical: false,
     // ranges: [
     //     ['a30', 'a50'], ['a50', 'a80'], ['a80', 'a90'] // 'sliderstart', 'sliderend', handleId
@@ -36,7 +36,7 @@ const slider2 = new SliderController({
         'y4': {value: 40},
         'y5': {value: 50}
     },
-    neighborHandles: 'jumpover',
+    // neighborHandles: 'jumpover',
     isVertical: 1,
     ranges: [
         ['sliderstart', 'y1'], ['sliderend', 'y5']
@@ -57,7 +57,7 @@ const slider3 = new SliderController({
         'qq': {value: 50},
         'a80': {value: 80}
     },
-    neighborHandles: 'jumpover',
+    neighborHandles: 'stop',
     isVertical: 0,
     tagsPositions: [{'qq': 'bottom'}]
 })
