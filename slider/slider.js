@@ -72,6 +72,27 @@ class SliderController {
         this.model.setValue(id, type, value)
             .then(cores => this.view.renderModel(cores))
     }
+
+    setValue(id, type, value) {
+        if(type !== 'value' && type !== 'pcnt') throw new Error(
+            `Type <${type}> is not valid. Choose 'value' or 'pcnt'`
+        );
+        if(!Object.keys(this.model.cores).includes(id)) throw new Error(
+            `Id <${id}> not found`
+        );
+        this.requestModelChange(id, type, value)
+    }
+
+    getValues(id) {
+        let values = {}
+        if(!id) Object.entries(this.model.cores).forEach(entry =>
+            values[entry[0]] = entry[1].value);
+        else if(id.constructor.name ===  'Array') id.forEach(id => 
+            values[id] = this.model.cores[id].value); 
+        else if(id.constructor.name === 'String') values = this.model.cores[id].value;
+
+        return values
+    }
 }
 
 class SliderModel {
@@ -314,7 +335,7 @@ class SliderView {
         });
     }
 
-    showAbove(handleID) {
+    showAbove(handleID) { // TODO fix in stop-mode neighborHandles
         for(let id in this.handles) {this.handles[id].elem.style.zIndex = ''}
         this.handles[handleID].elem.style.zIndex = 1000;
     }
