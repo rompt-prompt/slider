@@ -309,7 +309,7 @@ class SliderView {
 class SliderElement {
     constructor(classes, type) {
         this.elem = document.createElement('div');
-        this.elem.dataset.type = type;
+        type ? this.elem.dataset.type = type : null;
         this.elem.classList.add(...classes);
     }
 
