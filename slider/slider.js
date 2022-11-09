@@ -8,7 +8,6 @@ class SliderController {
             isVertical: this.isVertical,
             useRange: this.useRange,
         } = options)
-
         this.init(options)
     }
 
@@ -112,17 +111,15 @@ class SliderModel {
         this.max = options.range[1];
         this.neighborHandles = options.neighborHandles;
         this.initCores(options.handles);
-
     }
 
     initCores(handles) {
-        this.cores = {};
-        for(let id in handles) {
-            this.cores[id] = {
-                value: handles[id].value,
-                pcnt: this.calcPcntFromValue(handles[id].value),
+        this.cores = Object.fromEntries(Object.entries(handles).map(handle =>[
+            handle[0], {
+                value: handle[1],
+                pcnt: this.calcPcntFromValue(handle[1])
             }
-        }
+        ]))
     }
     calcValueFromPcnt(pcnt) {
         if(this.dataType === 'number') return (pcnt * (this.max - this.min) / 100) + this.min;
@@ -253,22 +250,15 @@ class SliderView {
     init(handles, tagsPositions, ranges) {
         this.widget = new SliderElement(['slider', `${this.isVertical ? 'slider_v': 'slider_h'}`])
         this.bar = new Bar(['slider__bar', 'js-slider-bar']);
-        this.handles = createHandleInstances(handles, tagsPositions);
+        this.handles = Object.fromEntries(Object.entries(handles).map(handle => [
+            handle[0], 
+            new Handle(handle[0], handle[1], 
+                ['slider__handle', 'js-slider-handle', `slider__handle_${handle[0]}`],
+                tagsPositions
+            )
+        ]))
         if(ranges) this.ranges = createRangeInstances(ranges)
 
-        function createHandleInstances(handles, tagsPositions) {
-            let obj = {};
-        
-            for(let id in handles) {
-                obj[id] = new Handle(
-                    id,
-                    handles[id].value, 
-                    ['slider__handle', 'js-slider-handle', `slider__handle_${id}`],
-                    tagsPositions
-                );
-            }
-            return obj;
-        }
         function createRangeInstances(ranges) {
             let arr = []
             ranges.forEach(rangeAnchorsId => {
