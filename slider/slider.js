@@ -2,29 +2,32 @@
 
 class SliderController {
     constructor(options) {
+        this.startOptions = options;
         ({
             root: this.root, 
             isVertical: this.isVertical,
             useRange: this.useRange,
         } = options)
 
-        if(!this.isValidOptions) {
-            throw new Error('not valid options');
-        } else {
-            this.view = new SliderView(this.root, options.handles,
-                 this.isVertical, this.useRange, options.ranges, options.tagsPositions,
-                 options.tagsPrefix,
-                 options.tagsPostfix,
-                 );
-            this.model = new SliderModel(options);
-
-            this.view.renderModel(this.model.cores);
-            this.watchEvents();
-        }
+        this.init(options)
     }
 
     isValidOptions() {
         return true;
+    }
+
+    init(options) {
+        if(!this.isValidOptions()) throw new Error('not valid options');
+        
+        this.view = new SliderView(this.root, options.handles,
+            this.isVertical, this.useRange, options.ranges, options.tagsPositions,
+            options.tagsPrefix,
+            options.tagsPostfix,
+            );
+       this.model = new SliderModel(options);
+
+       this.view.renderModel(this.model.cores);
+       this.watchEvents();
     }
 
     watchEvents() {
@@ -92,6 +95,11 @@ class SliderController {
         else if(id.constructor.name === 'String') values = this.model.cores[id].value;
 
         return values
+    }
+
+    reset() {
+        this.root.innerHTML = '';
+        this.init(this.startOptions);
     }
 }
 
