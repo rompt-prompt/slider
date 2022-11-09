@@ -265,18 +265,15 @@ class SliderView {
 
 
     renderTamplate() {
+        this.root.innerHTML = '';
+        this.root.append(this.widget.elem);
+        this.widget.elem.append(this.bar.elem);
         this.ranges?.forEach(range => {
             this.bar.elem.append(range.elem);
-        })
-
+        });
         for(let handle in this.handles) {
             this.bar.elem.append(this.handles[handle].elem);
-        }
-
-        this.widget.elem.append(this.bar.elem);
-        this.root.innerHTML = ''
-        this.root.append(this.widget.elem);
-
+        };
     }
 
     renderModel(cores) {
