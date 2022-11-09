@@ -257,19 +257,10 @@ class SliderView {
                 tagsPositions
             )
         ]))
-        if(ranges) this.ranges = createRangeInstances(ranges)
-
-        function createRangeInstances(ranges) {
-            let arr = []
-            ranges.forEach(rangeAnchorsId => {
-                const range = new SelectedRange(
-                    rangeAnchorsId, 
-                    ['slider__range', `js-range-${rangeAnchorsId[0]}_${rangeAnchorsId[1]}`]
-                );
-                arr.push(range)
-            })
-            return arr;
-        };
+        if(ranges) this.ranges = ranges.map(range => range = new SelectedRange(
+            range, 
+            ['slider__range', `js-range-${range[0]}_${range[1]}`]
+        ))
     }
 
 

@@ -8,17 +8,17 @@ const slider1 = new SliderController({
     dataType: 'number',
     range: [-10, 10],
     step: 0.3,
-    handles: {
+    handles: { // {handleId: handleInitValue}
         'a30': 0,
         'a50': 5,
         'a80': 8,
         // 'a90': 900,
     },
-    neighborHandles: 'move', // 'move' 'stop' 'jumpover === any, default
+    neighborHandles: 'jumpover', // 'move' 'stop' 'jumpover === any, default
     isVertical: false,
-    // ranges: [
-    //     ['a30', 'a50'], ['a50', 'a80'], ['a80', 'a90'] // 'sliderstart', 'sliderend', handleId
-    // ],
+    ranges: [ // [[anc1, anc2]] || [[anc1, anc2], [anc2, anc3]], 'sliderstart', 'sliderend', handleId
+    ['a30', 'sliderstart'], ['a30', 'a50'], ['a50', 'a80'], ['a80', 'sliderend']
+    ],
     tagsPositions: 'top', // 'top', 'right' 'left', 'bottom' {id: position}
     tagsPostfix: ' ₽',
 })
@@ -58,6 +58,7 @@ const slider3 = new SliderController({
         'a80': 80,
     },
     neighborHandles: 'stop',
+    ranges: [['q', 'qq'], ['a80', 'qq']],
     isVertical: 0,
     tagsPositions: [{'qq': 'bottom'}]
 })
