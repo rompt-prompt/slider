@@ -31,7 +31,7 @@ class SliderController {
     }
 
     watchEvents() {
-        this.view.sliderElem.onpointerdown = event => {
+        this.view.widget.elem.onpointerdown = event => {
             event.preventDefault();
             let type = event.target.dataset.type
             if(type === 'bar' || type === 'range') this.onClick();
@@ -246,65 +246,44 @@ class SliderView {
         this.tagsPrefix = tagsPrefix || '';
         this.tagsPostfix = tagsPostfix || '';
 
-        this.createHandleInstances(handles, tagsPositions);
-        this.createRangeInstances(ranges);
+        this.init(handles, tagsPositions, ranges)
         this.renderTamplate();
     }
 
-    createHandleInstances(handles, tagsPositions) {
-        this.handles = {};
+    init(handles, tagsPositions, ranges) {
+        this.widget = new SliderElement(['slider', `${this.isVertical ? 'slider_v': 'slider_h'}`])
+        this.bar = new Bar(['slider__bar', 'js-slider-bar']);
+        this.handles = createHandleInstances(handles, tagsPositions);
+        if(ranges) this.ranges = createRangeInstances(ranges)
+
+        function createHandleInstances(handles, tagsPositions) {
+            let obj = {};
         
-        function getTagPosition(tagsPositions, id) {
-            switch(tagsPositions.constructor.name) {
-                case 'String': return tagsPositions;
-                case 'Array':
-                    const defaultPosotion = tagsPositions.find(item => item.constructor.name === 'String');
-                    const privatePosition = tagsPositions.find(item => item.constructor.name === 'Object')?.[id];
-                    return privatePosition || defaultPosotion;
+            for(let id in handles) {
+                obj[id] = new Handle(
+                    id,
+                    handles[id].value, 
+                    ['slider__handle', 'js-slider-handle', `slider__handle_${id}`],
+                    tagsPositions
+                );
             }
+            return obj;
         }
-
-        for(let id in handles) {
-            this.handles[id] = new Handle(
-                handles[id].value, 
-                ['slider__handle', 'js-slider-handle', `slider__handle_${id}`]
-            );
-            this.handles[id].elem.dataset.type = 'handle';
-            this.handles[id].elem.dataset.id = id;
-
-            if(tagsPositions) {
-                const tag = new Tag(getTagPosition(tagsPositions, id));
-                this.handles[id].tag = tag;
-                this.handles[id].elem.append(tag.elem)
-            }
-        }
+        function createRangeInstances(ranges) {
+            let arr = []
+            ranges.forEach(rangeAnchorsId => {
+                const range = new SelectedRange(
+                    rangeAnchorsId, 
+                    ['slider__range', `js-range-${rangeAnchorsId[0]}_${rangeAnchorsId[1]}`]
+                );
+                arr.push(range)
+            })
+            return arr;
+        };
     }
 
-    createRangeInstances(ranges) {
-        if(!ranges) return;
-        this.ranges = []
-        ranges.forEach(rangeAnchorsId => {
-            const range = new SelectedRange(
-                rangeAnchorsId, 
-                ['slider__range', `js-range-${rangeAnchorsId[0]}_${rangeAnchorsId[1]}`]
-            );
-            this.ranges.push(range)
-            range.elem.dataset.type = 'range';
-            range.elem.dataset.id = `${rangeAnchorsId[0]}_${rangeAnchorsId[1]}`;
-        })
-    }
 
     renderTamplate() {
-        this.sliderElem = document.createElement('div');
-        this.sliderElem.classList.add('slider');
-        this.isVertical 
-        ? this.sliderElem.classList.add('slider_v', 'js-slider-v')
-        : this.sliderElem.classList.add('slider_h', 'js-slider-h');
-
-
-        this.bar = new Bar(['slider__bar', 'js-slider-bar']);
-        this.bar.elem.dataset.type = 'bar'
-
         this.ranges?.forEach(range => {
             this.bar.elem.append(range.elem);
         })
@@ -313,9 +292,9 @@ class SliderView {
             this.bar.elem.append(this.handles[handle].elem);
         }
 
-        this.sliderElem.append(this.bar.elem);
+        this.widget.elem.append(this.bar.elem);
         this.root.innerHTML = ''
-        this.root.append(this.sliderElem);
+        this.root.append(this.widget.elem);
 
     }
 
@@ -350,9 +329,10 @@ class SliderView {
 }
 
 class SliderElement {
-    constructor(classes) {
+    constructor(classes, type) {
         this.elem = document.createElement('div');
-        this.elem.classList.add(...classes)
+        this.elem.dataset.type = type;
+        this.elem.classList.add(...classes);
     }
 
     getRelativeCoords(event, normalize) {
@@ -396,13 +376,13 @@ class SliderElement {
 
 class Bar extends SliderElement {
     constructor(classes) {
-        super(classes);
+        super(classes, 'bar');
     }
 }
 
 class SelectedRange extends SliderElement {
     constructor(anchorsId, classes) {
-        super(classes);
+        super(classes, 'range');
         this.startId = anchorsId[0];
         this.endId = anchorsId[1];
     }
@@ -418,35 +398,47 @@ class SelectedRange extends SliderElement {
 }
 
 class Handle extends SliderElement {
-    constructor(initValue, classes) { 
-        super(classes);
+    constructor(id, initValue, classes, tagsPositions) { 
+        super(classes, 'handle');
+        this.elem.dataset.id = id;
         this.initValue = initValue;
+        if(tagsPositions) this.createTagInstance(tagsPositions);
+    }
+
+    createTagInstance(tagsPositions) {
+        this.tag = new Tag(tagsPositions, this.elem.dataset.id);
+        this.elem.append(this.tag.elem)
     }
 }
 
 class Tag extends SliderElement {
-    constructor(position) {
-        let positionClass;
-        switch(position) {
-            case 'right':
-                positionClass = 'slider__tag-container_right';
-                break;
-            case 'left':
-                positionClass = 'slider__tag-container_left';
-                break;
-            case 'bottom':
-                positionClass = 'slider__tag-container_bottom';
-                break;
-            case 'top':
-                positionClass = 'slider__tag-container_top';
-        }
-        super(['slider__tag-container', positionClass]);
-        
+    constructor(tagsPositions, id) {
+        super(['slider__tag-container']);
+        this.DEFAULT_POSITION = 'top';
+        this.elem.classList.add(this.resolveTagPosition(tagsPositions, id));
         this.elem.innerHTML = `
             <div class="tag">
                 <div class="tag__value js-tag-value"></div>
             </div>
         `
+    }
+
+    resolveTagPosition(tagsPositions, id) {
+        let position;
+        switch(tagsPositions.constructor.name) {
+            case 'String': position = tagsPositions; break;
+            case 'Array':
+                const defaultPosotion = tagsPositions.find(
+                    item => item.constructor.name === 'String'
+                    ) || this.DEFAULT_POSITION;
+                const privatePosition = tagsPositions.find(
+                    item => item.constructor.name === 'Object'
+                    )?.[id];
+                position = privatePosition || defaultPosotion
+                break;
+        }
+        return `slider__tag-container_${position}`;
+
     }
 
     displayValue(value) {
