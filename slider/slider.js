@@ -2,12 +2,6 @@
 
 class SliderController {
     constructor(options) {
-        this.startOptions = options;
-        ({
-            root: this.root, 
-            isVertical: this.isVertical,
-            useRange: this.useRange,
-        } = options)
         this.init(options)
     }
 
@@ -171,8 +165,9 @@ class SliderController {
     init(options) {
         if(!this.isValidOptions(options)) throw new Error('not valid options');
         
-        this.view = new SliderView(this.root, options.handles,
-            this.isVertical, this.useRange, options.ranges, options.tagsPositions,
+        this.options = options;
+        this.view = new SliderView(this.options.root, options.handles,
+            this.options.isVertical, this.options.useRange, options.ranges, options.tagsPositions,
             options.tagsPrefix,
             options.tagsPostfix,
             );
@@ -193,7 +188,7 @@ class SliderController {
 
     onClick() {
         let clickHandler = event => {
-            const value = this.isVertical ? 
+            const value = this.options.isVertical ? 
                             this.view.bar.getRelativeCoords(event, true).y
                             : this.view.bar.getRelativeCoords(event, true).x;
             this.requestModelChange(undefined, 'pcnt', value);
@@ -209,7 +204,7 @@ class SliderController {
             this.view.bar.getRelativeCoords(startEvent).y
         );
         let moveHandler = event => {
-            const value = this.isVertical 
+            const value = this.options.isVertical 
                             ? inRange(this.view.bar.getRelativeCoords(event).y + shift.y, 0, 100)
                             : inRange( this.view.bar.getRelativeCoords(event).x + shift.x, 0, 100)
             this.requestModelChange(handleID, 'pcnt', value);
@@ -250,8 +245,8 @@ class SliderController {
     }
 
     reset() {
-        this.root.innerHTML = '';
-        this.init(this.startOptions);
+        this.options.root.innerHTML = '';
+        this.init(this.options);
     }
 }
 
