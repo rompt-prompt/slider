@@ -166,12 +166,8 @@ class SliderController {
         if(!this.isValidOptions(options)) throw new Error('not valid options');
         
         this.options = options;
-        this.view = new SliderView(this.options.root, options.handles,
-            this.options.isVertical, this.options.useRange, options.ranges, options.tagsPositions,
-            options.tagsPrefix,
-            options.tagsPostfix,
-            );
-       this.model = new SliderModel(options);
+        this.view = new SliderView(options);
+        this.model = new SliderModel(options);
 
        this.view.renderModel(this.model.cores);
        this.watchEvents();
@@ -252,17 +248,17 @@ class SliderController {
 
 class SliderModel {
     constructor(options) {
+        this.initModel(options);
+    }
+
+    initModel(options) {
         this.mode = options.mode;
         this.dataType = options.dataType;
         this.step = options.step;
         this.min = options.range[0];
         this.max = options.range[1];
         this.neighborHandles = options.neighborHandles;
-        this.initCores(options.handles);
-    }
-
-    initCores(handles) {
-        this.cores = Object.fromEntries(Object.entries(handles).map(handle =>[
+        this.cores = Object.fromEntries(Object.entries(options.handles).map(handle =>[
             handle[0], {
                 value: handle[1],
                 pcnt: this.calcPcntFromValue(handle[1])
@@ -384,33 +380,31 @@ class SliderModel {
     }
 }
 class SliderView {
-    constructor(root, handles, isVertical, useRange, ranges, tagsPositions, tagsPrefix, tagsPostfix) {
-        this.root = root;
-        this.isVertical = isVertical;
-        this.useRange = useRange;
-        this.tagsPrefix = tagsPrefix || '';
-        this.tagsPostfix = tagsPostfix || '';
-
-        this.init(handles, tagsPositions, ranges)
+    constructor(options) {
+        this.init(options)
         this.renderTamplate();
     }
 
-    init(handles, tagsPositions, ranges) {
+    init(options) {
+        this.root = options.root;
+        this.isVertical = options.isVertical;
+        this.tagsPrefix = options.tagsPrefix || '';
+        this.tagsPostfix = options.tagsPostfix || '';
+
         this.widget = new SliderElement(['slider', `${this.isVertical ? 'slider_v': 'slider_h'}`])
         this.bar = new Bar(['slider__bar', 'js-slider-bar']);
-        this.handles = Object.fromEntries(Object.entries(handles).map(handle => [
+        this.handles = Object.fromEntries(Object.entries(options.handles).map(handle => [
             handle[0], 
             new Handle(handle[0], handle[1], 
                 ['slider__handle', 'js-slider-handle', `slider__handle_${handle[0]}`],
-                tagsPositions
+                options.tagsPositions
             )
         ]))
-        if(ranges) this.ranges = ranges.map(range => range = new SelectedRange(
+        if(options.ranges) this.ranges = options.ranges.map(range => range = new SelectedRange(
             range, 
             ['slider__range', `js-range-${range[0]}_${range[1]}`]
         ))
     }
-
 
     renderTamplate() {
         this.root.innerHTML = '';

@@ -20,6 +20,7 @@ const slider1 = new SliderController({
     ],
     tagsPositions: [{'a50': 'bottom'}, 'top'],
     tagsPostfix: ' ₽',
+    tagsPrefix: '$ ',
 })
 
 const slider2 = new SliderController({
