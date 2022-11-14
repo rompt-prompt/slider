@@ -11,12 +11,165 @@ class SliderController {
         this.init(options)
     }
 
-    isValidOptions() {
-        return true;
+    isValidOptions(options) {
+        let errors = '';
+
+        checkRequired('Root', options.root)
+        checkMode();
+        checkDataType();
+        checkRange();
+        checkStep();
+        checkHandles();
+        checkIsVertical();
+        checkNeighborHandles();
+        checkRanges();
+        checkTags();
+
+        function checkMode() {
+            if(checkRequired('Mode', options.mode)) {
+                if(!['select'].includes(options.mode)) errors += `\n>>> Incorrect mode. Specified <${options.mode}>`;
+            };
+        }
+        function checkDataType() {
+            if(checkRequired('DataType', options.dataType)) {
+                if(!['number'].includes(options.dataType)) errors += `\n>>> Incorrect dataType. Specified <${options.dataType}>`;
+            };
+        }
+        function checkRange() {
+            if(checkRequired('Range', options.range)) {
+                switch(options.dataType) {
+                    case 'number':
+                        if(options.range.length !== 2) {
+                            errors += `\n>>> With datatype 'number' required array with only 2 values: ['start', 'end'].`; 
+                            break;
+                        }
+                        if(options.range[0] >= options.range[1]) {
+                            errors += `\n>>> Start value should be less than end value.`
+                        }
+                        break;
+                }
+            };
+        }
+        function checkStep() {
+            if(checkRequired('Step', options.step)) {
+                switch(options.dataType) {
+                    case 'number':
+                        if(options.step <= 0) {
+                            errors += `\n>>> Step should be greater than 0.`
+                        }
+                        if(options.range[1] - options.range[0] < options.step) {
+                            errors += `\n>>> Step should be less than ${options.range[1] - options.range[0]}.`
+                        }
+                        break;
+                }
+    
+            };
+        }
+        function checkHandles() {
+            if(checkRequired('Handles', options.handles)) {
+                switch(options.dataType) {
+                    case 'number':
+                        if(Object.keys(options.handles).length < 1) {
+                            errors += `\n>>> Empty handles.`
+                        }
+                        Object.entries(options.handles).forEach(entry => {
+                            if(entry[1] < options.range[0] || options.range[1] < entry[1]) {
+                            errors += `\n>>> Handle <${entry[0]}> value should be between ${options.range[0]} & ${options.range[1]}.`
+                        }})
+                        break;
+                }
+            };
+        }
+        function checkIsVertical() {
+            if(options.isVertical === undefined) console.warn(`\n>>> Using horizontal layout. Define <isVertical: true> to use vertical.`);
+        }
+        function checkNeighborHandles() {
+            if(!options.neighborHandles) console.warn(`\n>>> Is not specified how to treat with neighbour handles. Using default <jumpover>. Define <neighborHandles> as 'move' or 'stop' to change.`);
+        }
+        function checkRanges() {
+            if(!options.ranges) {
+                console.warn(`\n>>> Progress bars are not in use. Define <ranges> if necessary.`);
+            } else {
+                let checkProgressBarsSyntax = (ranges, level = 1) => {
+                    if(level > 2) return;
+                    if(ranges.constructor.name !== 'Array' && level <= 2) {
+                        errors += `\n>>> To define progress bars use syntax: [[anchor1, anchor2], [anchor2, anchor3]]. Where anchor is handle ID or 'sliderstart', 'sliderend'
+                        `
+                    } else {
+                        if(level === 2 && ranges.length !== 2) {
+                            errors += `\n>>> Incorrect progress bars setup <${ranges}>. Only two anchors are allowed in each progress bar, ${ranges.length} is provided.`
+                        }
+                        ranges.forEach(range => checkProgressBarsSyntax(range, level + 1));
+                    }
+                }
+                let checkProgressBarsAnchors = (anchor) => {
+                    const allowedAnchors = ['sliderstart', 'sliderend'].concat(Object.keys(options.handles));
+                    if(!allowedAnchors.includes(anchor)) errors += `\n>>> Anchor <${anchor}> is not valid. Progress bar anchor should be handle's ID or 'sliderstart', 'sliderend'`
+                }
+                
+                checkProgressBarsSyntax(options.ranges);
+                options.ranges.forEach(range => {
+                    checkProgressBarsAnchors(range[0]);
+                    checkProgressBarsAnchors(range[1]);
+                })
+            }  
+        }
+        function checkTags() {
+            if(!options.tagsPositions) {
+                console.warn(`\n>>> Tags are not in use. Define <tagsPositions> if necessary.`);
+            } else {
+                let checkPosition = position => ['top', 'right', 'left', 'bottom']
+                    .includes(position) ? true :  errors += `\n>>> Tag position <${position}> is not valid. Choose 'top', 'right', 'left' or 'bottom'.`;
+
+                let checkTagsPositionSyntax = data => {
+                    switch(data.constructor.name) {
+                        case 'String':
+                            checkPosition(data);
+                            break;
+                        case 'Array':
+                            if(data.length > 2) {
+                                errors += `\n>>> To define tags use syntax: 'position' or ['position', {id1: 'position1', id2: 'position2'}] or [{id: 'position'}]`
+                            } else {
+                                let countDefault = 0;
+                                data.forEach(position => {
+                                    if(position.constructor.name === 'String') {
+                                        checkPosition(position);
+                                        countDefault++;
+                                    } else if(position.constructor.name === 'Object') {
+                                        Object.entries(position).forEach(entry => {
+                                            if(!Object.keys(options.handles).includes(entry[0])) {
+                                                errors += `\n>>> Tag error. Handle <${entry[0]}> not found.`
+                                            }
+                                            checkPosition(entry[1])
+                                        })
+                                    }
+                                })
+                                if(countDefault > 1) {
+                                    errors += `\n>>> Only one default position is allowed. Provided <${countDefault}>.`;
+                                }
+                            }
+
+                            break;
+
+                    }
+                }
+                
+                checkTagsPositionSyntax(options.tagsPositions)
+            }
+        }
+        function checkRequired(name, option) {
+            if(!option) {
+                errors += `\n>>> ${name} required.`;
+                return false;
+            } else return true;
+        }
+
+        errors ? console.error(errors) : null;
+        return errors ? false : true;
     }
 
     init(options) {
-        if(!this.isValidOptions()) throw new Error('not valid options');
+        if(!this.isValidOptions(options)) throw new Error('not valid options');
         
         this.view = new SliderView(this.root, options.handles,
             this.isVertical, this.useRange, options.ranges, options.tagsPositions,
@@ -106,7 +259,7 @@ class SliderModel {
     constructor(options) {
         this.mode = options.mode;
         this.dataType = options.dataType;
-        this.step = options.step || 1;
+        this.step = options.step;
         this.min = options.range[0];
         this.max = options.range[1];
         this.neighborHandles = options.neighborHandles;
