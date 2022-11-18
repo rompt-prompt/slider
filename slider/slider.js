@@ -258,12 +258,33 @@ class SliderModel {
         this.min = options.range[0];
         this.max = options.range[1];
         this.neighborHandles = options.neighborHandles;
-        this.cores = Object.fromEntries(Object.entries(options.handles).map(handle =>[
-            handle[0], {
-                value: handle[1],
-                pcnt: this.calcPcntFromValue(handle[1])
-            }
-        ]))
+        this.cores = Object.fromEntries(Object.entries(options.handles).map(
+            handle => {
+                const id = handle[0];
+                const value = handle[1];
+                return [
+                    id, 
+                    {
+                        value, 
+                        pcnt: this.calcPcntFromValue(handle[1]),
+                    }
+                ]
+            }    
+        ))
+        this.setCoreIndex()
+
+        console.group('Start values:')
+            console.log('cores', this.cores)
+            console.log('entrs cores', Object.entries(this.cores))
+        console.groupEnd()
+    }
+
+    setCoreIndex() {
+        const sortedCores = Object.entries(this.cores).sort((a, b) => a[1].pcnt > b[1].pcnt ? 1 : a[1].pcnt < b[1].pcnt ? -1 : 0);
+        sortedCores.forEach((core, index) => {
+            const id = core[0]
+            this.cores[id].index = index + 1;
+        })
     }
     calcValueFromPcnt(pcnt) {
         if(this.dataType === 'number') return (pcnt * (this.max - this.min) / 100) + this.min;
@@ -273,66 +294,54 @@ class SliderModel {
         if(this.dataType === 'number') return (value - this.min) * 100 / (this.max - this.min);
     }
 
-    getSortedCores() {
-        return Object.entries(this.cores).sort((a, b) => {
-            return a[1].pcnt > a[1].pcnt ? 1 : a[1].pcnt < b[1].pcnt ? -1 : 0});
+    getNeibIds(id) {
+        let coresEntries = Object.entries(this.cores);
+        let thisOrder = this.cores[id].index;
+        let prevId = thisOrder === 1 ? '' : coresEntries.find( core => core[1].index === thisOrder - 1)[0];
+        let nextId = thisOrder === coresEntries.length ? '' : coresEntries.find(core => core[1].index === thisOrder + 1)[0];
+
+        return {prevId, nextId};
     }
 
-    getNeighbors(id, sortedCores) {
-        const thisIndex = sortedCores.findIndex(element => element[0] === id);
-        const prevIndex = thisIndex === 0 ? null : thisIndex - 1;
-        const prevId = prevIndex === null ? null :  sortedCores[prevIndex][0];
-        const nextIndex = thisIndex === sortedCores.length - 1 ? null : thisIndex + 1;
-        const nextId = nextIndex === null ? null :  sortedCores[nextIndex][0];
-
-        return {thisIndex, prevIndex, prevId, nextIndex, nextId}        
-    }
-
-    calcLimits(id) {
-        const sortedCores = this.getSortedCores();
-        const neighbors = this.getNeighbors(id, sortedCores);
-
-        let min = neighbors.thisIndex !== 0 ? {
-            value: sortedCores[neighbors.prevIndex][1].value,
-            pcnt: sortedCores[neighbors.prevIndex][1].pcnt
-        } : {value: this.min, pcnt: 0}
-
-        let max = neighbors.thisIndex !== sortedCores.length - 1 ? {
-            value: sortedCores[neighbors.nextIndex][1].value,
-            pcnt: sortedCores[neighbors.nextIndex][1].pcnt
-        } : {value: this.max, pcnt: 100}
-
-        return {min, max}
-    }
-
-    calcCore(id, requestedValue, requestedPcnt, localLimits) {
+    calcCore(id, requestedValue, requestedPcnt) {
         let value, pcnt;
         if(this.dataType === 'number') {
             const steps = Math.round((requestedValue - this.min) / this.step);
-            value = inRange(
-                requestedValue === this.max ? this.max : this.min + (this.step * steps),
-                this.min,
-                this.max);
-            pcnt = inRange(requestedPcnt, 0, 100);
+            const limitIds = this.getNeibIds(id);
+
             switch(this.neighborHandles) {
-                case 'move':
-                    const neighbors = this.getNeighbors(id, this.getSortedCores());
-        
-                    if(
-                        requestedPcnt < this.cores[id].pcnt &&
-                        requestedPcnt <= localLimits.min.pcnt && 
-                        neighbors.prevId !== null
-                    ) this.setValue(neighbors.prevId, 'pcnt', pcnt);
-                    else if(
-                        requestedPcnt >= this.cores[id].pcnt &&
-                        requestedPcnt >= localLimits.max.pcnt &&
-                        neighbors.nextId !== null
-                    ) this.setValue(neighbors.nextId, 'pcnt', pcnt)
+                case 'jumpover':
+                    value = inRange(
+                        requestedValue === this.max ? this.max : this.min + (this.step * steps),
+                        this.min, this.max
+                    );
+                    pcnt = inRange(requestedPcnt, 0, 100);
                     break;
-                    
+                case 'move':
+                    value = inRange(
+                        requestedValue === this.max ? this.max : this.min + (this.step * steps),
+                        this.min, this.max
+                    );
+                    pcnt = inRange(requestedPcnt, 0, 100);
+
+                    if(limitIds.prevId && pcnt <= this.cores[limitIds.prevId].pcnt && this.cores[limitIds.prevId].pcnt !== 0) {
+                        this.setValue(limitIds.prevId, 'pcnt', requestedPcnt)
+                    }
+                    if(limitIds.nextId && pcnt >= this.cores[limitIds.nextId].pcnt && this.cores[limitIds.nextId].pcnt !== 100) {
+                        this.setValue(limitIds.nextId, 'pcnt', requestedPcnt)
+                    }
+                    break;
                 case 'stop':
-                    value = inRange(value, localLimits.min.value, localLimits.max.value);
-                    pcnt = inRange(requestedPcnt, localLimits.min.pcnt, localLimits.max.pcnt);
+                    value = inRange(
+                        requestedValue === this.max ? this.max : this.min + (this.step * steps),
+                        limitIds.prevId ? this.cores[limitIds.prevId].value : this.min,
+                        limitIds.nextId ? this.cores[limitIds.nextId].value : this.max
+                    );
+                    pcnt = inRange(
+                        requestedPcnt, 
+                        limitIds.prevId ? this.cores[limitIds.prevId].pcnt : 0, 
+                        limitIds.nextId ? this.cores[limitIds.nextId].pcnt : 100
+                    );
                     break;
             }
 
@@ -342,37 +351,37 @@ class SliderModel {
         return {value, pcnt}
     }
 
-    getClosestId(pcnt) {
+    getClosestId(pcnt) { // ========== исправить
         const coresArr = Object.entries(this.cores);
 
         if(coresArr.length === 1) return coresArr[0][0];
 
         const closestCore = coresArr.reduce((prev, curr)  => 
             Math.abs(curr[1].pcnt - pcnt) < Math.abs(prev[1].pcnt - pcnt) ? curr : prev)
-
-        return closestCore[0]
+            console.log(closestCore)
+            return closestCore[0]
     }
 
     setValue(id, type, value) {
         if(id == undefined && type === 'pcnt') id = this.getClosestId(value);
 
-        if(this.mode === 'select') {
-            let requestedValue, requestedPcnt;
-            switch (type) {
-                case 'pcnt':
-                    requestedPcnt = value;
-                    requestedValue = this.calcValueFromPcnt(requestedPcnt);
-                    break;
-                case 'value':
-                    requestedValue = value;
-                    requestedPcnt = this.calcPcntFromValue(requestedValue);
-            }
-            const localLimits = this.calcLimits(id)
-            const permittedCore = this.calcCore(id, requestedValue, requestedPcnt, localLimits);
-
-            this.cores[id].value = permittedCore.value;
-            this.cores[id].pcnt = permittedCore.pcnt;
+        let requestedValue, requestedPcnt;
+        switch (type) {
+            case 'pcnt':
+                requestedPcnt = value;
+                requestedValue = this.calcValueFromPcnt(requestedPcnt);
+                break;
+            case 'value':
+                requestedValue = value;
+                requestedPcnt = this.calcPcntFromValue(requestedValue);
         }
+        const permittedCore = this.calcCore(id, requestedValue, requestedPcnt);
+
+        this.cores[id].value = permittedCore.value;
+        this.cores[id].pcnt = permittedCore.pcnt;
+
+        if(this.neighborHandles === 'jumpover') this.setCoreIndex();
+
 // console.log(id, '= value: ', this.cores[id].value, ', pcnt:', this.cores[id].pcnt)
         return new Promise(resolve => {
             resolve(this.cores)

@@ -6,19 +6,23 @@ const slider1 = new SliderController({
     root: container1,
     mode: 'select',
     dataType: 'number',
-    range: [-10, 10],
+    range: [0, 10],
     step: 1.3,
     handles: {
-        'a30': -5,
-        'a50': 0,
-        'a80': 5,
+        1: 9,
+        'third': 3,
+        2: 5,
+    //     4: 8,
+    //    5: 2,
+    //     'zzz': 3,
+
     },
     isVertical: false,
     neighborHandles: 'jumpover',
-    ranges: [ //TODO rename
-    ['a30', 'sliderstart'], ['a30', 'a50'], ['a50', 'a80'], ['a80', 'sliderend']
-    ],
-    tagsPositions: [{'a50': 'bottom'}, 'top'],
+    // ranges: [ //TODO rename
+    // ['a30', 'sliderstart'], ['a30', 'a50'], ['a50', 'a80'], ['a80', 'sliderend']
+    // ],
+    tagsPositions: 'top',
     tagsPostfix: ' ₽',
     tagsPrefix: '$ ',
 })
@@ -35,11 +39,16 @@ const slider2 = new SliderController({
         'y3': 30,
         'y4': 40,
         'y5': 50,
+        6: 60,
+        7: 70,
+        8: 80,
+        9: 90,
+        10: 100,
     },
-    neighborHandles: 'jumpover',
+    neighborHandles: 'move',
     isVertical: 1,
     ranges: [
-        ['sliderstart', 'y1'], ['sliderend', 'y5']
+        ['sliderstart', 'y1'], ['sliderend', '10']
     ],
     tagsPositions: ['left', {'y2': 'right', 'y4': 'right'}],
     tagsPrefix: '$ ',
@@ -53,12 +62,12 @@ const slider3 = new SliderController({
     range: [0, 100],
     step: 1,
     handles: {
-        'q': 10,
-        'qq': 50,
-        'a80': 80,
+    //    3: 10,
+    '1q': 60,
+        '2q': 50,
     },
     neighborHandles: 'stop',
-    ranges: [['q', 'qq'], ['a80', 'qq']],
+    // ranges: [['q', 1], ['a80', 1]],
     isVertical: 0,
-    tagsPositions: [{'qq': 'bottom'}]
+    tagsPositions: 'top',
 })
