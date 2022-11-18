@@ -42,7 +42,14 @@ $tag-color: rgb(0, 0, 0);
 }
 .slider .slider__handle:nth-child(1) {
     background-color: green !important;
+    border-color: yellow;
 }
+
+.slider .slider__handle:nth-child(2) {
+    background-color: blue !important;
+    border-color: red;
+}
+
 
 .slider .slider__range:nth-child(1) {
     background: rgba(255, 0, 0, 0.7)
