@@ -272,11 +272,6 @@ class SliderModel {
             }    
         ))
         this.setCoreIndex()
-
-        console.group('Start values:')
-            console.log('cores', this.cores)
-            console.log('entrs cores', Object.entries(this.cores))
-        console.groupEnd()
     }
 
     setCoreIndex() {
@@ -324,12 +319,30 @@ class SliderModel {
                     );
                     pcnt = inRange(requestedPcnt, 0, 100);
 
-                    if(limitIds.prevId && pcnt <= this.cores[limitIds.prevId].pcnt && this.cores[limitIds.prevId].pcnt !== 0) {
-                        this.setValue(limitIds.prevId, 'pcnt', requestedPcnt)
+                    const getCoresToGlueWith = (forward, id, pcnt) => {
+                        const coresToGlue = [];
+                        const test = (forward, id, pcnt) => {
+                            const testCoreId = forward ? this.getNeibIds(id).nextId : this.getNeibIds(id).prevId;
+                            if(!testCoreId) return;
+                            else if(forward && this.cores[testCoreId].pcnt > pcnt) return;
+                            else if(!forward && this.cores[testCoreId].pcnt < pcnt) return;
+                            else {
+                                coresToGlue.push(testCoreId)
+                                test(forward, testCoreId, pcnt);
+                            }
+                        }
+                        test(forward, id, pcnt);
+                        return coresToGlue;
                     }
-                    if(limitIds.nextId && pcnt >= this.cores[limitIds.nextId].pcnt && this.cores[limitIds.nextId].pcnt !== 100) {
-                        this.setValue(limitIds.nextId, 'pcnt', requestedPcnt)
-                    }
+
+                    const coresToGlue = pcnt > this.cores[id].pcnt ? 
+                        getCoresToGlueWith(true, id, pcnt) : getCoresToGlueWith(false, id, pcnt);
+
+                    coresToGlue.forEach(id => {
+                        this.cores[id].pcnt = pcnt;
+                        this.cores[id].value = this.calcValueFromPcnt(pcnt);
+                    })
+
                     break;
                 case 'stop':
                     value = inRange(
@@ -346,19 +359,18 @@ class SliderModel {
             }
 
             let stepCapicityDigs = this.step.toString().match(/\.(\d+)/)?.[1].length;
-            value = +value.toFixed(stepCapicityDigs)
+            value = +value.toFixed(stepCapicityDigs) // TODO вынести отдельно
         }
         return {value, pcnt}
     }
 
-    getClosestId(pcnt) { // ========== исправить
+    getClosestId(pcnt) { // TODO исправить
         const coresArr = Object.entries(this.cores);
 
         if(coresArr.length === 1) return coresArr[0][0];
 
         const closestCore = coresArr.reduce((prev, curr)  => 
             Math.abs(curr[1].pcnt - pcnt) < Math.abs(prev[1].pcnt - pcnt) ? curr : prev)
-            console.log(closestCore)
             return closestCore[0]
     }
 
@@ -382,7 +394,6 @@ class SliderModel {
 
         if(this.neighborHandles === 'jumpover') this.setCoreIndex();
 
-// console.log(id, '= value: ', this.cores[id].value, ', pcnt:', this.cores[id].pcnt)
         return new Promise(resolve => {
             resolve(this.cores)
         })

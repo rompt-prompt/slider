@@ -18,7 +18,7 @@ const slider1 = new SliderController({
 
     },
     isVertical: false,
-    neighborHandles: 'jumpover',
+    neighborHandles: 'move',
     // ranges: [ //TODO rename
     // ['a30', 'sliderstart'], ['a30', 'a50'], ['a50', 'a80'], ['a80', 'sliderend']
     // ],
@@ -48,9 +48,9 @@ const slider2 = new SliderController({
     neighborHandles: 'move',
     isVertical: 1,
     ranges: [
-        ['sliderstart', 'y1'], ['sliderend', '10']
+        ['sliderstart', 'y1'], ['sliderend', 'y3']
     ],
-    tagsPositions: ['left', {'y2': 'right', 'y4': 'right'}],
+    tagsPositions: ['left', {'y2': 'right'}],
     tagsPrefix: '$ ',
 
 })
