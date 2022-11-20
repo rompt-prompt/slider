@@ -298,6 +298,11 @@ class SliderModel {
         return {prevId, nextId};
     }
 
+    formatNumericValue(value) {
+        const stepCapicityDigs = this.step.toString().match(/\.(\d+)/)?.[1].length;
+        return +value.toFixed(stepCapicityDigs) 
+    }
+
     calcCore(id, requestedValue, requestedPcnt) {
         let value, pcnt;
         if(this.dataType === 'number') {
@@ -340,7 +345,7 @@ class SliderModel {
 
                     coresToGlue.forEach(id => {
                         this.cores[id].pcnt = pcnt;
-                        this.cores[id].value = this.calcValueFromPcnt(pcnt);
+                        this.cores[id].value = this.formatNumericValue(this.calcValueFromPcnt(pcnt));
                     })
 
                     break;
@@ -358,8 +363,7 @@ class SliderModel {
                     break;
             }
 
-            let stepCapicityDigs = this.step.toString().match(/\.(\d+)/)?.[1].length;
-            value = +value.toFixed(stepCapicityDigs) // TODO вынести отдельно
+            value = this.formatNumericValue(value)
         }
         return {value, pcnt}
     }
