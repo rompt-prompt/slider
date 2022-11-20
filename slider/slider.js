@@ -385,14 +385,24 @@ class SliderModel {
         return {value, pcnt}
     }
 
-    getClosestId(pcnt) { // TODO исправить
+    getClosestId(pcnt) {
         const coresArr = Object.entries(this.cores);
 
         if(coresArr.length === 1) return coresArr[0][0];
 
-        const closestCore = coresArr.reduce((prev, curr)  => 
-            Math.abs(curr[1].pcnt - pcnt) < Math.abs(prev[1].pcnt - pcnt) ? curr : prev)
-            return closestCore[0]
+        const closestCore = coresArr.reduce((prev, curr)  => {
+            if(Math.abs(curr[1].pcnt - pcnt) < Math.abs(prev[1].pcnt - pcnt)) {
+                return curr;
+            }
+            else if(Math.abs(curr[1].pcnt - pcnt) === Math.abs(prev[1].pcnt - pcnt)) {
+                console.log('===')
+                if(pcnt >= curr[1].pcnt && curr[1].index > prev[1].index) return curr;
+                if(pcnt < curr[1].pcnt && curr[1].index < prev[1].index) return curr;
+                return prev
+            }
+            return prev;
+        })
+        return closestCore[0]
     }
 
     setValue(id, type, value) {

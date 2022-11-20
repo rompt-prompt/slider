@@ -67,12 +67,18 @@ const slider3 = new SliderController({
     range: [0, 100],
     step: 1,
     handles: {
-    //    3: 10,
-    '1q': 60,
-        '2q': 50,
+       10: 50,
+    '70-': 70,
+        50: 10,
     },
     neighborHandles: 'stop',
     // ranges: [['q', 1], ['a80', 1]],
     isVertical: 0,
     tagsPositions: 'top',
+    handlesTextContent: {
+        '70-': '70-',
+        10: 10,
+        50: 50,
+
+    }
 })
