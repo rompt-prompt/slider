@@ -257,7 +257,7 @@ class SliderModel {
         this.step = options.step;
         this.min = options.range[0];
         this.max = options.range[1];
-        this.neighborHandles = options.neighborHandles;
+        this.neighborHandles = options.neighborHandles || 'jumpover';
         this.cores = Object.fromEntries(Object.entries(options.handles).map(
             handle => {
                 const id = handle[0];
@@ -449,7 +449,7 @@ class SliderView {
             this.handles[id].moveCenterTo(...swapArgs(cores[id].pcnt));
             this.handles[id].tag ? this.handles[id].tag.displayValue(
                 this.tagsPrefix + cores[id].value + this.tagsPostfix) : null;
-        } // TODO check fool 0-100%
+        }
         this.ranges?.forEach(range => {
             const calcStartEndPcnt = id => {switch(id) {
                 case 'sliderstart': return 0;

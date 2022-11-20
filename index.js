@@ -18,7 +18,7 @@ const slider1 = new SliderController({
 
     },
     isVertical: false,
-    neighborHandles: 'move',
+    // neighborHandles: 'move',
     // ranges: [ //TODO rename
     // ['a30', 'sliderstart'], ['a30', 'a50'], ['a50', 'a80'], ['a80', 'sliderend']
     // ],
