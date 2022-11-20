@@ -18,13 +18,18 @@ const slider1 = new SliderController({
 
     },
     isVertical: false,
-    // neighborHandles: 'move',
+    neighborHandles: 'move',
     // ranges: [ //TODO rename
     // ['a30', 'sliderstart'], ['a30', 'a50'], ['a50', 'a80'], ['a80', 'sliderend']
     // ],
     tagsPositions: 'top',
     tagsPostfix: ' ₽',
     tagsPrefix: '$ ',
+    handlesTextContent: {
+        1: 1,
+        'third': 'third',
+        2: '2',
+    }
 })
 
 const slider2 = new SliderController({

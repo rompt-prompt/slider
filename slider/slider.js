@@ -18,6 +18,7 @@ class SliderController {
         checkNeighborHandles();
         checkRanges();
         checkTags();
+        checkHandlesTextContent();
 
         function checkMode() {
             if(checkRequired('Mode', options.mode)) {
@@ -149,6 +150,22 @@ class SliderController {
                 }
                 
                 checkTagsPositionSyntax(options.tagsPositions)
+            }
+        }
+        function checkHandlesTextContent() {
+            if(!options.handlesTextContent) {
+                console.warn(`\n>>> Text content in handles is not in use. Define <handlesTextContent> if necessary.`);
+            } else {
+                if(options.handlesTextContent.constructor.name !== "Object") {
+                    errors += `\n>>> To define text content in handles use object {id: text}`
+                    return;
+                }
+
+                Object.entries(options.handlesTextContent).forEach(entry => {
+                    if(!Object.keys(options.handles).includes(entry[0])) {
+                        errors += `\n>>> Handles text content error. Handle <${entry[0]}> not found.`
+                    }
+                })
             }
         }
         function checkRequired(name, option) {
@@ -421,7 +438,8 @@ class SliderView {
             handle[0], 
             new Handle(handle[0], handle[1], 
                 ['slider__handle', 'js-slider-handle', `slider__handle_${handle[0]}`],
-                options.tagsPositions
+                options.tagsPositions,
+                options.handlesTextContent,
             )
         ]))
         if(options.ranges) this.ranges = options.ranges.map(range => range = new SelectedRange(
@@ -542,10 +560,11 @@ class SelectedRange extends SliderElement {
 }
 
 class Handle extends SliderElement {
-    constructor(id, initValue, classes, tagsPositions) { 
+    constructor(id, initValue, classes, tagsPositions, textContent) { 
         super(classes, 'handle');
         this.elem.dataset.id = id;
         this.initValue = initValue;
+        if(textContent) this.elem.textContent = textContent[id];
         if(tagsPositions) this.createTagInstance(tagsPositions);
     }
 
