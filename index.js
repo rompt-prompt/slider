@@ -12,9 +12,9 @@ const slider1 = new SliderController({
         1: 9,
         'third': 3,
         2: 5,
-    //     4: 8,
-    //    5: 2,
-    //     'zzz': 3,
+        4: 8,
+        5: 2,
+        'zzz': 3,
 
     },
     isVertical: false,
