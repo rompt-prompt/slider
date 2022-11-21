@@ -6,7 +6,7 @@ $bar-border-radius: 20px;
 $bar-border-color: blue;
 $bar-border-width: 70px;
 
-$range-bg: yellow;
+$progressBar-bg: yellow;
 
 $handle-width: 100px;
 $handle-height: 100px; 
@@ -51,15 +51,15 @@ $tag-color: rgb(0, 0, 0);
 }
 
 
-.slider .slider__range:nth-child(1) {
+.slider .slider__progressBar:nth-child(1) {
     background: rgba(255, 0, 0, 0.7)
 }
 
-.slider .slider__range:nth-child(2) {
+.slider .slider__progressBar:nth-child(2) {
     background: rgba(9, 255, 0, 0.7)
 }
 
-.slider .slider__range:nth-child(3) {
+.slider .slider__progressBar:nth-child(3) {
     background: rgba(238, 255, 0, 0.7)
 }
 .slider__handle {
@@ -80,8 +80,8 @@ $tag-color: rgb(0, 0, 0);
         border: $bar-border-width solid $bar-border-color;
         position: relative;
     }
-    &__range {
-        background: $range-bg;
+    &__progressBar {
+        background: $progressBar-bg;
         border-radius: $bar-border-radius;
         position: absolute;
     }
@@ -188,7 +188,7 @@ $tag-color: rgb(0, 0, 0);
         width: $slider-main-axis;
         height: $slider-second-axis;
 
-        .slider__range {
+        .slider__progressBar {
             height: $slider-second-axis;
             top: 50%;
             transform: translateY(-50%);
@@ -212,7 +212,7 @@ $tag-color: rgb(0, 0, 0);
         width: $slider-second-axis;
         height: $slider-main-axis;
 
-        .slider__range {
+        .slider__progressBar {
             width: $slider-second-axis;
             left: 50%;
             transform: translateX(-50%);

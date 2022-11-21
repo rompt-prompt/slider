@@ -16,7 +16,7 @@ class SliderController {
         checkHandles();
         checkIsVertical();
         checkNeighborHandles();
-        checkRanges();
+        checkProgressBars();
         checkTags();
         checkHandlesTextContent();
 
@@ -81,20 +81,20 @@ class SliderController {
         function checkNeighborHandles() {
             if(!options.neighborHandles) console.warn(`\n>>> Is not specified how to treat with neighbour handles. Using default <jumpover>. Define <neighborHandles> as 'move' or 'stop' to change.`);
         }
-        function checkRanges() {
-            if(!options.ranges) {
-                console.warn(`\n>>> Progress bars are not in use. Define <ranges> if necessary.`);
+        function checkProgressBars() {
+            if(!options.progressBars) {
+                console.warn(`\n>>> Progress bars are not in use. Define <progressBars> if necessary.`);
             } else {
-                let checkProgressBarsSyntax = (ranges, level = 1) => {
+                let checkProgressBarsSyntax = (progressBars, level = 1) => {
                     if(level > 2) return;
-                    if(ranges.constructor.name !== 'Array' && level <= 2) {
+                    if(progressBars.constructor.name !== 'Array' && level <= 2) {
                         errors += `\n>>> To define progress bars use syntax: [[anchor1, anchor2], [anchor2, anchor3]]. Where anchor is handle ID or 'sliderstart', 'sliderend'
                         `
                     } else {
-                        if(level === 2 && ranges.length !== 2) {
-                            errors += `\n>>> Incorrect progress bars setup <${ranges}>. Only two anchors are allowed in each progress bar, ${ranges.length} is provided.`
+                        if(level === 2 && progressBars.length !== 2) {
+                            errors += `\n>>> Incorrect progress bars setup <${progressBars}>. Only two anchors are allowed in each progress bar, ${progressBars.length} is provided.`
                         }
-                        ranges.forEach(range => checkProgressBarsSyntax(range, level + 1));
+                        progressBars.forEach(progressBar => checkProgressBarsSyntax(progressBar, level + 1));
                     }
                 }
                 let checkProgressBarsAnchors = (anchor) => {
@@ -102,10 +102,10 @@ class SliderController {
                     if(!allowedAnchors.includes(anchor)) errors += `\n>>> Anchor <${anchor}> is not valid. Progress bar anchor should be handle's ID or 'sliderstart', 'sliderend'`
                 }
                 
-                checkProgressBarsSyntax(options.ranges);
-                options.ranges.forEach(range => {
-                    checkProgressBarsAnchors(range[0]);
-                    checkProgressBarsAnchors(range[1]);
+                checkProgressBarsSyntax(options.progressBars);
+                options.progressBars.forEach(progressBar => {
+                    checkProgressBarsAnchors(progressBar[0]);
+                    checkProgressBarsAnchors(progressBar[1]);
                 })
             }  
         }
@@ -194,7 +194,7 @@ class SliderController {
         this.view.widget.elem.onpointerdown = event => {
             event.preventDefault();
             let type = event.target.dataset.type
-            if(type === 'bar' || type === 'range') this.onClick();
+            if(type === 'bar' || type === 'progressBar') this.onClick();
             if(type === 'handle') this.onMove(event);
         }
     }
@@ -461,9 +461,9 @@ class SliderView {
                 options.handlesTextContent,
             )
         ]))
-        if(options.ranges) this.ranges = options.ranges.map(range => range = new SelectedRange(
-            range, 
-            ['slider__range', `js-range-${range[0]}_${range[1]}`]
+        if(options.progressBars) this.progressBars = options.progressBars.map(progressBar => progressBar = new ProgressBar(
+            progressBar, 
+            ['slider__progressBar', `js-progressBar-${progressBar[0]}_${progressBar[1]}`]
         ))
     }
 
@@ -471,8 +471,8 @@ class SliderView {
         this.root.innerHTML = '';
         this.root.append(this.widget.elem);
         this.widget.elem.append(this.bar.elem);
-        this.ranges?.forEach(range => {
-            this.bar.elem.append(range.elem);
+        this.progressBars?.forEach(progressBar => {
+            this.bar.elem.append(progressBar.elem);
         });
         for(let handle in this.handles) {
             this.bar.elem.append(this.handles[handle].elem);
@@ -492,19 +492,19 @@ class SliderView {
             this.handles[id].tag ? this.handles[id].tag.displayValue(
                 this.tagsPrefix + cores[id].value + this.tagsPostfix) : null;
         }
-        this.ranges?.forEach(range => {
+        this.progressBars?.forEach(progressBar => {
             const calcStartEndPcnt = id => {switch(id) {
                 case 'sliderstart': return 0;
                 case 'sliderend': return 100;
                 default: return cores[id].pcnt;
             }}
-            let startPcnt = calcStartEndPcnt(range.startId);
-            let endPcnt = calcStartEndPcnt(range.endId);
+            let startPcnt = calcStartEndPcnt(progressBar.startId);
+            let endPcnt = calcStartEndPcnt(progressBar.endId);
             if(startPcnt > endPcnt) [startPcnt, endPcnt] = [endPcnt, startPcnt]
             const length = Math.abs(endPcnt - startPcnt);
 
-            range.moveLeftEdgeTo(...swapArgs(startPcnt));
-            range.setRelativeSize(...swapArgs(length));
+            progressBar.moveLeftEdgeTo(...swapArgs(startPcnt));
+            progressBar.setRelativeSize(...swapArgs(length));
         });
     }
 }
@@ -561,15 +561,15 @@ class Bar extends SliderElement {
     }
 }
 
-class SelectedRange extends SliderElement {
+class ProgressBar extends SliderElement {
     constructor(anchorsId, classes) {
-        super(classes, 'range');
+        super(classes, 'progressBar');
         this.startId = anchorsId[0];
         this.endId = anchorsId[1];
     }
 
     moveCenterTo(x, y) {
-        throw new Error('method moveCenterTo is not allowed for range');
+        throw new Error('method moveCenterTo is not allowed for progress bars');
     }
 
     setRelativeSize(width, height) {

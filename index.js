@@ -19,9 +19,9 @@ const slider1 = new SliderController({
     },
     isVertical: false,
     neighborHandles: 'move',
-    // ranges: [ //TODO rename
-    // ['a30', 'sliderstart'], ['a30', 'a50'], ['a50', 'a80'], ['a80', 'sliderend']
-    // ],
+    progressBars: [
+        ['third', 'sliderstart'], ['1', 'sliderend']
+    ],
     tagsPositions: 'top',
     tagsPostfix: ' ₽',
     tagsPrefix: '$ ',
@@ -52,7 +52,7 @@ const slider2 = new SliderController({
     },
     neighborHandles: 'move',
     isVertical: 1,
-    ranges: [
+    progressBars: [
         ['sliderstart', 'y1'], ['sliderend', 'y3']
     ],
     tagsPositions: ['left', {'y2': 'right'}],
@@ -72,7 +72,7 @@ const slider3 = new SliderController({
         70: 70,
     },
     neighborHandles: 'stop',
-    // ranges: [['q', 1], ['a80', 1]],
+    progressBars: [['50', '10'], ['50', '70']],
     isVertical: 0,
     tagsPositions: 'top',
     handlesTextContent: {
