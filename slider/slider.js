@@ -207,11 +207,13 @@ class SliderController {
             this.requestModelChange(undefined, 'pcnt', value);
         }
 
+        this.resolveZIndex();
         this.view.bar.elem.addEventListener('pointerup', clickHandler, {once: true})
     }
 
     onMove(startEvent) {
         const handleID = startEvent.target.dataset.id;
+        this.resolveZIndex(handleID);
         const shift = this.view.handles[handleID].getDeltaToCenter(
             this.view.bar.getRelativeCoords(startEvent).x,
             this.view.bar.getRelativeCoords(startEvent).y
@@ -223,12 +225,20 @@ class SliderController {
             this.requestModelChange(handleID, 'pcnt', value);
         }
 
-        this.view.showAbove(handleID);
-
         document.addEventListener('pointermove', moveHandler);
         document.addEventListener('pointerup', () => {
             document.removeEventListener('pointermove', moveHandler)
         }, {once: true});
+    }
+
+    resolveZIndex(activeHandleId) {
+        for(let id in this.view.handles) {
+            id === activeHandleId ? 
+            this.view.handles[id].elem.classList.add('js-active') :
+            this.view.handles[id].elem.classList.remove('js-active');
+
+            this.view.handles[id].setZIndex();
+        }
     }
 
     requestModelChange(id, type, value) {
@@ -395,7 +405,6 @@ class SliderModel {
                 return curr;
             }
             else if(Math.abs(curr[1].pcnt - pcnt) === Math.abs(prev[1].pcnt - pcnt)) {
-                console.log('===')
                 if(pcnt >= curr[1].pcnt && curr[1].index > prev[1].index) return curr;
                 if(pcnt < curr[1].pcnt && curr[1].index < prev[1].index) return curr;
                 return prev
@@ -475,6 +484,11 @@ class SliderView {
 
         for(let id in cores) {
             this.handles[id].moveCenterTo(...swapArgs(cores[id].pcnt));
+
+            this.handles[id].pcnt = cores[id].pcnt;
+            this.handles[id].index = cores[id].index;
+            this.handles[id].setZIndex();
+
             this.handles[id].tag ? this.handles[id].tag.displayValue(
                 this.tagsPrefix + cores[id].value + this.tagsPostfix) : null;
         }
@@ -482,7 +496,7 @@ class SliderView {
             const calcStartEndPcnt = id => {switch(id) {
                 case 'sliderstart': return 0;
                 case 'sliderend': return 100;
-                default: return cores[id].pcnt
+                default: return cores[id].pcnt;
             }}
             let startPcnt = calcStartEndPcnt(range.startId);
             let endPcnt = calcStartEndPcnt(range.endId);
@@ -492,11 +506,6 @@ class SliderView {
             range.moveLeftEdgeTo(...swapArgs(startPcnt));
             range.setRelativeSize(...swapArgs(length));
         });
-    }
-
-    showAbove(handleID) { // TODO fix in stop-mode neighborHandles
-        for(let id in this.handles) {this.handles[id].elem.style.zIndex = ''}
-        this.handles[handleID].elem.style.zIndex = 1000;
     }
 }
 
@@ -581,6 +590,13 @@ class Handle extends SliderElement {
     createTagInstance(tagsPositions) {
         this.tag = new Tag(tagsPositions, this.elem.dataset.id);
         this.elem.append(this.tag.elem)
+    }
+
+    setZIndex() {
+        if(this.elem.classList.contains('js-active')) this.elem.style.zIndex = 1000;
+        else if(this.pcnt <= 50) this.elem.style.zIndex = 100 + this.index;
+        else if(this.pcnt > 50)  this.elem.style.zIndex = 100 - this.index;
+
     }
 }
 
