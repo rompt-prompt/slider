@@ -280,7 +280,6 @@ class SliderModel {
 
     initModel(options) {
         this.mode = options.mode;
-        this.dataType = options.dataType;
         this.step = options.step;
         this.min = options.range[0];
         this.max = options.range[1];
@@ -309,11 +308,11 @@ class SliderModel {
         })
     }
     calcValueFromPcnt(pcnt) {
-        if(this.dataType === 'number') return (pcnt * (this.max - this.min) / 100) + this.min;
+       return (pcnt * (this.max - this.min) / 100) + this.min;
     }
 
     calcPcntFromValue(value) {
-        if(this.dataType === 'number') return (value - this.min) * 100 / (this.max - this.min);
+        return (value - this.min) * 100 / (this.max - this.min);
     }
 
     getNeibIds(id) {
@@ -325,73 +324,71 @@ class SliderModel {
         return {prevId, nextId};
     }
 
-    formatNumericValue(value) {
-        const stepCapicityDigs = this.step.toString().match(/\.(\d+)/)?.[1].length;
-        return +value.toFixed(stepCapicityDigs) 
+    formatValueCapacity(value) {
+        const stepCapacityDigs = this.step.toString().match(/\.(\d+)/)?.[1].length;
+        return +value.toFixed(stepCapacityDigs) 
     }
 
     calcCore(id, requestedValue, requestedPcnt) {
         let value, pcnt;
-        if(this.dataType === 'number') {
-            const steps = Math.round((requestedValue - this.min) / this.step);
-            const limitIds = this.getNeibIds(id);
+        const steps = Math.round((requestedValue - this.min) / this.step);
+        const limitIds = this.getNeibIds(id);
 
-            switch(this.neighborHandles) {
-                case 'jumpover':
-                    value = inRange(
-                        requestedValue === this.max ? this.max : this.min + (this.step * steps),
-                        this.min, this.max
-                    );
-                    pcnt = inRange(requestedPcnt, 0, 100);
-                    break;
-                case 'move':
-                    value = inRange(
-                        requestedValue === this.max ? this.max : this.min + (this.step * steps),
-                        this.min, this.max
-                    );
-                    pcnt = inRange(requestedPcnt, 0, 100);
+        switch(this.neighborHandles) {
+            case 'jumpover':
+                value = inRange(
+                    requestedValue === this.max ? this.max : this.min + (this.step * steps),
+                    this.min, this.max
+                );
+                pcnt = inRange(requestedPcnt, 0, 100);
+                break;
+            case 'move':
+                value = inRange(
+                    requestedValue === this.max ? this.max : this.min + (this.step * steps),
+                    this.min, this.max
+                );
+                pcnt = inRange(requestedPcnt, 0, 100);
 
-                    const getCoresToGlueWith = (forward, id, pcnt) => {
-                        const coresToGlue = [];
-                        const test = (forward, id, pcnt) => {
-                            const testCoreId = forward ? this.getNeibIds(id).nextId : this.getNeibIds(id).prevId;
-                            if(!testCoreId) return;
-                            else if(forward && this.cores[testCoreId].pcnt > pcnt) return;
-                            else if(!forward && this.cores[testCoreId].pcnt < pcnt) return;
-                            else {
-                                coresToGlue.push(testCoreId)
-                                test(forward, testCoreId, pcnt);
-                            }
+                const getCoresToGlueWith = (forward, id, pcnt) => {
+                    const coresToGlue = [];
+                    const test = (forward, id, pcnt) => {
+                        const testCoreId = forward ? this.getNeibIds(id).nextId : this.getNeibIds(id).prevId;
+                        if(!testCoreId) return;
+                        else if(forward && this.cores[testCoreId].pcnt > pcnt) return;
+                        else if(!forward && this.cores[testCoreId].pcnt < pcnt) return;
+                        else {
+                            coresToGlue.push(testCoreId)
+                            test(forward, testCoreId, pcnt);
                         }
-                        test(forward, id, pcnt);
-                        return coresToGlue;
                     }
+                    test(forward, id, pcnt);
+                    return coresToGlue;
+                }
 
-                    const coresToGlue = pcnt > this.cores[id].pcnt ? 
-                        getCoresToGlueWith(true, id, pcnt) : getCoresToGlueWith(false, id, pcnt);
+                const coresToGlue = pcnt > this.cores[id].pcnt ? 
+                    getCoresToGlueWith(true, id, pcnt) : getCoresToGlueWith(false, id, pcnt);
 
-                    coresToGlue.forEach(id => {
-                        this.cores[id].pcnt = pcnt;
-                        this.cores[id].value = this.formatNumericValue(this.calcValueFromPcnt(pcnt));
-                    })
+                coresToGlue.forEach(id => {
+                    this.cores[id].pcnt = pcnt;
+                    this.cores[id].value = this.formatValueCapacity(this.calcValueFromPcnt(pcnt));
+                })
 
-                    break;
-                case 'stop':
-                    value = inRange(
-                        requestedValue === this.max ? this.max : this.min + (this.step * steps),
-                        limitIds.prevId ? this.cores[limitIds.prevId].value : this.min,
-                        limitIds.nextId ? this.cores[limitIds.nextId].value : this.max
-                    );
-                    pcnt = inRange(
-                        requestedPcnt, 
-                        limitIds.prevId ? this.cores[limitIds.prevId].pcnt : 0, 
-                        limitIds.nextId ? this.cores[limitIds.nextId].pcnt : 100
-                    );
-                    break;
-            }
-
-            value = this.formatNumericValue(value)
+                break;
+            case 'stop':
+                value = inRange(
+                    requestedValue === this.max ? this.max : this.min + (this.step * steps),
+                    limitIds.prevId ? this.cores[limitIds.prevId].value : this.min,
+                    limitIds.nextId ? this.cores[limitIds.nextId].value : this.max
+                );
+                pcnt = inRange(
+                    requestedPcnt, 
+                    limitIds.prevId ? this.cores[limitIds.prevId].pcnt : 0, 
+                    limitIds.nextId ? this.cores[limitIds.nextId].pcnt : 100
+                );
+                break;
         }
+
+        value = this.formatValueCapacity(value)
         return {value, pcnt}
     }
 
