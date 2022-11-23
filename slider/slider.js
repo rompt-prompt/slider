@@ -455,7 +455,7 @@ class SliderView {
         this.bar = new Bar(['slider__bar', 'js-slider-bar']);
         this.handles = Object.fromEntries(Object.entries(options.handles).map(handle => [
             handle[0], 
-            new Handle(handle[0], handle[1], 
+            new Handle(handle[0], 
                 ['slider__handle', 'js-slider-handle', `slider__handle_${handle[0]}`],
                 options.tagsPositions,
                 options.handlesTextContent,
@@ -579,10 +579,9 @@ class ProgressBar extends SliderElement {
 }
 
 class Handle extends SliderElement {
-    constructor(id, initValue, classes, tagsPositions, textContent) { 
+    constructor(id, classes, tagsPositions, textContent) { 
         super(classes, 'handle');
         this.elem.dataset.id = id;
-        this.initValue = initValue;
         if(textContent) this.elem.textContent = textContent[id];
         if(tagsPositions) this.createTagInstance(tagsPositions);
     }
