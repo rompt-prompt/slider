@@ -184,10 +184,28 @@ class SliderController {
         
         this.options = options;
         this.view = new SliderView(options);
-        this.model = new SliderModel(options);
+        if(options.dataType === 'number') {
+            this.model = new SliderModel(options);
+        } else {
+            this.typeHandler = new DataType(this.options);
+            this.model = new SliderModel(this.typeHandler.resolveOptionsForModel());
+        }
 
-       this.view.renderModel(this.model.cores);
-       this.watchEvents();
+        this.setVerbalValue();
+        this.view.renderModel(this.model.cores);
+        this.watchEvents();
+    }
+
+    setVerbalValue() {
+        if(this.options.dataType === 'number') {
+            for(let id in this.model.cores) {
+                this.model.cores[id].verbalValue = this.model.cores[id].value + 100;
+            }
+        } else {
+            for(let id in this.model.cores) {
+                this.model.cores[id].verbalValue = this.typeHandler.getVerbalValue(this.model.cores[id].value);
+            }
+        }
     }
 
     watchEvents() {
@@ -243,6 +261,7 @@ class SliderController {
 
     requestModelChange(id, type, value) {
         this.model.setValue(id, type, value)
+            .then(this.setVerbalValue())
             .then(cores => this.view.renderModel(cores))
     }
 
@@ -257,14 +276,14 @@ class SliderController {
     }
 
     getValues(id) {
-        let values = {}
+        const output = {}
         if(!id) Object.entries(this.model.cores).forEach(entry =>
-            values[entry[0]] = entry[1].value);
+            output[entry[0]] = entry[1].verbalValue);
         else if(id.constructor.name ===  'Array') id.forEach(id => 
-            values[id] = this.model.cores[id].value); 
-        else if(id.constructor.name === 'String') values = this.model.cores[id].value;
+            output[id] = this.model.cores[id].verbalValue); 
+        else if(id.constructor.name === 'String') output = this.model.cores[id].verbalValue;
 
-        return values
+        return output
     }
 
     reset() {
@@ -487,7 +506,7 @@ class SliderView {
             this.handles[id].setZIndex();
 
             this.handles[id].tag ? this.handles[id].tag.displayValue(
-                this.tagsPrefix + cores[id].value + this.tagsPostfix) : null;
+                this.tagsPrefix + cores[id].verbalValue + this.tagsPostfix) : null;
         }
         this.progressBars?.forEach(progressBar => {
             const calcStartEndPcnt = id => {switch(id) {
@@ -628,6 +647,28 @@ class Tag extends SliderElement {
 
     displayValue(value) {
         this.elem.querySelector('.js-tag-value').textContent = value;
+    }
+}
+
+class DataType {
+    constructor(options) {
+        if(options.dataType === 'date') this.handler = new DateHandler(options);
+
+    }
+
+    resolveOptionsForModel() { // range, step, handles + mode+neib+
+
+    }
+
+    getVerbalValue() {
+        
+    }
+    
+}
+
+class DateHandler {
+    constructor(options) {
+        
     }
 }
 
