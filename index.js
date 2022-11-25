@@ -6,7 +6,7 @@ const slider1 = new SliderController({
     root: container1,
     mode: 'select',
     dataType: 'date',
-    range: [new Date('2019-02-27'), new Date('2022-12-31')],
+    range: [new Date('2019-02-27'), new Date('2022-12-05')],
     step: 1,
     stepMeasure: 'month', // 'day', 'month' or 'year'
     handles: {
@@ -49,10 +49,10 @@ const slider3 = new SliderController({
     root: container3,
     mode: 'select',
     dataType: 'number',
-    range: [0, 2.903225806451613],
+    range: [0, 2.9],
     step: 1,
     handles: {
-        50: 1.5,
+        50: 1,
     },
     neighborHandles: 'jumpover',
     isVertical: 0,
@@ -67,19 +67,19 @@ let startDate = new Date(2020, 0, 1);
 let endDate = new Date(2021, 11, 30);
 let dayMS = 1000 * 60 * 60 * 24;
 
-while(+startDate != +endDate) {
-    slider1.options.handles.first = startDate;
-    slider1.reset();
-    let d, m, y;
-    [d, m, y] = slider1.model.cores.first.verbalValue.split('.')
-    let verbalDate = new Date(y, m - 1, d);
+// while(+startDate != +endDate) {
+//     slider1.options.handles.first = startDate;
+//     slider1.reset();
+//     let d, m, y;
+//     [d, m, y] = slider1.model.cores.first.verbalValue.split('.')
+//     let verbalDate = new Date(y, m - 1, d);
 
-    let eq = +startDate == +verbalDate;
+//     let eq = +startDate == +verbalDate;
 
-    eq ? 
-    console.log('ok') :
-    console.error(startDate, slider1.model.cores.first.verbalValue, verbalDate);
+//     eq ? 
+//     console.log('ok') :
+//     console.error(startDate, slider1.model.cores.first.verbalValue, verbalDate);
 
-    startDate = new Date(+startDate + dayMS)
+//     startDate = new Date(+startDate + dayMS)
 
-}
+// }

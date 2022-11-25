@@ -333,8 +333,8 @@ class SliderModel {
     }
 
     calcPcntFromValue(value) {
-        return (value - this.min) * 100 / (this.max - this.min);
-    }
+        let pcnt = (value - this.min) * 100 / (this.max - this.min);
+        return isNaN(pcnt) ? 0 : pcnt;    }
 
     getNeibIds(id) {
         let coresEntries = Object.entries(this.cores);
@@ -346,9 +346,11 @@ class SliderModel {
     }
 
     formatValueCapacity(value) {
-        const stepCapacityDigs = this.step.toString().match(/\.(\d+)/)?.[1].length;
-        return +value.toFixed(stepCapacityDigs) 
-    }
+        const stepCapacityDigs = this.step.toString().match(/\.(\d+)/)?.[1].length || 0;
+        const rangeStartCapacityDigs = this.min.toString().match(/\.(\d+)/)?.[1].length || 0;
+        const rangeEndCapacityDigs = this.max.toString().match(/\.(\d+)/)?.[1].length || 0;
+        return +value.toFixed(Math.max(stepCapacityDigs, rangeStartCapacityDigs, rangeEndCapacityDigs)) 
+}
 
     calcCore(id, requestedValue, requestedPcnt) {
         let value, pcnt;
@@ -358,14 +360,14 @@ class SliderModel {
         switch(this.neighborHandles) {
             case 'jumpover':
                 value = inRange(
-                    requestedValue === this.max ? this.max : this.min + (this.step * steps),
+                    requestedValue >= this.max ? this.max : this.min + (this.step * steps),
                     this.min, this.max
                 );
                 pcnt = inRange(requestedPcnt, 0, 100);
                 break;
             case 'move':
                 value = inRange(
-                    requestedValue === this.max ? this.max : this.min + (this.step * steps),
+                    requestedValue >= this.max ? this.max : this.min + (this.step * steps),
                     this.min, this.max
                 );
                 pcnt = inRange(requestedPcnt, 0, 100);
@@ -397,7 +399,7 @@ class SliderModel {
                 break;
             case 'stop':
                 value = inRange(
-                    requestedValue === this.max ? this.max : this.min + (this.step * steps),
+                    requestedValue >= this.max ? this.max : this.min + (this.step * steps),
                     limitIds.prevId ? this.cores[limitIds.prevId].value : this.min,
                     limitIds.nextId ? this.cores[limitIds.nextId].value : this.max
                 );
