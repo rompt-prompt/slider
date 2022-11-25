@@ -5,179 +5,181 @@ class SliderController {
         this.init(options)
     }
 
-    isValidOptions(options) {
-        let errors = '';
+    // isValidOptions(options) {
+    //     let errors = '';
 
-        checkRequired('Root', options.root)
-        checkMode();
-        checkDataType();
-        checkRange();
-        checkStep();
-        checkHandles();
-        checkIsVertical();
-        checkNeighborHandles();
-        checkProgressBars();
-        checkTags();
-        checkHandlesTextContent();
+    //     checkRequired('Root', options.root)
+    //     checkMode();
+    //     checkDataType();
+    //     checkRange();
+    //     checkStep();
+    //     checkHandles();
+    //     checkIsVertical();
+    //     checkNeighborHandles();
+    //     checkProgressBars();
+    //     checkTags();
+    //     checkHandlesTextContent();
 
-        function checkMode() {
-            if(checkRequired('Mode', options.mode)) {
-                if(!['select'].includes(options.mode)) errors += `\n>>> Incorrect mode. Specified <${options.mode}>`;
-            };
-        }
-        function checkDataType() {
-            if(checkRequired('DataType', options.dataType)) {
-                if(!['number'].includes(options.dataType)) errors += `\n>>> Incorrect dataType. Specified <${options.dataType}>`;
-            };
-        }
-        function checkRange() {
-            if(checkRequired('Range', options.range)) {
-                switch(options.dataType) {
-                    case 'number':
-                        if(options.range.length !== 2) {
-                            errors += `\n>>> With datatype 'number' required array with only 2 values: ['start', 'end'].`; 
-                            break;
-                        }
-                        if(options.range[0] >= options.range[1]) {
-                            errors += `\n>>> Start value should be less than end value.`
-                        }
-                        break;
-                }
-            };
-        }
-        function checkStep() {
-            if(checkRequired('Step', options.step)) {
-                switch(options.dataType) {
-                    case 'number':
-                        if(options.step <= 0) {
-                            errors += `\n>>> Step should be greater than 0.`
-                        }
-                        if(options.range[1] - options.range[0] < options.step) {
-                            errors += `\n>>> Step should be less than ${options.range[1] - options.range[0]}.`
-                        }
-                        break;
-                }
+    //     function checkMode() {
+    //         if(checkRequired('Mode', options.mode)) {
+    //             if(!['select'].includes(options.mode)) errors += `\n>>> Incorrect mode. Specified <${options.mode}>`;
+    //         };
+    //     }
+    //     function checkDataType() {
+    //         if(checkRequired('DataType', options.dataType)) {
+    //             if(!['number'].includes(options.dataType)) errors += `\n>>> Incorrect dataType. Specified <${options.dataType}>`;
+    //         };
+    //     }
+    //     function checkRange() {
+    //         if(checkRequired('Range', options.range)) {
+    //             switch(options.dataType) {
+    //                 case 'number':
+    //                     if(options.range.length !== 2) {
+    //                         errors += `\n>>> With datatype 'number' required array with only 2 values: ['start', 'end'].`; 
+    //                         break;
+    //                     }
+    //                     if(options.range[0] >= options.range[1]) {
+    //                         errors += `\n>>> Start value should be less than end value.`
+    //                     }
+    //                     break;
+    //             }
+    //         };
+    //     }
+    //     function checkStep() {
+    //         if(checkRequired('Step', options.step)) {
+    //             switch(options.dataType) {
+    //                 case 'number':
+    //                     if(options.step <= 0) {
+    //                         errors += `\n>>> Step should be greater than 0.`
+    //                     }
+    //                     if(options.range[1] - options.range[0] < options.step) {
+    //                         errors += `\n>>> Step should be less than ${options.range[1] - options.range[0]}.`
+    //                     }
+    //                     break;
+    //             }
     
-            };
-        }
-        function checkHandles() {
-            if(checkRequired('Handles', options.handles)) {
-                switch(options.dataType) {
-                    case 'number':
-                        if(Object.keys(options.handles).length < 1) {
-                            errors += `\n>>> Empty handles.`
-                        }
-                        Object.entries(options.handles).forEach(entry => {
-                            if(entry[1] < options.range[0] || options.range[1] < entry[1]) {
-                            errors += `\n>>> Handle <${entry[0]}> value should be between ${options.range[0]} & ${options.range[1]}.`
-                        }})
-                        break;
-                }
-            };
-        }
-        function checkIsVertical() {
-            if(options.isVertical === undefined) console.warn(`\n>>> Using horizontal layout. Define <isVertical: true> to use vertical.`);
-        }
-        function checkNeighborHandles() {
-            if(!options.neighborHandles) console.warn(`\n>>> Is not specified how to treat with neighbour handles. Using default <jumpover>. Define <neighborHandles> as 'move' or 'stop' to change.`);
-        }
-        function checkProgressBars() {
-            if(!options.progressBars) {
-                console.warn(`\n>>> Progress bars are not in use. Define <progressBars> if necessary.`);
-            } else {
-                let checkProgressBarsSyntax = (progressBars, level = 1) => {
-                    if(level > 2) return;
-                    if(progressBars.constructor.name !== 'Array' && level <= 2) {
-                        errors += `\n>>> To define progress bars use syntax: [[anchor1, anchor2], [anchor2, anchor3]]. Where anchor is handle ID or 'sliderstart', 'sliderend'
-                        `
-                    } else {
-                        if(level === 2 && progressBars.length !== 2) {
-                            errors += `\n>>> Incorrect progress bars setup <${progressBars}>. Only two anchors are allowed in each progress bar, ${progressBars.length} is provided.`
-                        }
-                        progressBars.forEach(progressBar => checkProgressBarsSyntax(progressBar, level + 1));
-                    }
-                }
-                let checkProgressBarsAnchors = (anchor) => {
-                    const allowedAnchors = ['sliderstart', 'sliderend'].concat(Object.keys(options.handles));
-                    if(!allowedAnchors.includes(anchor)) errors += `\n>>> Anchor <${anchor}> is not valid. Progress bar anchor should be handle's ID or 'sliderstart', 'sliderend'`
-                }
+    //         };
+    //     }
+    //     function checkHandles() {
+    //         if(checkRequired('Handles', options.handles)) {
+    //             switch(options.dataType) {
+    //                 case 'number':
+    //                     if(Object.keys(options.handles).length < 1) {
+    //                         errors += `\n>>> Empty handles.`
+    //                     }
+    //                     Object.entries(options.handles).forEach(entry => {
+    //                         if(entry[1] < options.range[0] || options.range[1] < entry[1]) {
+    //                         errors += `\n>>> Handle <${entry[0]}> value should be between ${options.range[0]} & ${options.range[1]}.`
+    //                     }})
+    //                     break;
+    //             }
+    //         };
+    //     }
+    //     function checkIsVertical() {
+    //         if(options.isVertical === undefined) console.warn(`\n>>> Using horizontal layout. Define <isVertical: true> to use vertical.`);
+    //     }
+    //     function checkNeighborHandles() {
+    //         if(!options.neighborHandles) console.warn(`\n>>> Is not specified how to treat with neighbour handles. Using default <jumpover>. Define <neighborHandles> as 'move' or 'stop' to change.`);
+    //     }
+    //     function checkProgressBars() {
+    //         if(!options.progressBars) {
+    //             console.warn(`\n>>> Progress bars are not in use. Define <progressBars> if necessary.`);
+    //         } else {
+    //             let checkProgressBarsSyntax = (progressBars, level = 1) => {
+    //                 if(level > 2) return;
+    //                 if(progressBars.constructor.name !== 'Array' && level <= 2) {
+    //                     errors += `\n>>> To define progress bars use syntax: [[anchor1, anchor2], [anchor2, anchor3]]. Where anchor is handle ID or 'sliderstart', 'sliderend'
+    //                     `
+    //                 } else {
+    //                     if(level === 2 && progressBars.length !== 2) {
+    //                         errors += `\n>>> Incorrect progress bars setup <${progressBars}>. Only two anchors are allowed in each progress bar, ${progressBars.length} is provided.`
+    //                     }
+    //                     progressBars.forEach(progressBar => checkProgressBarsSyntax(progressBar, level + 1));
+    //                 }
+    //             }
+    //             let checkProgressBarsAnchors = (anchor) => {
+    //                 const allowedAnchors = ['sliderstart', 'sliderend'].concat(Object.keys(options.handles));
+    //                 if(!allowedAnchors.includes(anchor)) errors += `\n>>> Anchor <${anchor}> is not valid. Progress bar anchor should be handle's ID or 'sliderstart', 'sliderend'`
+    //             }
                 
-                checkProgressBarsSyntax(options.progressBars);
-                options.progressBars.forEach(progressBar => {
-                    checkProgressBarsAnchors(progressBar[0]);
-                    checkProgressBarsAnchors(progressBar[1]);
-                })
-            }  
-        }
-        function checkTags() {
-            if(!options.tagsPositions) {
-                console.warn(`\n>>> Tags are not in use. Define <tagsPositions> if necessary.`);
-            } else {
-                let checkPosition = position => ['top', 'right', 'left', 'bottom']
-                    .includes(position) ? true :  errors += `\n>>> Tag position <${position}> is not valid. Choose 'top', 'right', 'left' or 'bottom'.`;
+    //             checkProgressBarsSyntax(options.progressBars);
+    //             options.progressBars.forEach(progressBar => {
+    //                 checkProgressBarsAnchors(progressBar[0]);
+    //                 checkProgressBarsAnchors(progressBar[1]);
+    //             })
+    //         }  
+    //     }
+    //     function checkTags() {
+    //         if(!options.tagsPositions) {
+    //             console.warn(`\n>>> Tags are not in use. Define <tagsPositions> if necessary.`);
+    //         } else {
+    //             let checkPosition = position => ['top', 'right', 'left', 'bottom']
+    //                 .includes(position) ? true :  errors += `\n>>> Tag position <${position}> is not valid. Choose 'top', 'right', 'left' or 'bottom'.`;
 
-                let checkTagsPositionSyntax = data => {
-                    switch(data.constructor.name) {
-                        case 'String':
-                            checkPosition(data);
-                            break;
-                        case 'Array':
-                            if(data.length > 2) {
-                                errors += `\n>>> To define tags use syntax: 'position' or ['position', {id1: 'position1', id2: 'position2'}] or [{id: 'position'}]`
-                            } else {
-                                let countDefault = 0;
-                                data.forEach(position => {
-                                    if(position.constructor.name === 'String') {
-                                        checkPosition(position);
-                                        countDefault++;
-                                    } else if(position.constructor.name === 'Object') {
-                                        Object.entries(position).forEach(entry => {
-                                            if(!Object.keys(options.handles).includes(entry[0])) {
-                                                errors += `\n>>> Tag error. Handle <${entry[0]}> not found.`
-                                            }
-                                            checkPosition(entry[1])
-                                        })
-                                    }
-                                })
-                                if(countDefault > 1) {
-                                    errors += `\n>>> Only one default position is allowed. Provided <${countDefault}>.`;
-                                }
-                            }
+    //             let checkTagsPositionSyntax = data => {
+    //                 switch(data.constructor.name) {
+    //                     case 'String':
+    //                         checkPosition(data);
+    //                         break;
+    //                     case 'Array':
+    //                         if(data.length > 2) {
+    //                             errors += `\n>>> To define tags use syntax: 'position' or ['position', {id1: 'position1', id2: 'position2'}] or [{id: 'position'}]`
+    //                         } else {
+    //                             let countDefault = 0;
+    //                             data.forEach(position => {
+    //                                 if(position.constructor.name === 'String') {
+    //                                     checkPosition(position);
+    //                                     countDefault++;
+    //                                 } else if(position.constructor.name === 'Object') {
+    //                                     Object.entries(position).forEach(entry => {
+    //                                         if(!Object.keys(options.handles).includes(entry[0])) {
+    //                                             errors += `\n>>> Tag error. Handle <${entry[0]}> not found.`
+    //                                         }
+    //                                         checkPosition(entry[1])
+    //                                     })
+    //                                 }
+    //                             })
+    //                             if(countDefault > 1) {
+    //                                 errors += `\n>>> Only one default position is allowed. Provided <${countDefault}>.`;
+    //                             }
+    //                         }
 
-                            break;
+    //                         break;
 
-                    }
-                }
+    //                 }
+    //             }
                 
-                checkTagsPositionSyntax(options.tagsPositions)
-            }
-        }
-        function checkHandlesTextContent() {
-            if(!options.handlesTextContent) {
-                console.warn(`\n>>> Text content in handles is not in use. Define <handlesTextContent> if necessary.`);
-            } else {
-                if(options.handlesTextContent.constructor.name !== "Object") {
-                    errors += `\n>>> To define text content in handles use object {id: text}`
-                    return;
-                }
+    //             checkTagsPositionSyntax(options.tagsPositions)
+    //         }
+    //     }
+    //     function checkHandlesTextContent() {
+    //         if(!options.handlesTextContent) {
+    //             console.warn(`\n>>> Text content in handles is not in use. Define <handlesTextContent> if necessary.`);
+    //         } else {
+    //             if(options.handlesTextContent.constructor.name !== "Object") {
+    //                 errors += `\n>>> To define text content in handles use object {id: text}`
+    //                 return;
+    //             }
 
-                Object.entries(options.handlesTextContent).forEach(entry => {
-                    if(!Object.keys(options.handles).includes(entry[0])) {
-                        errors += `\n>>> Handles text content error. Handle <${entry[0]}> not found.`
-                    }
-                })
-            }
-        }
-        function checkRequired(name, option) {
-            if(!option) {
-                errors += `\n>>> ${name} required.`;
-                return false;
-            } else return true;
-        }
+    //             Object.entries(options.handlesTextContent).forEach(entry => {
+    //                 if(!Object.keys(options.handles).includes(entry[0])) {
+    //                     errors += `\n>>> Handles text content error. Handle <${entry[0]}> not found.`
+    //                 }
+    //             })
+    //         }
+    //     }
+    //     function checkRequired(name, option) {
+    //         if(!option) {
+    //             errors += `\n>>> ${name} required.`;
+    //             return false;
+    //         } else return true;
+    //     }
 
-        errors ? console.error(errors) : null;
-        return errors ? false : true;
-    }
+    //     errors ? console.error(errors) : null;
+    //     return errors ? false : true;
+    // }
+
+    isValidOptions(options) {return true}
 
     init(options) {
         if(!this.isValidOptions(options)) throw new Error('not valid options');
@@ -187,7 +189,7 @@ class SliderController {
         if(options.dataType === 'number') {
             this.model = new SliderModel(options);
         } else {
-            this.typeHandler = new DataType(this.options);
+            this.typeHandler = new TypeHandlerFactory().create(this.options);
             this.model = new SliderModel(this.typeHandler.resolveOptionsForModel());
         }
 
@@ -199,7 +201,7 @@ class SliderController {
     setVerbalValue() {
         if(this.options.dataType === 'number') {
             for(let id in this.model.cores) {
-                this.model.cores[id].verbalValue = this.model.cores[id].value + 100;
+                this.model.cores[id].verbalValue = this.model.cores[id].value;
             }
         } else {
             for(let id in this.model.cores) {
@@ -650,25 +652,135 @@ class Tag extends SliderElement {
     }
 }
 
-class DataType {
-    constructor(options) {
-        if(options.dataType === 'date') this.handler = new DateHandler(options);
-
-    }
-
-    resolveOptionsForModel() { // range, step, handles + mode+neib+
-
-    }
-
-    getVerbalValue() {
-        
-    }
-    
-}
-
 class DateHandler {
     constructor(options) {
-        
+        this.options = options;
+        if(this.options.stepMeasure === 'month') {
+            this.outputDay = this.isLastDayOfMonth(this.options.range[0]) ?
+                'last' : this.options.range[0].getDate();
+        }
+    }
+
+    resolveOptionsForModel() {
+        const modelOptions = {
+            mode: this.options.mode,
+            step: this.options.step,
+            neighborHandles: this.options.neighborHandles,
+            handles: {},
+        };
+
+        const callback = 
+            this.options.stepMeasure === 'day' ? this.calcDaysAmount.bind(this) :
+            this.options.stepMeasure === 'month' ? this.calcMonthsAmount.bind(this) :
+            this.options.stepMeasure === 'year' ? this.calcYearsAmount.bind(this) : null;
+
+        for(let id in this.options.handles) {
+            modelOptions.handles[id] = callback(this.options.range[0], this.options.handles[id])
+        }
+        modelOptions.range = [0, callback(...this.options.range)];
+        return modelOptions
+    }
+
+    getVerbalValue(value) {
+        const callback = 
+            this.options.stepMeasure === 'day' ? this.addDays.bind(this) :
+            this.options.stepMeasure === 'month' ? this.addMonths.bind(this) :
+            this.options.stepMeasure === 'year' ? this.addYears.bind(this) : null;
+        const verbal = new Date(
+            Math.min(+callback(this.options.range[0], value), +this.options.range[1]));
+        return this.formatDate(verbal);
+    }
+
+    formatDate(date) {
+        const addLeadingSymbol = (num, requiredCapacity, symbol) => {
+            let str = num.toString()
+            if(str.length >= requiredCapacity) return str;
+            return symbol.toString().repeat(requiredCapacity - str.length) + str;
+        }
+        const d = addLeadingSymbol(date.getDate(), 2, 0);
+        const m = addLeadingSymbol(date.getMonth() + 1, 2, 0);
+        const y = date.getFullYear();
+
+        return [d, m, y].join('.')
+    }
+
+    calcDaysAmount(date1, date2) {
+        return Math.abs(+date1 - +date2) / (1000 * 60 * 60 * 24);
+    }
+
+    addDays(date, days) {
+        return +date + (days * 1000 * 60 * 60 * 24);
+    }
+
+    getLastDayOfMonth(month, year) {
+        const date = new Date(year, month + 1, 0)
+        return date.getDate();
+    }
+
+    isLastDayOfMonth(date) {
+        const day = date.getDate();
+        const lastDay = this.getLastDayOfMonth(date.getMonth(), date.getFullYear());
+        return day === lastDay;
+    }
+
+    calcMonthsAmount(date1, date2) {
+        const totalMonths = date2.getMonth() - date1.getMonth() + 
+            (12 * (date2.getFullYear() - date1.getFullYear()));
+        const daysDate2 = date2.getDate();
+        return totalMonths + (daysDate2 / 100);
+    }
+
+    addMonths(date, months) {
+        const year = date.getFullYear();
+        const month =  date.getMonth() + Math.floor(months);
+
+        let newDate = new Date(date).setFullYear(year, month, 1);
+
+        let day;
+        if(months % 1 !== 0) {
+            day = +((months % 1) * 100).toFixed(0);
+        } else if(this.outputDay !== 1) {
+           day = this.outputDay === 'last' ? this.getLastDayOfMonth(month, year) : this.outputDay;
+        }
+        day ? newDate = new Date(newDate).setDate(day) : null;
+
+        return newDate
+    }
+
+    calcYearsAmount(date1, date2) {
+        const totalYears = (date2.getFullYear() - date1.getFullYear());
+        const daysDate2 = this.calcDaysAmount(
+            new Date(date2).setMonth(0, 0), date2)
+            console.log(totalYears, daysDate2)
+        return totalYears + (daysDate2 / 1000);
+    }
+
+    addYears(date, years) {
+        const year = date.getFullYear() + Math.floor(years);
+        const month = date.getMonth();
+        const day = date.getDate();
+
+        let newDate = new Date(date).setFullYear(year, 0 , 1);
+
+        if(years % 1 !== 0) {
+            newDate = new Date(newDate).setDate(+((years % 1) * 1000).toFixed(0));
+        } else {
+            newDate = new Date(newDate).setMonth(month, day);
+        }
+
+        return newDate;
+    }
+}
+
+class TypeHandlerFactory {
+    static types = {
+        date: DateHandler
+    }
+
+    create(options) {
+        const TypeHandler = TypeHandlerFactory.types[options.dataType];
+        return new TypeHandler(options);
+
     }
 }
 
