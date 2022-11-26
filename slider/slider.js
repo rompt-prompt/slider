@@ -182,6 +182,7 @@ class SliderController {
     isValidOptions(options) {return true}
 
     init(options) {
+        const isValid = new Validator(options).isValidOptions()
         if(!this.isValidOptions(options)) throw new Error('not valid options');
         
         this.options = options;
@@ -782,6 +783,227 @@ class TypeHandlerFactory {
     create(options) {
         const TypeHandler = TypeHandlerFactory.types[options.dataType];
         return new TypeHandler(options);
+
+    }
+}
+class Validator {
+    constructor(options) {
+        this.options = options;
+        this.ids = Object.keys(options.handles);
+        this.requiredOptions = ['root','mode', 'dataType', 'range', 'step', 'handles'];
+        this.unessentialOptions = [
+            {name: 'neighborHandles', default: 'jumpover', valid: ['jumpover', 'move', 'stop']}, 
+            {name: 'isVertical', default: 'false', valid: [true, false]},
+            {name: 'progressBars', valid: ['sliderstart', 'sliderend'].concat(this.ids)},
+            {name: 'tagsPositions', valid: ['top', 'right', 'left', 'bottom']},
+            {name: 'handlesTextContent'}
+        ]
+        this.modes = ['select'];
+        this.dataTypes = ['number', 'date'];
+
+        Object.defineProperty(this.numTypeTests, 'testNumber', {
+            enumerable: false
+        })
+
+        this.errors = '';
+        this.warnings = '';
+    }
+
+    addError(message) {
+        this.errors += `\n>>> ${message}`;
+    }
+
+    addWarning(message) {
+        this.warnings += `\n>>> ${message}`;
+    }
+
+    isExitingId(id) {
+        return this.ids.includes(id);
+    }
+
+    isValidOptions() {
+        for(let test in this.generalTests) {
+            this.generalTests[test]()
+        };
+        for(let test in this.numTypeTests) {
+            this.numTypeTests[test]()
+        }
+
+        console.error(this.errors);
+        console.warn(this.warnings);
+        return this.errors;
+    }
+
+    generalTests = {
+        checkRequired: () => {
+            const keys = Object.keys(this.options);
+            this.requiredOptions.forEach(option => 
+                keys.includes(option) ? null : this.addError(`${option} required.`)
+            );
+        },
+        checkMode: () => {
+            if(!this.modes.includes(this.options.mode)) {
+                this.addError(`Incorrect mode. Choose one of: ${this.modes}`);
+            }
+        },
+        checkDataType: () => {
+            if(!this.dataTypes.includes(this.options.dataType)) {
+                this.addError(`Incorrect dataType. Choose one of: ${this.dataTypes}`);
+            };
+        },
+        checkHandles: () => {
+            this.ids.length < 1 ? this.addError('Empty handles.') : null;
+        },
+        checkRange: () => {
+            this.options.range.length < 2 ? this.addError('Range length < 2') : null;
+        },
+        checkUnessentialOptions: () => {
+            this.unessentialOptions.forEach(option => {
+                if(this.options[option.name] === undefined) {
+                    this.addWarning(`${option.name} is not specified. ` + 
+                        `${option.default ? `Using default <${option.default}>.` : `${option.name} not in use. `}` +
+                        `${option.valid ? `Define if necessary: ${option.valid}.` : ''}`);
+                } else {
+                    const test = 'check' + option.name[0].toUpperCase() + option.name.substring(1);
+                    console.log('test>>>', test)
+                    this.optionalTests[test]()
+                }
+            });
+        },
+    }
+
+    optionalTests = {
+        testInValid: (name, definition) => {
+            const valid = this.unessentialOptions.find(item => item.name === name).valid;
+            if(!valid.includes(definition)) {
+                this.addError(`${name} <${definition}> is not valid. ` + 
+                    `Choose: ${valid}`)
+            }
+        },
+        checkNeighborHandles: () => {
+            this.optionalTests.testInValid('neighborHandles', this.options.neighborHandles);
+        },
+        checkIsVertical: () => {
+            this.optionalTests.testInValid('isVertical', this.options.isVertical);
+        },
+        checkProgressBars: () => {
+            const checkSyntax = (progressBars, level = 1) => {
+                if(level > 2) return;
+                if(level <= 2 && progressBars.constructor.name !== 'Array') {
+                    this.addError('Incorrect profressBars syntax. Define: ' + 
+                        '[[anchor1, anchor2], [anchor2, anchor3]]. ' + 
+                        'Where anchor is handle ID or <sliderstart> or <sliderend>');
+                } else if(level === 2 && progressBars.length !== 2) {
+                    this.addError(`Incorrect profressBars setup <${progressBars}>. ` + 
+                        `Only two anchors are allowed in each progress bar, ${progressBars.length} is provided.`)
+                } else {
+                    progressBars.forEach(progressBar => checkSyntax(progressBar, level + 1));
+                }
+            }
+            
+            checkSyntax(this.options.progressBars);
+            this.options.progressBars.flat().forEach(anchor => {
+                this.optionalTests.testInValid('progressBars', anchor);
+            })
+        },
+        checkTagsPositions: () => {
+            const testPosition = (position) => this.optionalTests.testInValid('tagsPositions', position);
+            const tagsPositions = this.options.tagsPositions;
+
+            if(tagsPositions.constructor.name === 'String') {
+                testPosition(tagsPositions);
+            } 
+            else if(tagsPositions.constructor.name === 'Array') {
+                if(tagsPositions.length > 2) {
+                    this.addError(`To define different tagsPositions use syntax: ` +
+                        `'['position', {id1: 'position1', id2: 'position2'}] ` +
+                        `or [{id: 'position'}]. Only one default position is allowed.`);
+                } 
+                else {
+                    let countDefault = 0;
+                    tagsPositions.forEach(position => {
+                        if(position.constructor.name === 'String') {
+                            testPosition(position);
+                            countDefault++;
+                        } 
+                        else if(position.constructor.name === 'Object') {
+                            Object.entries(position).forEach(entry => {
+                                !this.isExitingId(entry[0]) ? 
+                                    this.addError(`Tag error. Handle <${entry[0]}> not found.`) :
+                                    testPosition(entry[1]) 
+                        })}
+                    })
+                    countDefault > 1 ? this.addError(`Only one default position is allowed. Provided <${countDefault}>.`) : null;
+                }
+            }
+            else this.addError(`To define tagsPositions use string or array: ` +
+                `'position' or ['position', {id1: 'position1', id2: 'position2'}] ` +
+                `or [{id: 'position'}]`);
+        },
+        checkHandlesTextContent: () => {
+            if(this.options.handlesTextContent.constructor.name !== "Object") {
+                this.addError('To define text content in handles use object {id: text}')
+                return;
+            }
+
+            Object.entries(this.options.handlesTextContent).forEach(entry => {
+                const id = entry[0];
+                this.isExitingId(id) ? null : this.addError(`handlesTextContent error. Handle <${id}> not found.`)
+            })
+
+        }
+    }
+
+    numTypeTests = {
+        testNumber: (name, num) => {
+            if(!(typeof num === 'number' && isFinite(num))) {
+                this.addError(`${name} value <${num}> is not number.`)
+            }
+        },
+        checkRange: () => {
+            if(this.options.range.length !== 2) {
+                this.addError(`Range error. ` +
+                    `With datatype 'number' required array with only 2 values: ['start', 'end']. ` +
+                    `Povided ${this.options.range.length}.`);
+            }
+
+            this.options.range.forEach(item => {
+                this.numTypeTests.testNumber('range', item)});
+
+            if(this.options.range[0] >= this.options.range[1]) {
+                this.addError(`Range error. Start value should be less than end value (['start', 'end']).`);
+            }
+        },
+        checkHandles: () => {
+            Object.entries(this.options.handles).forEach(handle => {
+                const id = handle[0];
+                const value = handle[1];
+                const min = this.options.range[0];
+                const max = this.options.range[1];
+
+                this.numTypeTests.testNumber(`handle ${id}`, value);
+                if(max < min) return;
+                if(value < min || max < value) {
+                    this.addError(`Handle <${id}> value should be between <${min}> & <${max}>. Provided <${value}>.`)
+            }})
+        },
+        checkStep: () => {
+            const step = this.options.step;
+            const min = this.options.range[0];
+            const max = this.options.range[1];
+
+            this.numTypeTests.testNumber('step', step);
+            if(step <= 0) {
+                this.addError(`Step should be greater than 0.`);
+                return;
+            }
+            if(max - min < step) {
+                this.addError(`Step should be less than ${max - min}.`);
+            }  
+        },
+    }
+
+    dateTypeTest = {
 
     }
 }

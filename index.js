@@ -2,20 +2,27 @@ const container1 = document.querySelectorAll('.js-res')[0];
 const container2 = document.querySelectorAll('.js-res')[1];
 const container3 = document.querySelectorAll('.js-res')[2];
 
-const slider1 = new SliderController({
-    root: container1,
-    mode: 'select',
-    dataType: 'date',
-    range: [new Date('2019-02-27'), new Date('2022-12-05')],
-    step: 1,
-    stepMeasure: 'month', // 'day', 'month' or 'year'
-    handles: {
-        'first': new Date('2020-02-29'),
-        // 'second': new Date('2199-10-31')
-    },
-    neighborHandles: 'move',
-    tagsPositions: 'top',
-})
+// const slider1 = new SliderController({
+//     root: container1,
+//     mode: 'select',
+//     dataType: 'date',
+//     range: [new Date('2019-02-27'), new Date('2022-12-05')],
+//     step: 1,
+//     stepMeasure: 'month', // 'day', 'month' or 'year'
+//     handles: {
+//         'first': new Date('2020-02-29'),
+//         'second': new Date('2021-10-31')
+//     },
+//     neighborHandles: 'move',
+//     isVertical: false,
+//     progressBars: [
+//         ['sliderstart', 'first'], ['sliderend', 'second']
+//     ],
+//     tagsPositions: ['top', {second: 'bottom'}],
+//     handlesTextContent: {
+//         first: 'first', second: 'second'
+//     }
+// })
 
 // const slider2 = new SliderController({
 //     root: container2,
@@ -52,20 +59,18 @@ const slider3 = new SliderController({
     range: [0, 2.9],
     step: 1,
     handles: {
-        50: 1,
+        '50': 1,
     },
     neighborHandles: 'jumpover',
-    isVertical: 0,
-    tagsPositions: 'top',
 })
 
 
 //test
 
-let dates = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31];
-let startDate = new Date(2020, 0, 1);
-let endDate = new Date(2021, 11, 30);
-let dayMS = 1000 * 60 * 60 * 24;
+// let dates = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31];
+// let startDate = new Date(2020, 0, 1);
+// let endDate = new Date(2021, 11, 30);
+// let dayMS = 1000 * 60 * 60 * 24;
 
 // while(+startDate != +endDate) {
 //     slider1.options.handles.first = startDate;
