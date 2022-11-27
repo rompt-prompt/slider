@@ -2,27 +2,27 @@ const container1 = document.querySelectorAll('.js-res')[0];
 const container2 = document.querySelectorAll('.js-res')[1];
 const container3 = document.querySelectorAll('.js-res')[2];
 
-// const slider1 = new SliderController({
-//     root: container1,
-//     mode: 'select',
-//     dataType: 'date',
-//     range: [new Date('2019-02-27'), new Date('2022-12-05')],
-//     step: 1,
-//     stepMeasure: 'month', // 'day', 'month' or 'year'
-//     handles: {
-//         'first': new Date('2020-02-29'),
-//         'second': new Date('2021-10-31')
-//     },
-//     neighborHandles: 'move',
-//     isVertical: false,
-//     progressBars: [
-//         ['sliderstart', 'first'], ['sliderend', 'second']
-//     ],
-//     tagsPositions: ['top', {second: 'bottom'}],
-//     handlesTextContent: {
-//         first: 'first', second: 'second'
-//     }
-// })
+const slider1 = new SliderController({
+    root: container1,
+    mode: 'select',
+    dataType: 'date',
+    range: [new Date('2021-01-01'), new Date('2021-12-31')],
+    step: 1,
+    stepMeasure: 'month', // 'day', 'month' or 'year'
+    handles: {
+        'first': new Date('2021-02-28'),
+        'second': new Date('2021-10-31')
+    },
+    neighborHandles: 'move',
+    isVertical: false,
+    progressBars: [
+        ['sliderstart', 'first'], ['sliderend', 'second']
+    ],
+    tagsPositions: ['top', {second: 'bottom'}],
+    handlesTextContent: {
+        first: 'first', second: 'second'
+    }
+})
 
 // const slider2 = new SliderController({
 //     root: container2,
@@ -52,17 +52,17 @@ const container3 = document.querySelectorAll('.js-res')[2];
 
 // })
 
-const slider3 = new SliderController({
-    root: container3,
-    mode: 'select',
-    dataType: 'number',
-    range: [0, 2.9],
-    step: 1,
-    handles: {
-        '50': 1,
-    },
-    neighborHandles: 'jumpover',
-})
+// const slider3 = new SliderController({
+//     root: container3,
+//     mode: 'select',
+//     dataType: 'number',
+//     range: [0, 2.9],
+//     step: 1,
+//     handles: {
+//         '50': 1,
+//     },
+//     neighborHandles: 'jumpover',
+// })
 
 
 //test

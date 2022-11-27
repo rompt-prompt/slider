@@ -754,7 +754,6 @@ class DateHandler {
         const totalYears = (date2.getFullYear() - date1.getFullYear());
         const daysDate2 = this.calcDaysAmount(
             new Date(date2).setMonth(0, 0), date2)
-            console.log(totalYears, daysDate2)
         return totalYears + (daysDate2 / 1000);
     }
 
@@ -790,20 +789,22 @@ class Validator {
     constructor(options) {
         this.options = options;
         this.ids = Object.keys(options.handles);
-        this.requiredOptions = ['root','mode', 'dataType', 'range', 'step', 'handles'];
+        this.requiredOptions = [
+            {name: 'root', useInMode: 'all'},
+            {name: 'mode', useInMode: 'all', valid: ['select']},
+            {name: 'dataType', useInMode: 'all', valid: ['number', 'date']},
+            {name: 'range', useInMode: 'all'},
+            {name: 'step', useInMode: 'all'},
+            {name: 'handles', useInMode: 'all'},
+            {name: 'stepMeasure', useInMode: 'date', valid: ['day', 'month', 'year']},
+        ];
         this.unessentialOptions = [
             {name: 'neighborHandles', default: 'jumpover', valid: ['jumpover', 'move', 'stop']}, 
             {name: 'isVertical', default: 'false', valid: [true, false]},
             {name: 'progressBars', valid: ['sliderstart', 'sliderend'].concat(this.ids)},
             {name: 'tagsPositions', valid: ['top', 'right', 'left', 'bottom']},
             {name: 'handlesTextContent'}
-        ]
-        this.modes = ['select'];
-        this.dataTypes = ['number', 'date'];
-
-        Object.defineProperty(this.numTypeTests, 'testNumber', {
-            enumerable: false
-        })
+        ];
 
         this.errors = '';
         this.warnings = '';
@@ -821,12 +822,44 @@ class Validator {
         return this.ids.includes(id);
     }
 
+    testInValid(name, definition) {
+        const valid = 
+            this.requiredOptions.find(item => item.name === name)?.valid || 
+            this.unessentialOptions.find(item => item.name === name)?.valid;
+            
+        if(!valid.includes(definition)) {
+            this.addError(`${name} <${definition}> is not valid. ` + 
+                `Choose: ${valid}`)
+        }
+    }
+
+    testType(optionName, value) {
+        let text;
+        switch(this.options.dataType) {
+            case 'number':
+                !(typeof value === 'number' && isFinite(value)) ? 
+                    text = 'is not number' : null;
+                break;
+            case 'date': 
+                !(value instanceof Date) ? 
+                    text = 'is not instance of Date' : null;
+        }
+        text ? this.addError(`${optionName}: <${value}> ${text}.`) : null
+    }
+
     isValidOptions() {
         for(let test in this.generalTests) {
             this.generalTests[test]()
         };
-        for(let test in this.numTypeTests) {
-            this.numTypeTests[test]()
+
+        if(this.options.dataType === 'number') {
+            for(let test in this.numTypeTests) {
+                this.numTypeTests[test]()}
+        }
+
+        if(this.options.dataType === 'date') {
+            for(let test in this.dateTypeTests) {
+                this.dateTypeTests[test]()}                       
         }
 
         console.error(this.errors);
@@ -837,20 +870,14 @@ class Validator {
     generalTests = {
         checkRequired: () => {
             const keys = Object.keys(this.options);
-            this.requiredOptions.forEach(option => 
-                keys.includes(option) ? null : this.addError(`${option} required.`)
-            );
+            this.requiredOptions.forEach(option => {
+                if(option.useInMode === 'all' || option.useInMode === this.options.mode) {
+                    keys.includes(option.name) ? null : this.addError(`${option.name} required.`)
+                }
+            });
         },
-        checkMode: () => {
-            if(!this.modes.includes(this.options.mode)) {
-                this.addError(`Incorrect mode. Choose one of: ${this.modes}`);
-            }
-        },
-        checkDataType: () => {
-            if(!this.dataTypes.includes(this.options.dataType)) {
-                this.addError(`Incorrect dataType. Choose one of: ${this.dataTypes}`);
-            };
-        },
+        checkMode: () => this.testInValid('mode', this.options.mode),
+        checkDataType: () => this.testInValid('dataType', this.options.dataType),
         checkHandles: () => {
             this.ids.length < 1 ? this.addError('Empty handles.') : null;
         },
@@ -865,7 +892,6 @@ class Validator {
                         `${option.valid ? `Define if necessary: ${option.valid}.` : ''}`);
                 } else {
                     const test = 'check' + option.name[0].toUpperCase() + option.name.substring(1);
-                    console.log('test>>>', test)
                     this.optionalTests[test]()
                 }
             });
@@ -873,18 +899,11 @@ class Validator {
     }
 
     optionalTests = {
-        testInValid: (name, definition) => {
-            const valid = this.unessentialOptions.find(item => item.name === name).valid;
-            if(!valid.includes(definition)) {
-                this.addError(`${name} <${definition}> is not valid. ` + 
-                    `Choose: ${valid}`)
-            }
-        },
         checkNeighborHandles: () => {
-            this.optionalTests.testInValid('neighborHandles', this.options.neighborHandles);
+            this.testInValid('neighborHandles', this.options.neighborHandles);
         },
         checkIsVertical: () => {
-            this.optionalTests.testInValid('isVertical', this.options.isVertical);
+            this.testInValid('isVertical', this.options.isVertical);
         },
         checkProgressBars: () => {
             const checkSyntax = (progressBars, level = 1) => {
@@ -903,11 +922,11 @@ class Validator {
             
             checkSyntax(this.options.progressBars);
             this.options.progressBars.flat().forEach(anchor => {
-                this.optionalTests.testInValid('progressBars', anchor);
+                this.testInValid('progressBars', anchor);
             })
         },
         checkTagsPositions: () => {
-            const testPosition = (position) => this.optionalTests.testInValid('tagsPositions', position);
+            const testPosition = (position) => this.testInValid('tagsPositions', position);
             const tagsPositions = this.options.tagsPositions;
 
             if(tagsPositions.constructor.name === 'String') {
@@ -955,11 +974,6 @@ class Validator {
     }
 
     numTypeTests = {
-        testNumber: (name, num) => {
-            if(!(typeof num === 'number' && isFinite(num))) {
-                this.addError(`${name} value <${num}> is not number.`)
-            }
-        },
         checkRange: () => {
             if(this.options.range.length !== 2) {
                 this.addError(`Range error. ` +
@@ -968,7 +982,7 @@ class Validator {
             }
 
             this.options.range.forEach(item => {
-                this.numTypeTests.testNumber('range', item)});
+                this.testType('range', item)});
 
             if(this.options.range[0] >= this.options.range[1]) {
                 this.addError(`Range error. Start value should be less than end value (['start', 'end']).`);
@@ -981,7 +995,7 @@ class Validator {
                 const min = this.options.range[0];
                 const max = this.options.range[1];
 
-                this.numTypeTests.testNumber(`handle ${id}`, value);
+                this.testType(`handle ${id}`, value);
                 if(max < min) return;
                 if(value < min || max < value) {
                     this.addError(`Handle <${id}> value should be between <${min}> & <${max}>. Provided <${value}>.`)
@@ -992,7 +1006,7 @@ class Validator {
             const min = this.options.range[0];
             const max = this.options.range[1];
 
-            this.numTypeTests.testNumber('step', step);
+            this.testType('step', step);
             if(step <= 0) {
                 this.addError(`Step should be greater than 0.`);
                 return;
@@ -1000,11 +1014,46 @@ class Validator {
             if(max - min < step) {
                 this.addError(`Step should be less than ${max - min}.`);
             }  
-        },
+        }
     }
 
-    dateTypeTest = {
+    dateTypeTests = {
+        doNumTests: () => {
+            this.numTypeTests.checkRange();
+            this.numTypeTests.checkHandles();
+        },
+        stepMeasure: () => this.testInValid('stepMeasure', this.options.stepMeasure),
+        checkStep: () => {
+            const typeHandler = new DateHandler(this.options);
+            const step = this.options.step;
+            const min = 0;
+            const max = 
+                this.options.stepMeasure === 'day' ?
+                    typeHandler.calcDaysAmount(...this.options.range) :
+                this.options.stepMeasure === 'month' ? 
+                    typeHandler.calcMonthsAmount(...this.options.range) :
+                this.options.stepMeasure === 'year' ? 
+                    typeHandler.calcYearsAmount(...this.options.range) :
+                    null
 
+            if(!(typeof step === 'number' && isFinite(step))) {
+                this.addError(`Step: ${step} is not number.`);
+            }
+            if(step <= 0) {
+                this.addError(`Step should be greater than 0.`);
+                return;
+            }
+            if(!Number.isInteger(step)) {
+                this.addError(`Step should be integer.`);
+            }
+            if(max - min < step) {
+                const delta = Math.floor(max - min);
+                this.addError(`Step should be >= ${delta} ${
+                    delta === 1 ? this.options.stepMeasure :
+                    this.options.stepMeasure + 's'
+                }.`);
+            }  
+        }
     }
 }
 
