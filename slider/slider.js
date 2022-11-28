@@ -90,6 +90,8 @@ class SliderController {
         if(!Object.keys(this.model.cores).includes(id)) throw new Error(
             `Id <${id}> not found`
         );
+
+        value = this.typeHandler?.getValueFromVerbal(value) || value;
         this.requestModelChange(id, type, value)
     }
 
@@ -507,6 +509,15 @@ class DateHandler {
         const verbal = new Date(
             Math.min(+callback(this.options.range[0], value), +this.options.range[1]));
         return this.formatDate(verbal);
+    }
+
+    getValueFromVerbal(value) {
+        const callback = 
+            this.options.stepMeasure === 'day' ? this.calcDaysAmount.bind(this) :
+            this.options.stepMeasure === 'month' ? this.calcMonthsAmount.bind(this) :
+            this.options.stepMeasure === 'year' ? this.calcYearsAmount.bind(this) : null;
+
+        return callback(this.options.range[0], value);
     }
 
     formatDate(date) {
