@@ -5,35 +5,24 @@ class SliderController {
         this.init(options)
     }
 
-    isValidOptions(options) {return true}
-
     init(options) {
         const validator = new Validator(options);
-        validator.checkOptions();
-        
-        this.options = options;
-        this.view = new SliderView(options);
-        if(options.dataType === 'number') {
-            this.model = new SliderModel(options);
-        } else {
-            this.typeHandler = new TypeHandlerFactory().create(this.options);
-            this.model = new SliderModel(this.typeHandler.resolveOptionsForModel());
+        if(validator.isValidOptions) {
+            this.options = options;
+            this.view = new SliderView(options);
+            this.typeHandler = validator.typeHandler;
+            this.model = new SliderModel(this.typeHandler?.resolveOptionsForModel() || options);
+            this.setVerbalValue();
+            this.view.renderModel(this.model.cores);
+            this.watchEvents();
         }
-
-        this.setVerbalValue();
-        this.view.renderModel(this.model.cores);
-        this.watchEvents();
     }
 
     setVerbalValue() {
-        if(this.options.dataType === 'number') {
-            for(let id in this.model.cores) {
-                this.model.cores[id].verbalValue = this.model.cores[id].value;
-            }
-        } else {
-            for(let id in this.model.cores) {
-                this.model.cores[id].verbalValue = this.typeHandler.getVerbalValue(this.model.cores[id].value);
-            }
+        for(let id in this.model.cores) {
+            this.model.cores[id].verbalValue = 
+                this.typeHandler?.getVerbalValue(this.model.cores[id].value) ||
+                this.model.cores[id].value;
         }
     }
 
@@ -636,6 +625,9 @@ class Validator {
 
         this.errors = '';
         this.warnings = '';
+
+        this.isValidOptions = false;
+        this.checkOptions()
     }
 
     addError(message) {
@@ -687,13 +679,18 @@ class Validator {
         }
 
         runTests(this.generalTests);
+
+        if(this.options.dataType !== 'number') {
+            this.typeHandler = new TypeHandlerFactory().create(this.options);
+        }
+
         this.options.dataType === 'number' ? runTests(this.numTypeTests) :
         this.options.dataType === 'date' ? runTests(this.dateTypeTests) :
         null;
 
         if(this.warnings) console.warn(this.warnings);
         if(this.errors) throw new Error(this.errors);
-        return true;
+        this.isValidOptions =  true;
     }
 
     generalTests = {
@@ -856,16 +853,15 @@ class Validator {
         },
         stepMeasure: () => this.testInValid('stepMeasure', this.options.stepMeasure),
         checkStep: () => {
-            const typeHandler = new DateHandler(this.options); // TODO брать инстанс из controller
             const step = this.options.step;
             const min = 0;
             const max = 
                 this.options.stepMeasure === 'day' ?
-                    typeHandler.calcDaysAmount(...this.options.range) :
+                    this.typeHandler.calcDaysAmount(...this.options.range) :
                 this.options.stepMeasure === 'month' ? 
-                    typeHandler.calcMonthsAmount(...this.options.range) :
+                    this.typeHandler.calcMonthsAmount(...this.options.range) :
                 this.options.stepMeasure === 'year' ? 
-                    typeHandler.calcYearsAmount(...this.options.range) :
+                    this.typeHandler.calcYearsAmount(...this.options.range) :
                     null
 
             if(!(typeof step === 'number' && isFinite(step))) {

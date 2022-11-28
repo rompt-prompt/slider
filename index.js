@@ -54,17 +54,17 @@ const slider1 = new SliderController({
 
 // })
 
-// const slider3 = new SliderController({
-//     root: container3,
-//     mode: 'select',
-//     dataType: 'number',
-//     range: [0, 2.9],
-//     step: 1,
-//     handles: {
-//         '50': 1,
-//     },
-//     neighborHandles: 'jumpover',
-// })
+const slider3 = new SliderController({
+    root: container3,
+    mode: 'select',
+    dataType: 'number',
+    range: [0, 2.9],
+    step: 1,
+    handles: {
+        '50': 1,
+    },
+    neighborHandles: 'jumpover',
+})
 
 
 //test
