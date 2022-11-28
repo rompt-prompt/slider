@@ -21,7 +21,9 @@ const slider1 = new SliderController({
     tagsPositions: ['top', {second: 'bottom'}],
     handlesTextContent: {
         first: 'first', second: 'second'
-    }
+    },
+    tagsPrefix: '$',
+    tagsPostfix: 'P'
 })
 
 // const slider2 = new SliderController({
