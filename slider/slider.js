@@ -471,7 +471,9 @@ class Tag extends SliderElement {
         this.elem.querySelector('.js-tag-value').textContent = value;
     }
 }
+class ArrayHandler {
 
+}
 class DateHandler {
     constructor(options) {
         this.options = options;
@@ -690,14 +692,20 @@ class Validator {
         }
 
         runTests(this.generalTests);
-
         if(this.options.dataType !== 'number') {
-            this.typeHandler = new TypeHandlerFactory().create(this.options);
+            try {
+                this.typeHandler = new TypeHandlerFactory().create(this.options);
+            }
+            catch(err) {
+                this.addError(`Error while creating type handler`);
+                console.error(this.errors);
+                throw new Error(err.stack);
+            }
         }
 
         this.options.dataType === 'number' ? runTests(this.numTypeTests) :
         this.options.dataType === 'date' ? runTests(this.dateTypeTests) :
-        null;
+        this.addError(`No tests for ${this.options.dataType}`);
 
         if(this.warnings) console.warn(this.warnings);
         if(this.errors) throw new Error(this.errors);
