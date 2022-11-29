@@ -2,69 +2,56 @@ const container1 = document.querySelectorAll('.js-res')[0];
 const container2 = document.querySelectorAll('.js-res')[1];
 const container3 = document.querySelectorAll('.js-res')[2];
 
-const slider1 = new SliderController({
-    root: container1,
-    mode: 'select',
-    dataType: 'date',
-    range: [new Date('2021-01-01'), new Date('2021-12-31')],
-    step: 1,
-    stepMeasure: 'month', // 'day', 'month' or 'year'
-    handles: {
-        'first': new Date('2021-02-28'),
-        'second': new Date('2021-10-31')
-    },
-    neighborHandles: 'move',
-    isVertical: false,
-    progressBars: [
-        ['sliderstart', 'first'], ['sliderend', 'second']
-    ],
-    tagsPositions: ['top', {second: 'bottom'}],
-    handlesTextContent: {
-        first: 'first', second: 'second'
-    },
-    tagsPrefix: '$',
-    tagsPostfix: 'P'
-})
-
-// const slider2 = new SliderController({
-//     root: container2,
+// const slider1 = new SliderController({
+//     root: container1,
 //     mode: 'select',
-//     dataType: 'number',
-//     range: [0, 100],
+//     dataType: 'date',
+//     range: [new Date('2021-01-01'), new Date('2021-12-31')],
 //     step: 1,
+//     stepMeasure: 'month', // 'day', 'month' or 'year'
 //     handles: {
-//         'y1': 10,
-//         'y2': 20,
-//         'y3': 30,
-//         'y4': 40,
-//         'y5': 50,
-//         6: 60,
-//         7: 70,
-//         8: 80,
-//         9: 90,
-//         10: 100,
+//         'first': new Date('2021-02-28'),
+//         'second': new Date('2021-10-31')
 //     },
 //     neighborHandles: 'move',
-//     isVertical: 1,
+//     isVertical: false,
 //     progressBars: [
-//         ['sliderstart', 'y1'], ['sliderend', 'y3']
+//         ['sliderstart', 'first'], ['sliderend', 'second']
 //     ],
-//     tagsPositions: ['left', {'y2': 'right'}],
-//     tagsPrefix: '$ ',
-
+//     tagsPositions: ['top', {second: 'bottom'}],
+//     handlesTextContent: {
+//         first: 'first', second: 'second'
+//     },
+//     tagsPrefix: '$',
+//     tagsPostfix: 'P'
 // })
 
-const slider3 = new SliderController({
-    root: container3,
+const slider2 = new SliderController({
+    root: container2,
     mode: 'select',
-    dataType: 'number',
-    range: [0, 2.9],
+    dataType: 'array',
+    range: ['Австралия', 'Австрия', 'Азербайджан', 'Албания', 
+    'Алжир', 'Ангола', 'Андорра', 'Антигуа и Барбуда', 'Аргентина', 'Армения'],
     step: 1,
     handles: {
-        '50': 1,
+        '1': 3,
+        '2': 8
     },
-    neighborHandles: 'jumpover',
+    neighborHandles: 'move',
+    tagsPositions: 'top',
 })
+
+// const slider3 = new SliderController({
+//     root: container3,
+//     mode: 'select',
+//     dataType: 'number',
+//     range: [0, 2.9],
+//     step: 1,
+//     handles: {
+//         '50': 1,
+//     },
+//     neighborHandles: 'jumpover',
+// })
 
 
 //test

@@ -604,7 +604,8 @@ class DateHandler {
 
 class TypeHandlerFactory {
     static types = {
-        date: DateHandler
+        date: DateHandler,
+        array: ArrayHandler,
     }
 
     create(options) {
@@ -620,7 +621,7 @@ class Validator {
         this.requiredOptions = [
             {name: 'root', useInMode: 'all'},
             {name: 'mode', useInMode: 'all', valid: ['select']},
-            {name: 'dataType', useInMode: 'all', valid: ['number', 'date']},
+            {name: 'dataType', useInMode: 'all', valid: ['number', 'date', 'array']},
             {name: 'range', useInMode: 'all'},
             {name: 'step', useInMode: 'all'},
             {name: 'handles', useInMode: 'all'},
@@ -671,11 +672,11 @@ class Validator {
         switch(this.options.dataType) {
             case 'number':
                 !(typeof value === 'number' && isFinite(value)) ? 
-                    text = 'is not number' : null;
+                    text = 'is not a number' : null;
                 break;
             case 'date': 
                 !(value instanceof Date) ? 
-                    text = 'is not instance of Date' : null;
+                    text = 'is not an instance of Date' : null;
         }
         text ? this.addError(`${optionName}: <${value}> ${text}.`) : null
     }
@@ -705,6 +706,7 @@ class Validator {
 
         this.options.dataType === 'number' ? runTests(this.numTypeTests) :
         this.options.dataType === 'date' ? runTests(this.dateTypeTests) :
+        this.options.dataType === 'array' ? runTests(this.arrayTypeTests) :
         this.addError(`No tests for ${this.options.dataType}`);
 
         if(this.warnings) console.warn(this.warnings);
@@ -724,10 +726,23 @@ class Validator {
         checkMode: () => this.testInValid('mode', this.options.mode),
         checkDataType: () => this.testInValid('dataType', this.options.dataType),
         checkHandles: () => {
+            this.options.handles.constructor.name !== 'Object' ? this.addError('Handles must be object.') :
             this.ids.length < 1 ? this.addError('Empty handles.') : null;
         },
         checkRange: () => {
+            this.options.range.constructor.name !== 'Array' ? this.addError('Range must be array.') :
             this.options.range.length < 2 ? this.addError('Range length < 2') : null;
+        },
+        checkStep: () => {
+            const step = this.options.step;
+
+            if(!(typeof step === 'number' && isFinite(step))) {
+                this.addError(`Step: ${step} is not a number.`);
+            }
+            if(step <= 0) {
+                this.addError(`Step should be greater than 0.`);
+                return;
+            }
         },
         checkUnessentialOptions: () => {
             this.unessentialOptions.forEach(option => {
@@ -847,18 +862,14 @@ class Validator {
                 if(max < min) return;
                 if(value < min || max < value) {
                     this.addError(`Handle <${id}> value should be between <${min}> & <${max}>. Provided <${value}>.`)
-            }})
+                }
+            })
         },
         checkStep: () => {
             const step = this.options.step;
             const min = this.options.range[0];
             const max = this.options.range[1];
 
-            this.testType('step', step);
-            if(step <= 0) {
-                this.addError(`Step should be greater than 0.`);
-                return;
-            }
             if(max - min < step) {
                 this.addError(`Step should be less than ${max - min}.`);
             }  
@@ -883,13 +894,6 @@ class Validator {
                     this.typeHandler.calcYearsAmount(...this.options.range) :
                     null
 
-            if(!(typeof step === 'number' && isFinite(step))) {
-                this.addError(`Step: ${step} is not number.`);
-            }
-            if(step <= 0) {
-                this.addError(`Step should be greater than 0.`);
-                return;
-            }
             if(!Number.isInteger(step)) {
                 this.addError(`Step should be integer.`);
             }
@@ -899,6 +903,31 @@ class Validator {
                     delta === 1 ? this.options.stepMeasure :
                     this.options.stepMeasure + 's'
                 }.`);
+            }  
+        }
+    }
+
+    arrayTypeTests = {
+        checkRange: () => {},
+        checkHandles: () => {
+            Object.entries(this.options.handles).forEach(handle => {
+                const id = handle[0];
+                const value = handle[1];
+                const min = 0;
+                const max = this.options.range.length - 1;
+
+                if(!(typeof value === 'number' && isFinite(value))) {
+                    this.addError(`Handle ${id} value <${value}> is not a number. ` +
+                        `With dataType 'array' handle value is the index of the element in array.`
+                )}
+                if(value < min || max < value) {
+                    this.addError(`Handle <${id}> value should be between <${min}> & <${max}>. Provided <${value}>.`)
+                }
+            })
+        },
+        checkStep: () => {
+            if(this.options.range.length - 1 < this.options.step) {
+                this.addError(`Step should be less than ${this.options.range.length - 1}.`);
             }  
         }
     }
