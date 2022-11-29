@@ -2,32 +2,47 @@ const container1 = document.querySelectorAll('.js-res')[0];
 const container2 = document.querySelectorAll('.js-res')[1];
 const container3 = document.querySelectorAll('.js-res')[2];
 
-// const slider1 = new SliderController({
-//     root: container1,
-//     mode: 'select',
-//     dataType: 'date',
-//     range: [new Date('2021-01-01'), new Date('2021-12-31')],
-//     step: 1,
-//     stepMeasure: 'month', // 'day', 'month' or 'year'
-//     handles: {
-//         'first': new Date('2021-02-28'),
-//         'second': new Date('2021-10-31')
-//     },
-//     neighborHandles: 'move',
-//     isVertical: false,
-//     progressBars: [
-//         ['sliderstart', 'first'], ['sliderend', 'second']
-//     ],
-//     tagsPositions: ['top', {second: 'bottom'}],
-//     handlesTextContent: {
-//         first: 'first', second: 'second'
-//     },
-//     tagsPrefix: '$',
-//     tagsPostfix: 'P'
-// })
+
+const slider1 = new SliderController({
+    root: container1,
+    mode: 'select',
+    dataType: 'number',
+    range: [0, 20.9],
+    step: 1,
+    handles: {
+        '1': 1,
+        '2': 5,
+    },
+    neighborHandles: 'jumpover',
+    tagsPositions: 'top',
+})
 
 const slider2 = new SliderController({
     root: container2,
+    mode: 'select',
+    dataType: 'date',
+    range: [new Date('2021-01-01'), new Date('2021-12-31')],
+    step: 1,
+    stepMeasure: 'month', // 'day', 'month' or 'year'
+    handles: {
+        '1': new Date('2021-02-28'),
+        '2': new Date('2021-10-31')
+    },
+    neighborHandles: 'move',
+    isVertical: false,
+    progressBars: [
+        ['sliderstart', '1'], ['sliderend', '2']
+    ],
+    tagsPositions: ['top', {2: 'bottom'}],
+    handlesTextContent: {
+        1: 'first', 2: 'second'
+    },
+    tagsPrefix: '$',
+    tagsPostfix: 'P'
+})
+
+const slider3 = new SliderController({
+    root: container3,
     mode: 'select',
     dataType: 'array',
     range: ['Австралия', 'Австрия', 'Азербайджан', 'Албания', 
@@ -37,21 +52,11 @@ const slider2 = new SliderController({
         '1': 3,
         '2': 8
     },
-    neighborHandles: 'move',
+    neighborHandles: 'stop',
     tagsPositions: 'top',
 })
 
-// const slider3 = new SliderController({
-//     root: container3,
-//     mode: 'select',
-//     dataType: 'number',
-//     range: [0, 2.9],
-//     step: 1,
-//     handles: {
-//         '50': 1,
-//     },
-//     neighborHandles: 'jumpover',
-// })
+
 
 
 //test

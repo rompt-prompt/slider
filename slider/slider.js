@@ -84,19 +84,29 @@ class SliderController {
     }
 
     setValue(id, type, value) {
-        if(type !== 'value' && type !== 'pcnt') throw new Error(
-            `Type <${type}> is not valid. Choose 'value' or 'pcnt'`
-        );
-        if(!Object.keys(this.model.cores).includes(id)) throw new Error(
-            `Id <${id}> not found`
-        );
+        const types = ['value', 'pcnt', 'index'];
+        if(!types.includes(type)) {
+            throw new Error(`Type <${type}> is not valid. Choose one of ${types}.`);
+        }
+        if(this.options.dataType === 'array' && type === 'value') {
+            throw new Error(`Type <${type}> is not available with array, use index.`);
+        }
+        if(this.options.dataType !== 'array' && type === 'index') {
+            throw new Error(`Type <index> is available only with array, use <value>.`);
+        }
+        if(!Object.keys(this.model.cores).includes(id)) {
+            throw new Error(`Id <${id}> not found.`);
+        }
 
-        value = this.typeHandler?.getValueFromVerbal(value) || value;
+        if(type === 'value' && this.typeHandler?.getValueFromVerbal) {
+            value = this.typeHandler.getValueFromVerbal(value);
+        }
+        if(type === 'index') type = 'value';
         this.requestModelChange(id, type, value)
     }
 
     getValues(id) {
-        const output = {}
+        let output = {}
         if(!id) Object.entries(this.model.cores).forEach(entry =>
             output[entry[0]] = entry[1].verbalValue);
         else if(id.constructor.name ===  'Array') id.forEach(id => 
@@ -472,7 +482,21 @@ class Tag extends SliderElement {
     }
 }
 class ArrayHandler {
-
+    constructor(options) {
+        this.options = options;
+    }
+    resolveOptionsForModel() {
+        return {
+            mode: this.options.mode,
+            step: this.options.step,
+            neighborHandles: this.options.neighborHandles,
+            handles: this.options.handles,
+            range: [0, this.options.range.length - 1]
+        };
+    }
+    getVerbalValue(value) {
+        return this.options.range[value]
+    }
 }
 class DateHandler {
     constructor(options) {
@@ -514,6 +538,7 @@ class DateHandler {
     }
 
     getValueFromVerbal(value) {
+        if(!(value instanceof Date)) throw new Error(`Value <${value}> is not a date`)
         const callback = 
             this.options.stepMeasure === 'day' ? this.calcDaysAmount.bind(this) :
             this.options.stepMeasure === 'month' ? this.calcMonthsAmount.bind(this) :
