@@ -1,7 +1,8 @@
 'use strict'
 
 class SliderController {
-    constructor(options) {
+    constructor(options, outputHandler) {
+        this.outputHandler = outputHandler;
         this.init(options)
     }
 
@@ -81,6 +82,7 @@ class SliderController {
         this.model.setValue(id, type, value)
             .then(this.setVerbalValue())
             .then(cores => this.view.renderModel(cores))
+            .then(this.outputHandler ? this.outputHandler(this.getValues()) : null)
     }
 
     setValue(id, type, value) {
