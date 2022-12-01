@@ -86,33 +86,50 @@ class Demo {
     constructor(page, options) {
         this.page = page;
         this.options = options;
-        this.createDemo();
+        this.init();
     }
-    createDemo() {
-        const demoElems = this.createTemplate();
-    
-        this.options.root = demoElems.root;
+    init() {
+        this.createTemplate();
+        this.options.root = this.sliderRoot;
+        
         this.page.style.display = 'flex';
-        this.slider = new SliderController(this.options);
+        this.slider = new SliderController(this.options, this.outputHandler.bind(this));
         this.page.style.display = '';
     }
     createTemplate() {
-        const container = this.createElem('div', ['demo-container', 'card']);
-        const sliderRoot = this.createElem('div', ['slider']);
-        const output = this.createElem('div', ['output']);
-        const config = this.createElem('div', ['config']);
-    
-        container.append(sliderRoot, output, config);
-        this.page.append(container);
-        this.output = output
-        return {root: sliderRoot, output, config};
+        this.container = this.createElem(this.page, 'div', ['demo-container', 'card']);
+        this.sliderRoot = this.createElem(this.container, 'div', ['slider']);
+        
+        this.createOutput();
+        this.configContainer = this.createElem(this.container, 'div', ['config']);
+
     }
 
-    createElem(tag, cls) {
+    createOutput() {
+        this.outputs = {};
+        this.outputContainer = this.createElem(this.container, 'div', ['output']);
+        
+        for(let id in this.options.handles) {
+            const handleElem = this.createElem(this.outputContainer, 'div', ['output__handle']);
+            const handleNameElem = this.createElem(handleElem, 'div', ['handle__name']);
+            handleNameElem.textContent = id;
+            this.outputs[id] = this.createElem(handleElem, 'div', ['handle__value']);
+        }
+    }
+
+    createElem(parent, tag, cls, dataset) {
         const elem = document.createElement(tag);
-        elem.classList.add(...cls);
+        if(cls) elem.classList.add(...cls);
+        if(dataset) elem.dataset = dataset;
+        parent.append(elem);
 
         return elem;
+    }
+
+    outputHandler(obj) {
+        for(let id in obj) {
+            this.outputs[id].textContent = obj[id];
+        }
     }
 }
 

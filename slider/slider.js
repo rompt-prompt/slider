@@ -15,6 +15,7 @@ class SliderController {
             this.model = new SliderModel(this.typeHandler?.resolveOptionsForModel() || options);
             this.setVerbalValue();
             this.view.renderModel(this.model.cores);
+            this.outputHandler ? this.outputHandler(this.getValues()) : null;
             this.watchEvents();
         }
     }
@@ -82,7 +83,7 @@ class SliderController {
         this.model.setValue(id, type, value)
             .then(this.setVerbalValue())
             .then(cores => this.view.renderModel(cores))
-            .then(this.outputHandler ? this.outputHandler(this.getValues()) : null)
+            .then(this.outputHandler ? this.outputHandler(this.getValues()) : null);
     }
 
     setValue(id, type, value) {
