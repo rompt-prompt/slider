@@ -1,9 +1,68 @@
-const navNumBtn = document.querySelector('js-nav-btn-num');
-const navDateBtn = document.querySelector('js-nav-btn-date');
-const navArrayBtn = document.querySelector('js-nav-btn-array');
+'use strict'
 
-const nav = document.querySelector('.nav')
-const pages = document.querySelectorAll('.page')
+const nav = document.querySelector('.nav');
+const pages = document.querySelectorAll('.page');
+const startPage = document.querySelector('.page_active')
+const demoSliders = [
+    {
+        mode: 'select',
+        dataType: 'number',
+        range: [0, 100],
+        step: 1,
+        handles: {
+            '1': 1,
+            '2': 5,
+        },
+        neighborHandles: 'jumpover',
+        tagsPositions: 'top',
+    },
+    {
+        mode: 'select',
+        dataType: 'date',
+        range: [new Date('2021-01-01'), new Date('2021-12-31')],
+        step: 1,
+        stepMeasure: 'month',
+        handles: {
+            '1': new Date('2021-02-28'),
+            '2': new Date('2021-10-31')
+        },
+        neighborHandles: 'move',
+        isVertical: false,
+        progressBars: [
+            ['sliderstart', '1'], ['sliderend', '2']
+        ],
+        tagsPositions: ['top', {2: 'bottom'}],
+        handlesTextContent: {
+            1: 'first', 2: 'second'
+        },
+        tagsPrefix: '$',
+        tagsPostfix: 'P'
+    },
+    {
+        mode: 'select',
+        dataType: 'array',
+        range: ['Австралия', 'Австрия', 'Азербайджан', 'Албания', 
+        'Алжир', 'Ангола', 'Андорра', 'Антигуа и Барбуда', 'Аргентина', 'Армения'],
+        step: 1,
+        handles: {
+            '1': 3,
+            '2': 8
+        },
+        neighborHandles: 'stop',
+        tagsPositions: 'top',
+    },
+    {
+        mode: 'select',
+        dataType: 'array',
+        range: ['Австралия', 'Австрия'],
+        step: 1,
+        handles: {
+            '1': 0
+        },
+        tagsPositions: 'top',
+        isVertical: true,
+    }
+]
 
 nav.onclick = event => {
     const link = event.target.dataset.link || event.target.parentElement.dataset.link;
@@ -15,64 +74,38 @@ nav.onclick = event => {
     })
 }
 
+function getPage (dataType) {
+    return Array.from(pages).find(page => 
+        page.dataset.link === dataType);
+}
 
+function createDemoTemplate (page) {
+    const createElem = (tag, cls) => {
+        const elem = document.createElement(tag);
+        elem.classList.add(...cls);
 
-const container1 = document.querySelectorAll('.js-res')[0];
-const container2 = document.querySelectorAll('.js-res')[1];
-const container3 = document.querySelectorAll('.js-res')[2];
+        return elem;
+    }
 
+    const container = createElem('div', ['slider-container', 'card']);
+    const sliderRoot = createElem('div', ['slider']);
+    const output = createElem('div', ['output']);
+    const config = createElem('div', ['config']);
 
-// const slider1 = new SliderController({
-//     root: container1,
-//     mode: 'select',
-//     dataType: 'number',
-//     range: [0, 20.9],
-//     step: 1,
-//     handles: {
-//         '1': 1,
-//         '2': 5,
-//     },
-//     neighborHandles: 'jumpover',
-//     tagsPositions: 'top',
-// })
+    container.append(sliderRoot, output, config);
+    page.append(container);
+    
+    return {root: sliderRoot, output, config};
+}
 
-// const slider2 = new SliderController({
-//     root: container2,
-//     mode: 'select',
-//     dataType: 'date',
-//     range: [new Date('2021-01-01'), new Date('2021-12-31')],
-//     step: 1,
-//     stepMeasure: 'month', // 'day', 'month' or 'year'
-//     handles: {
-//         '1': new Date('2021-02-28'),
-//         '2': new Date('2021-10-31')
-//     },
-//     neighborHandles: 'move',
-//     isVertical: false,
-//     progressBars: [
-//         ['sliderstart', '1'], ['sliderend', '2']
-//     ],
-//     tagsPositions: ['top', {2: 'bottom'}],
-//     handlesTextContent: {
-//         1: 'first', 2: 'second'
-//     },
-//     tagsPrefix: '$',
-//     tagsPostfix: 'P'
-// })
+function createSliderDemo (options) {
+    const page = getPage(options.dataType);
+    const demoContainers = createDemoTemplate(page);
+console.log(demoContainers)
+    options.root = demoContainers.root;
+    page.style.display = 'flex';
+    new SliderController(options);
+    page.style.display = '';
+}
 
-// const slider3 = new SliderController({
-//     root: container3,
-//     mode: 'select',
-//     dataType: 'array',
-//     range: ['Австралия', 'Австрия', 'Азербайджан', 'Албания', 
-//     'Алжир', 'Ангола', 'Андорра', 'Антигуа и Барбуда', 'Аргентина', 'Армения'],
-//     step: 1,
-//     handles: {
-//         '1': 3,
-//         '2': 8
-//     },
-//     neighborHandles: 'stop',
-//     tagsPositions: 'top',
-// })
-
-
+demoSliders.forEach(demo => createSliderDemo(demo))
