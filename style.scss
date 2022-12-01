@@ -47,10 +47,26 @@ body {
         display: none;
         height: 100vh;
         padding: 15px;
-        background-color: #f3f3f7;
+        background-color: $bg;
 
         &_active {
-            display: block;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .slider-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .card {
+            width: 100%;
+            height: 300px;
+            background-color: #fff;
+            border-radius: 8px;
+            border: 1px solid rgba(19, 44, 72, 0.1);
         }
     }
 }
