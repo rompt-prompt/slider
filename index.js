@@ -2,9 +2,9 @@
 
 const nav = document.querySelector('.nav');
 const pages = document.querySelectorAll('.page');
-const startPage = document.querySelector('.page_active')
 const demoSliders = [
     {
+        name: 'slider1',
         mode: 'select',
         dataType: 'number',
         range: [0, 100],
@@ -17,6 +17,7 @@ const demoSliders = [
         tagsPositions: 'top',
     },
     {
+        name: 'slider2',
         mode: 'select',
         dataType: 'date',
         range: [new Date('2021-01-01'), new Date('2021-12-31')],
@@ -39,6 +40,7 @@ const demoSliders = [
         tagsPostfix: 'P'
     },
     {
+        name: 'slider3',
         mode: 'select',
         dataType: 'array',
         range: ['Австралия', 'Австрия', 'Азербайджан', 'Албания', 
@@ -52,6 +54,7 @@ const demoSliders = [
         tagsPositions: 'top',
     },
     {
+        name: 'slider4',
         mode: 'select',
         dataType: 'array',
         range: ['Австралия', 'Австрия'],
@@ -79,33 +82,41 @@ function getPage (dataType) {
         page.dataset.link === dataType);
 }
 
-function createDemoTemplate (page) {
-    const createElem = (tag, cls) => {
+class Demo {
+    constructor(page, options) {
+        this.page = page;
+        this.options = options;
+        this.createDemo();
+    }
+    createDemo() {
+        const demoElems = this.createTemplate();
+    
+        this.options.root = demoElems.root;
+        this.page.style.display = 'flex';
+        this.slider = new SliderController(this.options);
+        this.page.style.display = '';
+    }
+    createTemplate() {
+        const container = this.createElem('div', ['demo-container', 'card']);
+        const sliderRoot = this.createElem('div', ['slider']);
+        const output = this.createElem('div', ['output']);
+        const config = this.createElem('div', ['config']);
+    
+        container.append(sliderRoot, output, config);
+        this.page.append(container);
+        this.output = output
+        return {root: sliderRoot, output, config};
+    }
+
+    createElem(tag, cls) {
         const elem = document.createElement(tag);
         elem.classList.add(...cls);
 
         return elem;
     }
-
-    const container = createElem('div', ['slider-container', 'card']);
-    const sliderRoot = createElem('div', ['slider']);
-    const output = createElem('div', ['output']);
-    const config = createElem('div', ['config']);
-
-    container.append(sliderRoot, output, config);
-    page.append(container);
-    
-    return {root: sliderRoot, output, config};
 }
 
-function createSliderDemo (options) {
-    const page = getPage(options.dataType);
-    const demoContainers = createDemoTemplate(page);
-console.log(demoContainers)
-    options.root = demoContainers.root;
-    page.style.display = 'flex';
-    new SliderController(options);
-    page.style.display = '';
-}
-
-demoSliders.forEach(demo => createSliderDemo(demo))
+demoSliders.forEach(demo => {
+    const page = getPage(demo.dataType);
+    window[demo.name] = new Demo(page, demo)
+})
