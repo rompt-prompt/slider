@@ -7,14 +7,16 @@ const demoSliders = [
         name: 'slider1',
         mode: 'select',
         dataType: 'number',
-        range: [0, 100],
+        range: [0, 17000],
         step: 1,
         handles: {
-            '1': 1,
-            '2': 5,
+            'min': 5000,
+            'max': 10000,
         },
+        progressBars: [['min', 'max']],
         neighborHandles: 'jumpover',
         tagsPositions: 'top',
+        tagsPostfix: ' ₽'
     },
     {
         name: 'slider2',
@@ -34,10 +36,8 @@ const demoSliders = [
         ],
         tagsPositions: ['top', {2: 'bottom'}],
         handlesTextContent: {
-            1: 'first', 2: 'second'
+            1: '1', 2: '2'
         },
-        tagsPrefix: '$',
-        tagsPostfix: 'P'
     },
     {
         name: 'slider3',
@@ -98,7 +98,7 @@ class Demo {
     }
     createTemplate() {
         this.container = this.createElem(this.page, 'div', ['demo-container', 'card']);
-        this.sliderRoot = this.createElem(this.container, 'div', ['slider']);
+        this.sliderRoot = this.createElem(this.container, 'div', ['slider-container']);
         
         this.createOutput();
         this.configContainer = this.createElem(this.container, 'div', ['config']);

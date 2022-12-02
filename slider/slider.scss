@@ -1,72 +1,22 @@
-$slider-main-axis: 500px;
-$slider-second-axis: 250px;
+$slider-main-axis: 268px;
+$slider-second-axis: 8px;
 
-$bar-color : #fff;
-$bar-border-radius: 20px;
-$bar-border-color: blue;
-$bar-border-width: 70px;
+$bar-color : rgba(255, 255, 255, 1);
+$bar-border-radius: 3px;
+$bar-border-color: rgba(31, 32, 65, 0.25);
+$bar-border-width: 1px;
 
-$progressBar-bg: yellow;
+$progressBar-bg: linear-gradient(180deg, #6FCF97 0%, #66D2EA 100%);;
 
-$handle-width: 100px;
-$handle-height: 100px; 
+$handle-width: 16px;
+$handle-height: 16px; 
 $handle-border-radius: 50%;
-$handle-border-color: black;
-$handle-border-width: 10px;
-$handle1-bg: rgba(1, 1, 1, 0.5);
+$handle-border-color: #fff;
+$handle-border-width: 2px;
+$handle-bg: linear-gradient(180deg, #6FCF97 0%, #66D2EA 100%);;
 
-$tag-bg-color: rgb(0, 255, 0);
-$tag-color: rgb(0, 0, 0);
-
-// helper Start
-// .slider::before, .slider::after {
-//     content: "";
-//     background-color: black;
-//     display: block;
-//     position: relative;
-// }
-
-// .slider::after {
-//     width: 1px;
-//     height: 100%;
-//     left: 50%;
-//     top: -100%;
-// }
-
-// .slider::before {
-//     width: 100%;
-//     height: 1px;
-//     left: 0;
-//     top: 50%;
-//     z-index: 10000;
-// }
-// .slider .slider__handle:nth-child(1) {
-//     background-color: green !important;
-//     border-color: yellow;
-// }
-
-// .slider .slider__handle:nth-child(2) {
-//     background-color: blue !important;
-//     border-color: red;
-// }
-
-
-// .slider .slider__progressBar:nth-child(1) {
-//     background: rgba(255, 0, 0, 0.7)
-// }
-
-// .slider .slider__progressBar:nth-child(2) {
-//     background: rgba(9, 255, 0, 0.7)
-// }
-
-// .slider .slider__progressBar:nth-child(3) {
-//     background: rgba(238, 255, 0, 0.7)
-// }
-// .slider__handle {
-//     color:rgb(195, 212, 195);
-//     font-size: 2rem;
-// }
-//helper END
+$tag-bg-color: rgb(56, 60, 68);
+$tag-color: #fff;
 
 .slider {
 
@@ -90,7 +40,7 @@ $tag-color: rgb(0, 0, 0);
         border: $handle-border-width solid $handle-border-color;
         border-radius: $handle-border-radius;
         position: absolute;
-        background-color: $handle1-bg;
+        background: $handle-bg;
 
         display: flex;
         justify-content: center;
@@ -103,7 +53,7 @@ $tag-color: rgb(0, 0, 0);
         z-index: 10000;
 
         &.slider__tag-container_top {
-            bottom: calc(100% + 20px);
+            bottom: calc(100% + 12px);
             left: 50%;
             transform: translate(-50%, 0);
     
@@ -117,7 +67,7 @@ $tag-color: rgb(0, 0, 0);
             }
         }
         &.slider__tag-container_bottom {
-            top: calc(100% + 20px);
+            top: calc(100% + 12px);
             left: 50%;
             transform: translate(-50%, 0);
     
@@ -131,7 +81,7 @@ $tag-color: rgb(0, 0, 0);
             }
         }
         &.slider__tag-container_right {
-            left: calc(100% + 20px);
+            left: calc(100% + 12px);
             top: 50%;
             transform: translate(0, -50%);
     
@@ -146,7 +96,7 @@ $tag-color: rgb(0, 0, 0);
         }
 
         &.slider__tag-container_left {
-            right: calc(100% + 20px);
+            right: calc(100% + 12px);
             top: 50%;
             transform: translate(0, -50%);
     
@@ -192,10 +142,6 @@ $tag-color: rgb(0, 0, 0);
             height: $slider-second-axis;
             top: 50%;
             transform: translateY(-50%);
-            
-            //JS
-            left: 0%;
-            width: 60%;
         }
     
         .slider__handle {
@@ -203,9 +149,7 @@ $tag-color: rgb(0, 0, 0);
             height: $handle-height;
             top: 50%;
             transform: translateY(-50%);
-
-            //JS
-            // left: 37.5%;
+            font-size: 8px;
         }
     }
     &.slider_v {
@@ -216,10 +160,6 @@ $tag-color: rgb(0, 0, 0);
             width: $slider-second-axis;
             left: 50%;
             transform: translateX(-50%);
-            
-            //JS
-            top: 20%;
-            height: 60%;
         }
     
         .slider__handle {
@@ -227,9 +167,6 @@ $tag-color: rgb(0, 0, 0);
             height: $handle-height;
             left: 50%;
             transform: translateX(-50%);
-
-            //JS
-            top: 37.5%;
         }
     }
 }
