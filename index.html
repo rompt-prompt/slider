@@ -25,7 +25,174 @@
         </ul>
     </nav>
     <main class="content">
-        <div class="page page_active" data-link="number">Number</div>
+        <div class="page page_active" data-link="number">Number
+            <div class="config">
+                <form>
+
+                    <div class="config__group group">
+                        <h3 class="group__name">Диапазон</h3>
+                        <label class="option">
+                            <span class="option__name">Минимум</span>
+                            <input class="option__value" type="number">
+                        </label>
+                        <label class="option">
+                            <span class="option__name">Максимум</span>
+                            <input class="option__value" type="number">
+                        </label>
+                    </div>
+
+                    <div class="config__group group">
+                        <h3 class="group__name">Диапазон</h3>
+                        <label class="option">
+                            <span class="option__name">Массив (разделитель "|")</span>
+                            <input class="option__value" type="text">
+                        </label>
+                    </div>
+
+                    <div class="config__group group">
+                        <label class="option">
+                            <span class="option__name">Шаг</span>
+                            <input class="option__value" type="number">
+                        </label>
+                    </div>
+
+                    <div class="config__group group">
+                        <h3 class="group__name">Размерность шага</h3>
+                        <label class="option">
+                            <span class="option__name">День</span>
+                            <input type="radio" name="stepMeasure" value="day">
+                        </label>
+                        <label class="option">
+                            <span class="option__name">Месяц</span>
+                            <input type="radio" name="stepMeasure" value="month">
+                        </label>
+                        <label class="option">
+                            <span class="option__name">Год</span>
+                            <input type="radio" name="stepMeasure" value="year">
+                        </label>
+                    </div>
+
+                    <div class="config__group group">
+                        <h3 class="group__name">Ориентация</h3>
+                        <label class="option">
+                            <span class="option__name">Вертикальная</span>
+                            <input type="radio" name="isVertical" value="true">
+                        </label>
+                        <label class="option">
+                            <span class="option__name">Горизонтальная</span>
+                            <input type="radio" name="isVertical" value="false">
+                        </label>
+                    </div>
+
+                    <div class="config__group group">
+                        <h3 class="group__name">Поведение соседних бегунков при одинаковых значениях</h3>
+                        <label class="option">
+                            <span class="option__name">Не мешать</span>
+                            <input type="radio" name="neighborHandles" value="jumpover">
+                        </label>
+                        <label class="option">
+                            <span class="option__name">Двигаться</span>
+                            <input type="radio" name="neighborHandles" value="move">
+                        </label>
+                        <label class="option">
+                            <span class="option__name">Останавливать</span>
+                            <input type="radio" name="neighborHandles" value="stop">
+                        </label>
+                    </div>
+
+                    <div class="config__group group">
+                        <h3 class="group__name">Префикс и постфикс</h3>
+                        <label class="option">
+                            <span class="option__name">Префикс</span>
+                            <input type="text">
+                        </label>
+                        <label class="option">
+                            <span class="option__name">Постфикс</span>
+                            <input type="text">
+                        </label>
+                    </div>
+
+                    <div class="config__group group">
+                        <h3 class="group__name">Ярлыки</h3>
+                        <label class="option">
+                            <span class="option__name">Не показывать</span>
+                            <input type="radio" name="tagsPositions" value="none">
+                        </label>
+                        <label class="option">
+                            <span class="option__name">Сверху</span>
+                            <input type="radio" name="tagsPositions" value="top">
+                        </label>
+                        <label class="option">
+                            <span class="option__name">Снизу</span>
+                            <input type="radio" name="tagsPositions" value="bottom">
+                        </label>
+                        <label class="option">
+                            <span class="option__name">Справа</span>
+                            <input type="radio" name="tagsPositions" value="right">
+                        </label>
+                        <label class="option">
+                            <span class="option__name">Слева</span>
+                            <input type="radio" name="tagsPositions" value="left">
+                        </label>
+                    </div>
+
+                    <div class="config__group group">
+                        <h3 class="group__name">Бегунки</h3>
+                        <div class="subgroup">
+                            <h4 class="subgroup__name">ID</h4>
+                            <label class="option">
+                                <span class="option__name">Начальное значение</span>
+                                <input type="number">
+                            </label>
+                            <label class="option">
+                                <span class="option__name">Текущее значение</span>
+                                <input type="number">
+                            </label>
+                            <i class="bi bi-trash"></i>
+                        </div>
+                        <div class="subgroup"></div>
+                            <h4 class="subgroup__name">Добавить бегунок</h4>
+                            <label class="option">
+                                <span class="option__name">ID</span>
+                                <input type="text">
+                            </label>
+                            <label class="option">
+                                <span class="option__name">Начальное значение</span>
+                                <input type="number">
+                            </label>
+                            <i class="bi bi-plus-square"></i>
+                    </div>
+
+                    <div class="config__group group">
+                        <h3 class="group__name">Progress bars</h3>
+                        <div class="option">
+                            <h4 class="option__name">ID</h4>
+                            <i class="bi bi-trash"></i>
+                        </div>
+                        <div class="subgroup"></div>
+                            <h4 class="subgroup__name">Добавить progress bar</h4>
+                            <label class="option">
+                                <span class="option__name">Начало</span>
+                                <select name="" id="">
+                                    <option value="ID">ID</option>
+                                    <option value="sliderstart">sliderstart</option>
+                                    <option value="sliderend">sliderend</option>
+                                </select>
+                            </label>
+                            <label class="option">
+                                <span class="option__name">Конец</span>
+                                <select name="" id="">
+                                    <option value="ID">ID</option>
+                                    <option value="sliderstart">sliderstart</option>
+                                    <option value="sliderend">sliderend</option>
+                                </select>
+                            </label>
+                            <i class="bi bi-plus-square"></i>
+                    </div>
+                    
+                </form>
+            </div>
+        </div>
         <div class="page" data-link="date">Date</div>
         <div class="page" data-link="array">Array</div>
     </main>

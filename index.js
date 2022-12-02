@@ -91,9 +91,9 @@ class Demo {
     init() {
         this.createTemplate();
         this.options.root = this.sliderRoot;
-        
+
         this.page.style.display = 'flex';
-        this.slider = new SliderController(this.options, this.outputHandler.bind(this));
+        this.slider = new SliderController(this.options, this.renderOutput.bind(this));
         this.page.style.display = '';
     }
     createTemplate() {
@@ -102,7 +102,6 @@ class Demo {
         
         this.createOutput();
         this.configContainer = this.createElem(this.container, 'div', ['config']);
-
     }
 
     createOutput() {
@@ -126,10 +125,20 @@ class Demo {
         return elem;
     }
 
-    outputHandler(obj) {
+    renderOutput(obj) {
         for(let id in obj) {
             this.outputs[id].textContent = obj[id];
         }
+    }
+}
+
+class Configurator {
+    constructor(slider, container) {
+
+    }
+
+    init() {
+
     }
 }
 
