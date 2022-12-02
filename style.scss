@@ -52,7 +52,6 @@ body {
         &_active {
             display: flex;
             flex-direction: column;
-            justify-content: center;
             gap: 15px;
         }
 
@@ -60,13 +59,52 @@ body {
             display: flex;
             flex-wrap: wrap;
             gap: 15px;
+
+            .slider-container {
+                width: 320px;
+                height: 320px;
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .output {
+                flex: 0 1 150px;
+                font-size: 1em;
+                
+                &__handle {
+                    &:not(:first-child) {
+                        margin: 10px 0;
+                    }
+
+                    &.handle {
+                        border: 1px dashed $lite;
+                        border-radius: 4px;
+                        padding: 7px;
+                        display: flex;
+                        
+                        .handle__name {
+                            font-weight: 700;
+                            margin-right: 5px;
+                        }
+                    }
+                }
+            }
+
+            .config {
+                outline: 1px dotted red;
+
+                flex: 1 0 auto;
+            }
         }
         .card {
             width: 100%;
-            height: 300px;
+            min-height: 320px;
             background-color: #fff;
             border-radius: 8px;
             border: 1px solid rgba(19, 44, 72, 0.1);
+            padding: 7px;
         }
     }
 }

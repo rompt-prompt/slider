@@ -7,16 +7,17 @@ const demoSliders = [
         name: 'slider1',
         mode: 'select',
         dataType: 'number',
-        range: [0, 17000],
-        step: 1,
+        range: [0, 17000000000000000],
+        step: 1000000,
         handles: {
             'min': 5000,
-            'max': 10000,
+            'max': 170000000000000,
         },
         progressBars: [['min', 'max']],
         neighborHandles: 'jumpover',
-        tagsPositions: 'top',
-        tagsPostfix: ' ₽'
+        tagsPositions: 'right',
+        tagsPostfix: ' ₽',
+        isVertical: true
     },
     {
         name: 'slider2',
@@ -47,24 +48,30 @@ const demoSliders = [
         'Алжир', 'Ангола', 'Андорра', 'Антигуа и Барбуда', 'Аргентина', 'Армения'],
         step: 1,
         handles: {
-            '1': 3,
-            '2': 8
+            '1': 1,
+            '2': 2,
+            '3': 3,
+            '4': 4,
+            '5': 5,
+            '6': 6,
+            // '7': 7,
+            '8': 8,
         },
-        neighborHandles: 'stop',
+        neighborHandles: 'jumpover',
         tagsPositions: 'top',
     },
-    {
-        name: 'slider4',
-        mode: 'select',
-        dataType: 'array',
-        range: ['Австралия', 'Австрия'],
-        step: 1,
-        handles: {
-            '1': 0
-        },
-        tagsPositions: 'top',
-        isVertical: true,
-    }
+    // {
+    //     name: 'slider4',
+    //     mode: 'select',
+    //     dataType: 'array',
+    //     range: ['Австралия', 'Австрия'],
+    //     step: 1,
+    //     handles: {
+    //         '1': 0
+    //     },
+    //     tagsPositions: 'top',
+    //     isVertical: true,
+    // }
 ]
 
 nav.onclick = event => {
@@ -102,6 +109,7 @@ class Demo {
         
         this.createOutput();
         this.configContainer = this.createElem(this.container, 'div', ['config']);
+        this.configContainer.textContent = 'ZZZZZZZZZ'
     }
 
     createOutput() {
@@ -109,10 +117,10 @@ class Demo {
         this.outputContainer = this.createElem(this.container, 'div', ['output']);
         
         for(let id in this.options.handles) {
-            const handleElem = this.createElem(this.outputContainer, 'div', ['output__handle']);
-            const handleNameElem = this.createElem(handleElem, 'div', ['handle__name']);
+            const handleElem = this.createElem(this.outputContainer, 'div', ['output__handle', 'handle']);
+            const handleNameElem = this.createElem(handleElem, 'span', ['handle__name']);
             handleNameElem.textContent = id;
-            this.outputs[id] = this.createElem(handleElem, 'div', ['handle__value']);
+            this.outputs[id] = this.createElem(handleElem, 'span', ['handle__value']);
         }
     }
 
