@@ -7,11 +7,11 @@ class SliderController {
     }
 
     init(options) {
-        const validator = new Validator(options);
-        if(validator.isValidOptions) {
+        this.validator = new Validator(options);
+        if(this.validator.isValidOptions) {
             this.options = options;
             this.view = new SliderView(options);
-            this.typeHandler = validator.typeHandler;
+            this.typeHandler = this.validator.typeHandler;
             this.model = new SliderModel(this.typeHandler?.resolveOptionsForModel() || options);
             this.setVerbalValue();
             this.view.renderModel(this.model.cores);

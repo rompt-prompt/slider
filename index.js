@@ -7,11 +7,11 @@ const demoSliders = [
         name: 'slider1',
         mode: 'select',
         dataType: 'number',
-        range: [0, 17000000000000000],
-        step: 1000000,
+        range: [0, 170],
+        step: 10,
         handles: {
-            'min': 5000,
-            'max': 170000000000000,
+            'min': 5,
+            'max': 100,
         },
         progressBars: [['min', 'max']],
         neighborHandles: 'jumpover',
@@ -19,47 +19,47 @@ const demoSliders = [
         tagsPostfix: ' ₽',
         isVertical: true
     },
-    {
-        name: 'slider2',
-        mode: 'select',
-        dataType: 'date',
-        range: [new Date('2021-01-01'), new Date('2021-12-31')],
-        step: 1,
-        stepMeasure: 'month',
-        handles: {
-            '1': new Date('2021-02-28'),
-            '2': new Date('2021-10-31')
-        },
-        neighborHandles: 'move',
-        isVertical: false,
-        progressBars: [
-            ['sliderstart', '1'], ['sliderend', '2']
-        ],
-        tagsPositions: ['top', {2: 'bottom'}],
-        handlesTextContent: {
-            1: '1', 2: '2'
-        },
-    },
-    {
-        name: 'slider3',
-        mode: 'select',
-        dataType: 'array',
-        range: ['Австралия', 'Австрия', 'Азербайджан', 'Албания', 
-        'Алжир', 'Ангола', 'Андорра', 'Антигуа и Барбуда', 'Аргентина', 'Армения'],
-        step: 1,
-        handles: {
-            '1': 1,
-            '2': 2,
-            '3': 3,
-            '4': 4,
-            '5': 5,
-            '6': 6,
-            // '7': 7,
-            '8': 8,
-        },
-        neighborHandles: 'jumpover',
-        tagsPositions: 'top',
-    },
+    // {
+    //     name: 'slider2',
+    //     mode: 'select',
+    //     dataType: 'date',
+    //     range: [new Date('2021-01-01'), new Date('2021-12-31')],
+    //     step: 1,
+    //     stepMeasure: 'month',
+    //     handles: {
+    //         '1': new Date('2021-02-28'),
+    //         '2': new Date('2021-10-31')
+    //     },
+    //     neighborHandles: 'move',
+    //     isVertical: false,
+    //     progressBars: [
+    //         ['sliderstart', '1'], ['sliderend', '2']
+    //     ],
+    //     tagsPositions: ['top', {2: 'bottom'}],
+    //     handlesTextContent: {
+    //         1: '1', 2: '2'
+    //     },
+    // },
+    // {
+    //     name: 'slider3',
+    //     mode: 'select',
+    //     dataType: 'array',
+    //     range: ['Австралия', 'Австрия', 'Азербайджан', 'Албания', 
+    //     'Алжир', 'Ангола', 'Андорра', 'Антигуа и Барбуда', 'Аргентина', 'Армения'],
+    //     step: 1,
+    //     handles: {
+    //         '1': 1,
+    //         '2': 2,
+    //         '3': 3,
+    //         '4': 4,
+    //         '5': 5,
+    //         '6': 6,
+    //         // '7': 7,
+    //         '8': 8,
+    //     },
+    //     neighborHandles: 'jumpover',
+    //     tagsPositions: 'top',
+    // },
     // {
     //     name: 'slider4',
     //     mode: 'select',
@@ -102,6 +102,7 @@ class Demo {
         this.page.style.display = 'flex';
         this.slider = new SliderController(this.options, this.renderOutput.bind(this));
         this.page.style.display = '';
+        this.configurator = new Configurator(this.slider, this.configContainer)
     }
     createTemplate() {
         this.container = this.createElem(this.page, 'div', ['demo-container', 'card']);
@@ -109,7 +110,6 @@ class Demo {
         
         this.createOutput();
         this.configContainer = this.createElem(this.container, 'div', ['config']);
-        this.configContainer.textContent = 'ZZZZZZZZZ'
     }
 
     createOutput() {
@@ -137,16 +137,6 @@ class Demo {
         for(let id in obj) {
             this.outputs[id].textContent = obj[id];
         }
-    }
-}
-
-class Configurator {
-    constructor(slider, container) {
-
-    }
-
-    init() {
-
     }
 }
 
