@@ -56,23 +56,34 @@ class ConfigurableOption {
 class RangeOption extends ConfigurableOption {
     constructor(slider) {
         super(slider, 'range', 'Диапазон');
+        const limits = this.calcLimits(slider);
         this.min = new Input(this.elem, 'Минимум', {
             name: this.optionName,
             type: slider.options.dataType,
             value: slider.options.range[0],
-            max: slider.options.range[1]
+            max: limits.min
         });
         this.max = new Input(this.elem, 'Максимум', {
             name: this.optionName,
             type: slider.options.dataType,
             value: slider.options.range[1],
-            min: slider.options.range[0]
+            min: limits.max
         });
     }
 
     update() {
         console.log(+this.min.value, +this.max.value)
         this.slider.options.range = [+this.min.value, +this.max.value];
+    }
+
+    calcLimits(slider) {
+        const minCore = slider.model.getClosestId(0);
+        const maxCore = slider.model.getClosestId(100);
+
+        const min = slider.model.cores[minCore].verbalValue;
+        const max = slider.model.cores[maxCore].verbalValue;
+        
+        return {min, max}
     }
 }
 
