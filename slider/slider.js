@@ -7,8 +7,8 @@ class SliderController {
     }
 
     init(options) {
-        this.validator = new Validator(options);
-        if(this.validator.isValidOptions) {
+        this.validator = new Validator(options, false);
+        if(this.validator.isValidOptions()) {
             this.options = options;
             this.view = new SliderView(options);
             this.typeHandler = this.validator.typeHandler;
@@ -17,6 +17,8 @@ class SliderController {
             this.view.renderModel(this.model.cores);
             this.outputHandler ? this.outputHandler(this.getValues()) : null;
             this.watchEvents();
+        } else {
+            throw new Error(this.validator.errors);
         }
     }
 
@@ -643,8 +645,9 @@ class TypeHandlerFactory {
     }
 }
 class Validator {
-    constructor(options) {
+    constructor(options, showWarnings = true) {
         this.options = options;
+        this.showWarnings = showWarnings;
         this.ids = Object.keys(options.handles);
         this.requiredOptions = [
             {name: 'root', useInMode: 'all'},
@@ -664,12 +667,6 @@ class Validator {
             {name: 'tagsPostfix'},
             {name: 'tagsPrefix'},
         ];
-
-        this.errors = '';
-        this.warnings = '';
-
-        this.isValidOptions = false;
-        this.checkOptions()
     }
 
     addError(message) {
@@ -703,13 +700,16 @@ class Validator {
                     text = 'is not a number' : null;
                 break;
             case 'date': 
-                !(value instanceof Date) ? 
-                    text = 'is not an instance of Date' : null;
+                !(value instanceof Date) || isNaN(value) ? 
+                    text = 'is not valid date' : null;
         }
         text ? this.addError(`${optionName}: <${value}> ${text}.`) : null
     }
 
-    checkOptions() {
+    isValidOptions() {
+        this.errors = '';
+        this.warnings = '';
+
         const runTests = (tests) => {
             for(let testId in tests) {
                 try {tests[testId]()}
@@ -737,9 +737,11 @@ class Validator {
         this.options.dataType === 'array' ? runTests(this.arrayTypeTests) :
         this.addError(`No tests for ${this.options.dataType}`);
 
-        if(this.warnings) console.warn(this.warnings);
-        if(this.errors) throw new Error(this.errors);
-        this.isValidOptions =  true;
+        if(this.showWarnings && this.warnings) {
+            console.warn(this.warnings);
+        }
+        if(this.errors) return false;
+        return true;
     }
 
     generalTests = {
