@@ -31,7 +31,7 @@ const demoSliders = [
             '2': new Date('2021-10-31')
         },
         neighborHandles: 'move',
-        isVertical: false,
+        // isVertical: false,
         progressBars: [
             ['sliderstart', '1'], ['sliderend', '2']
         ],
@@ -60,18 +60,18 @@ const demoSliders = [
     //     neighborHandles: 'jumpover',
     //     tagsPositions: 'top',
     // },
-    // {
-    //     name: 'slider4',
-    //     mode: 'select',
-    //     dataType: 'array',
-    //     range: ['Австралия', 'Австрия'],
-    //     step: 1,
-    //     handles: {
-    //         '1': 0
-    //     },
-    //     tagsPositions: 'top',
-    //     isVertical: true,
-    // }
+    {
+        name: 'slider4',
+        mode: 'select',
+        dataType: 'array',
+        range: ['Австралия', 'Австрия'],
+        step: 1,
+        handles: {
+            '1': 0
+        },
+        tagsPositions: 'top',
+        isVertical: true,
+    }
 ]
 
 nav.onclick = event => {

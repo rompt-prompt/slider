@@ -660,9 +660,9 @@ class Validator {
         ];
         this.unessentialOptions = [
             {name: 'neighborHandles', default: 'jumpover', valid: ['jumpover', 'move', 'stop']}, 
-            {name: 'isVertical', default: 'false', valid: [true, false]},
+            {name: 'isVertical', default: false, valid: [true, false]},
             {name: 'progressBars', valid: ['sliderstart', 'sliderend'].concat(this.ids)},
-            {name: 'tagsPositions', valid: ['top', 'right', 'left', 'bottom']},
+            {name: 'tagsPositions', default: false, valid: [false, 'top', 'right', 'left', 'bottom']},
             {name: 'handlesTextContent'},
             {name: 'tagsPostfix'},
             {name: 'tagsPrefix'},
@@ -820,7 +820,8 @@ class Validator {
             const testPosition = (position) => this.testInValid('tagsPositions', position);
             const tagsPositions = this.options.tagsPositions;
 
-            if(tagsPositions.constructor.name === 'String') {
+            if(tagsPositions.constructor.name === 'String' ||
+                tagsPositions.constructor.name === 'Boolean') {
                 testPosition(tagsPositions);
             } 
             else if(tagsPositions.constructor.name === 'Array') {
