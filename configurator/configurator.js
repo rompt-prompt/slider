@@ -222,14 +222,16 @@ class RangeOption extends Option {
                 title: 'Минимум', 
                 attributes: {
                     type, 'data-range': 'start', 
-                    value: formatValue(slider.options.range[0]), max: calcLimit(0),
+                    value: formatValue(slider.options.range[0]), 
+                    // max: calcLimit(0), // TODO fix update limits
                 }
             }, 
             {
                 title: 'Максимум', 
                 attributes: {
                     type, 'data-range': 'end', 
-                    value: formatValue(slider.options.range[1]), min: calcLimit(100),
+                    value: formatValue(slider.options.range[1]), 
+                    // min: calcLimit(100), // TODO fix update limits
                 }
             }
         ]
@@ -306,6 +308,12 @@ class HandlesConfig {
     }
 
     craeteHandleTamplate() {
+        const formatValue = (value) => {
+            return this.slider.options.dataType === 'date' ?
+                        this.slider.typeHandler.formatDate(value) :
+                        +value;
+        }
+
         this.elements = [];
         for(let id in this.slider.options.handles) {
             const elem = document.createElement('div');
@@ -317,14 +325,15 @@ class HandlesConfig {
             elem.append(subGroup);
 
 
+            const type = this.slider.options.dataType === 'date' ? 'date' : 'text';
             const inputStartVal = new Option(this.slider, this.optionName, null, [
                 {
                     title: 'Начальное значение',
                     attributes: {
-                        type: 'text', value: this.slider.options.handles[id],
+                        type, value: formatValue(this.slider.options.handles[id]),
                         'data-id': id, 'data-type': 'start',
-                        min: this.slider.options.range[0],
-                        max: this.slider.options.range[1],
+                        // min: formatValue(this.slider.options.range[0]), // TODO fix update limits
+                        // max: formatValue(this.slider.options.range[1]), // TODO fix update limits
                     }
                 }
             ]);
@@ -335,7 +344,13 @@ class HandlesConfig {
     }
 
     update(target) {
-        return new Promise(resolve => this.slider.options.handles[target.dataset.id] = +target.value)
-    }
-    
+        const value = 
+            this.slider.options.dataType === 'date' ?
+            new Date(target.value) :
+            this.slider.options.dataType === 'number' ?
+            +target.value :
+            null;
+
+        return new Promise(resolve => this.slider.options.handles[target.dataset.id] = value);
+    }   
 }

@@ -19,27 +19,27 @@ const demoSliders = [
         tagsPostfix: ' ₽',
         isVertical: true
     },
-    // {
-    //     name: 'slider2',
-    //     mode: 'select',
-    //     dataType: 'date',
-    //     range: [new Date('2021-01-01'), new Date('2021-12-31')],
-    //     step: 1,
-    //     stepMeasure: 'month',
-    //     handles: {
-    //         '1': new Date('2021-02-28'),
-    //         '2': new Date('2021-10-31')
-    //     },
-    //     neighborHandles: 'move',
-    //     // isVertical: false,
-    //     progressBars: [
-    //         ['sliderstart', '1'], ['sliderend', '2']
-    //     ],
-    //     tagsPositions: ['top', {2: 'bottom'}],
-    //     handlesTextContent: {
-    //         1: '1', 2: '2'
-    //     },
-    // },
+    {
+        name: 'slider2',
+        mode: 'select',
+        dataType: 'date',
+        range: [new Date('2021-01-01'), new Date('2021-12-31')],
+        step: 1,
+        stepMeasure: 'month',
+        handles: {
+            '1': new Date('2021-02-28'),
+            '2': new Date('2021-10-31')
+        },
+        neighborHandles: 'move',
+        // isVertical: false,
+        progressBars: [
+            ['sliderstart', '1'], ['sliderend', '2']
+        ],
+        tagsPositions: ['top', {2: 'bottom'}],
+        handlesTextContent: {
+            1: '1', 2: '2'
+        },
+    },
     // {
     //     name: 'slider3',
     //     mode: 'select',
