@@ -103,6 +103,7 @@ class Configurator {
                     attributes: {value: this.slider.options.tagsPostfix || ''}
                 },
             ]),
+            new HandlesConfig(this.slider),
         ];
 
         if(this.slider.options.dataType === 'number') {
@@ -293,4 +294,48 @@ class RadioOption extends Option {
         super(slider, optionName, groupTitle, inputs, converter);
         this.setCheckedAttr
     }
+}
+
+class HandlesConfig {
+    constructor(slider) {
+        this.groupTitle = 'Бегунки';
+        this.optionName = 'handles';
+        this.slider = slider;
+
+        this.craeteHandleTamplate();
+    }
+
+    craeteHandleTamplate() {
+        this.elements = [];
+        for(let id in this.slider.options.handles) {
+            const elem = document.createElement('div');
+            elem.classList.add('subgroup');
+
+            const subGroup = document.createElement('div');
+            subGroup.classList.add('subgroup__name');
+            subGroup.innerHTML = `<h4 class="subgroup__name">${id}</h4>`;
+            elem.append(subGroup);
+
+
+            const inputStartVal = new Option(this.slider, this.optionName, null, [
+                {
+                    title: 'Начальное значение',
+                    attributes: {
+                        type: 'text', value: this.slider.options.handles[id],
+                        'data-id': id, 'data-type': 'start',
+                        min: this.slider.options.range[0],
+                        max: this.slider.options.range[1],
+                    }
+                }
+            ]);
+            subGroup.append(...inputStartVal.elements);
+
+            this.elements.push(elem);
+        }
+    }
+
+    update(target) {
+        return new Promise(resolve => this.slider.options.handles[target.dataset.id] = +target.value)
+    }
+    
 }
