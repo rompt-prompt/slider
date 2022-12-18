@@ -57,7 +57,8 @@ class Configurator {
                     title: 'Горизонтальная', 
                     attributes: {value: false}
                 }
-            ]),
+            ], val => val === 'true' && !(val === 'false')
+            ),
             new RadioOption(this.slider, 'neighborHandles', 'Поведение соседних бегунков при одинаковых значениях', [
                 {
                     title: 'Не мешать', 
@@ -277,7 +278,7 @@ class RangeArrayOption extends Option {
 }
 
 class RadioOption extends Option {
-    constructor(slider, optionName, groupTitle, inputs) {
+    constructor(slider, optionName, groupTitle, inputs, converter) {
         const isChecked = inputValue => {
             const current = 
                 slider.options[optionName] || 
@@ -289,17 +290,7 @@ class RadioOption extends Option {
             Object.assign(input.attributes, {type: 'radio'},
                 isChecked(input.attributes.value) ? {checked: true} : null)
         });
-        super(slider, optionName, groupTitle, inputs);
+        super(slider, optionName, groupTitle, inputs, converter);
         this.setCheckedAttr
-    }
-
-    update(target) {
-        const value  = 
-            target.value === 'true' ? true : 
-            target.value === 'false' ? false : 
-            target.value;
-        return new Promise(resolve => {
-            super.update('', value)
-        })
     }
 }
