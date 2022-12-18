@@ -104,6 +104,7 @@ class Configurator {
                 },
             ]),
             new HandlesConfig(this.slider),
+            new ProgressBarConfig(this.slider)
         ];
 
         if(this.slider.options.dataType === 'number') {
@@ -353,4 +354,96 @@ class HandlesConfig {
 
         return new Promise(resolve => this.slider.options.handles[target.dataset.id] = value);
     }   
+}
+
+class ProgressBarConfig {
+    constructor(slider) {
+        this.groupTitle = 'Progress bars';
+        this.optionName = 'progressBars';
+        this.slider = slider;
+
+        this.craeteProgressBarsTamplate();
+        this.createNewPBTemplate();
+    }
+
+    craeteProgressBarsTamplate() {
+        this.elements = [];
+        this.slider.options.progressBars?.forEach(progressBar => {
+            const id = progressBar[0] + '_' + progressBar[1];
+            const elem = document.createElement('div');
+            elem.classList.add('subgroup');
+
+            const subGroup = document.createElement('div');
+            subGroup.classList.add('subgroup__name');
+            subGroup.innerHTML = `<h4 class="subgroup__name">${id}</h4>`;
+
+            const delBtn = document.createElement('i');
+            delBtn.classList.add('bi', 'bi-trash');
+            delBtn.dataset.id = id;
+            delBtn.onclick = () => {
+                const delIndex = this.slider.options.progressBars
+                    .findIndex(progressBar => {
+                        return progressBar[0] === id.split('_')[0] && 
+                                progressBar[1] === id.split('_')[1];
+                });
+                this.slider.options.progressBars.splice(delIndex, 1)
+                console.log(delIndex)
+
+                this.slider.reset();
+            }
+            subGroup.append(delBtn);
+
+
+            elem.append(subGroup);
+
+            this.elements.push(elem);
+        });
+    }
+
+    createNewPBTemplate() {
+        const subGroup = document.createElement('div');
+        subGroup.classList.add('subgroup');
+        subGroup.innerHTML = `<h4 class="subgroup__name">Добавить progress bar</h4>`;
+
+        const progressStart = this.cerateSelect('Начало', 
+            this.slider.validator.unessentialOptions
+                .find(option => option.name === 'progressBars').valid);
+        const progressEnd = this.cerateSelect('Конец', 
+            this.slider.validator.unessentialOptions
+                .find(option => option.name === 'progressBars').valid);
+        
+
+
+        const addBtn = document.createElement('i');
+        addBtn.classList.add('bi', 'bi-plus-square');
+        addBtn.onclick = () => {
+            if(!this.slider.options.progressBars) this.slider.options.progressBars = [];
+            this.slider.options.progressBars.push([
+                progressStart.querySelector('select').value, 
+                progressEnd.querySelector('select').value
+            ]);
+
+            this.slider.reset();
+        }
+        
+        subGroup.append(progressStart, progressEnd, addBtn);
+
+        this.elements.push(subGroup);
+    }
+
+    cerateSelect(title, options) {
+        const selectElem = document.createElement('label');
+        const optionsHTML = options.map(option => {
+            return `<option value="${option}">${option}</option>`
+        })
+
+        selectElem.classList.add('option');
+        selectElem.innerHTML = `
+            <span class="option__name">${title}</span>
+            <select name="${this.optionName}">
+                ${optionsHTML.join('')}
+            </select>
+        `
+        return selectElem;
+    }
 }

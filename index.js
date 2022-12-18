@@ -32,34 +32,34 @@ const demoSliders = [
         },
         neighborHandles: 'move',
         // isVertical: false,
-        progressBars: [
-            ['sliderstart', '1'], ['sliderend', '2']
-        ],
+        // progressBars: [
+        //     ['sliderstart', '1'], ['sliderend', '2']
+        // ],
         tagsPositions: ['top', {2: 'bottom'}],
         handlesTextContent: {
             1: '1', 2: '2'
         },
     },
-    // {
-    //     name: 'slider3',
-    //     mode: 'select',
-    //     dataType: 'array',
-    //     range: ['Австралия', 'Австрия', 'Азербайджан', 'Албания', 
-    //     'Алжир', 'Ангола', 'Андорра', 'Антигуа и Барбуда', 'Аргентина', 'Армения'],
-    //     step: 1,
-    //     handles: {
-    //         '1': 1,
-    //         '2': 2,
-    //         '3': 3,
-    //         '4': 4,
-    //         '5': 5,
-    //         '6': 6,
-    //         // '7': 7,
-    //         '8': 8,
-    //     },
-    //     neighborHandles: 'jumpover',
-    //     tagsPositions: 'top',
-    // },
+    {
+        name: 'slider3',
+        mode: 'select',
+        dataType: 'array',
+        range: ['Австралия', 'Австрия', 'Азербайджан', 'Албания', 
+        'Алжир', 'Ангола', 'Андорра', 'Антигуа и Барбуда', 'Аргентина', 'Армения'],
+        step: 1,
+        handles: {
+            '1': 1,
+            '2': 2,
+            '3': 3,
+            '4': 4,
+            '5': 5,
+            '6': 6,
+            // '7': 7,
+            '8': 8,
+        },
+        neighborHandles: 'jumpover',
+        tagsPositions: 'top',
+    },
     // {
     //     name: 'slider4',
     //     mode: 'select',
