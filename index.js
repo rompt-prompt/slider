@@ -10,10 +10,14 @@ const demoSliders = [
         range: [0, 170],
         step: 10,
         handles: {
-            'min': 5,
+            'min': 50,
             'max': 100,
         },
-        progressBars: [['min', 'max']],
+        progressBars: [
+            ['min', 'max'],
+            ['sliderstart', 'min'],
+            ['sliderend', 'max'],
+        ],
         neighborHandles: 'jumpover',
         tagsPositions: 'right',
         tagsPostfix: ' ₽',
@@ -102,7 +106,7 @@ class Demo {
         this.page.style.display = 'flex';
         this.slider = new SliderController(this.options, this.renderOutput.bind(this));
         this.page.style.display = '';
-        this.configurator = new Configurator(this.slider, this.configContainer)
+        this.configurator = new Configurator2(this.slider, this.configContainer)
     }
     createTemplate() {
         this.container = this.createElem(this.page, 'div', ['demo-container', 'card']);
