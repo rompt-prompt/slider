@@ -82,10 +82,10 @@ class ConfiguratorView {
         ];
 
         if(this.slider.options.dataType === 'number') {
-            this.form.unshift(new RangeGr());
+            this.form.unshift(new RangeGr(this.slider.options));
         }
         if(this.slider.options.dataType === 'date') {
-            this.form.unshift(new RangeGr(), new StepMeasureGr);
+            this.form.unshift(new RangeGr(this.slider.options), new StepMeasureGr);
         }
         if(this.slider.options.dataType === 'array') {
             this.form.unshift(new RangeArrayGr());
@@ -157,11 +157,12 @@ class FromGroup {
     }
 }
 class RangeGr extends FromGroup {
-    constructor() {
+    constructor(sliderOptions) {
         super('Диапазон');
+        const inputTypeAttr = sliderOptions.dataType === 'date' ? 'type="date"' : 'type="text"'
         this.group.append(
-            this.createLabelInput('Минимум', ['name="range-start"']),
-            this.createLabelInput('Максимум', ['name="range-end"'])
+            this.createLabelInput('Минимум', ['name="range-start"', inputTypeAttr]),
+            this.createLabelInput('Максимум', ['name="range-end"', inputTypeAttr])
         );
     }
 }
