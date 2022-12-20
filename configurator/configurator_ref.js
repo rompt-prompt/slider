@@ -72,24 +72,24 @@ class ConfiguratorView {
     }
     getFormTemplate() {
         this.form = [
-            new StepGr(),
-            new IsVerticalGr(),
-            new NeighborHandlesGr(),
-            new TagsPositionsGr(),
-            new AffixGr(),
-            new HandlesGr(this.slider.options),
+            // new StepGr(),
+            // new IsVerticalGr(),
+            // new NeighborHandlesGr(),
+            // new TagsPositionsGr(),
+            // new AffixGr(),
+            new HandlesGr(this.slider),
             new ProgressBarsGr(this.slider)
         ];
 
-        if(this.slider.options.dataType === 'number') {
-            this.form.unshift(new RangeGr(this.slider.options));
-        }
-        if(this.slider.options.dataType === 'date') {
-            this.form.unshift(new RangeGr(this.slider.options), new StepMeasureGr);
-        }
-        if(this.slider.options.dataType === 'array') {
-            this.form.unshift(new RangeArrayGr());
-        }
+        // if(this.slider.options.dataType === 'number') {
+        //     this.form.unshift(new RangeGr(this.slider.options));
+        // }
+        // if(this.slider.options.dataType === 'date') {
+        //     this.form.unshift(new RangeGr(this.slider.options), new StepMeasureGr);
+        // }
+        // if(this.slider.options.dataType === 'array') {
+        //     this.form.unshift(new RangeArrayGr());
+        // }
 
         return this.form;
     }
@@ -193,70 +193,107 @@ class AffixGr extends FromGroup {
     }
 }
 class HandlesGr extends FromGroup {
-    constructor(sliderOptions) {
+    constructor(slider) {
         super('Бегунки');
-        this.sliderOptions = sliderOptions;
-        this.group.append(...this.createHandleSub(), this.createAddHandleSub());
+        this.init(slider.options);
     }
 
-    createHandleSub() {
-        const handleSub = [];
-            for(let id in this.sliderOptions.handles) {
-                const sub = this.createFormSubgroup(id);
-                sub.append(
-                    this.sliderOptions.dataType === 'array' ? 
-                        this.createLabelSelect('Начальное значение', `handles-${id}`, this.sliderOptions.range) : 
-                        this.createLabelInput('Начальное значение', [
-                            `name="handles-${id}"`, 
-                            this.sliderOptions.dataType === 'date' ? 'type="date"' : null
-                        ]),
-                    this.createRemoveBtn({handleId: id})
-                );
-                handleSub.push(sub);
-            }
-        return handleSub;
+    init(sliderOptions) {
+        const dataType = sliderOptions.dataType;
+        const sliderRange = sliderOptions.range;
+
+        this.handleSubsContainer = document.createElement('div');
+        this.handleSubsContainer.classList.add('js-handles-container');
+
+        for(let id in sliderOptions.handles) {
+            this.handleSubsContainer.append(this.createHandleSub(dataType, id, sliderRange))
+        }
+
+        this.group.append(this.handleSubsContainer, this.createAddHandleSub(dataType, sliderRange));
     }
 
-    createAddHandleSub() {
+    createHandleSub(dataType, id, sliderRange) {
+        const sub = this.createFormSubgroup(id);
+        sub.dataset.handleSubgroupId = id;
+        sub.append(
+            dataType === 'array' ? 
+                this.createLabelSelect('Начальное значение', `handles-${id}`, sliderRange) : 
+                this.createLabelInput('Начальное значение', [
+                    `name="handles-${id}"`,
+                    dataType === 'date' ? 'type="date"' : null
+                ]),
+            this.createRemoveBtn({handleId: id})
+        );
+
+        return sub;
+    }
+
+    createAddHandleSub(dataType, sliderRange) {
         const addSub = this.createFormSubgroup('Добавить бегунок');
         addSub.append(
             this.createLabelInput('ID', [`data-add="id"`]),
-            this.sliderOptions.dataType === 'array' ? 
-                this.createLabelSelect('Начальное значение', `handles-add`, this.sliderOptions.range) :
+            dataType === 'array' ? 
+                this.createLabelSelect('Начальное значение', `handles-add`, sliderRange) :
                 this.createLabelInput('Начальное значение', [
                     'data-add="value"',
-                    this.sliderOptions.dataType === 'date' ? 'type="date"' : null
+                    dataType === 'date' ? 'type="date"' : null
                 ]),
             this.createAddBtn({btn: 'add'})
         )
         return addSub;
     }
+
+    removeHandleSub(id) {
+        this.handleSubsContainer
+            .querySelector(`[data-handle-subgroup-id="${id}"]`).remove();
+    }
+
+    addHandleSub(dataType, id, sliderRange) {
+        this.handleSubsContainer
+            .append(this.createHandleSub(dataType, id, sliderRange));
+    }
 }
 class ProgressBarsGr extends FromGroup {
     constructor(slider) {
         super('Progress bars');
-        const subGroups = [];
-
-        if(slider.options.progressBars) {
-            slider.options.progressBars.forEach(bar => {
-                const id = bar[0] + '_' + bar[1];
-                const sub = this.createFormSubgroup(id);
-                sub.append(this.createRemoveBtn({anchor1: bar[0], anchor2: bar[1], }));
-                subGroups.push(sub);
-            })
-        }
-
-        const addBarSub = this.createFormSubgroup('Добавить progress bar');
+        this.init(slider);
+    }
+    init(slider) {
         const validAnchors = slider.validator.unessentialOptions
             .find(option => option.name === 'progressBars').valid;
-        addBarSub.append(
+
+        this.barsContainer = document.createElement('div');
+        this.barsContainer.classList.add('js-bars-container');
+
+        if(slider.options.progressBars) {
+            slider.options.progressBars.forEach(bar => this.addBarSub(bar))
+        }
+        this.group.append(this.barsContainer, this.createAddBarSub(validAnchors));
+    }
+    createBarSub(bar) {
+        const id = bar[0] + '_' + bar[1];
+        const sub = this.createFormSubgroup(id);
+        sub.dataset.barSubgroupId = id;
+        sub.append(this.createRemoveBtn({anchor1: bar[0], anchor2: bar[1]}));
+
+        return sub;
+    }
+    removeBarSub(bar){
+        const id = bar[0] + '_' + bar[1];
+        this.barsContainer.querySelector(`[data-bar-subgroup-id="${id}"]`).remove();
+    }
+    addBarSub(bar) {
+        this.barsContainer.append(this.createBarSub(bar));
+    }
+    createAddBarSub(validAnchors) {
+        const sub = this.createFormSubgroup('Добавить progress bar');
+        sub.append(
             this.createLabelSelect('Начало', 'progressBars', validAnchors),
             this.createLabelSelect('Конец', 'progressBars', validAnchors),
             this.createAddBtn({btn: 'add'})
-        )
-        subGroups.push(addBarSub);
+        );
 
-        this.group.append(...subGroups);
+        return sub;
     }
 }
 class StepMeasureGr extends FromGroup {

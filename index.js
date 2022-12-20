@@ -12,6 +12,7 @@ const demoSliders = [
         handles: {
             'min': 50,
             'max': 100,
+            'test': 70
         },
         progressBars: [
             ['min', 'max'],
@@ -32,7 +33,8 @@ const demoSliders = [
         stepMeasure: 'month',
         handles: {
             '1': new Date('2021-02-28'),
-            '2': new Date('2021-10-31')
+            '2': new Date('2021-10-31'),
+            'test': new Date('2021-10-30')
         },
         neighborHandles: 'move',
         // isVertical: false,
@@ -59,7 +61,7 @@ const demoSliders = [
             '5': 5,
             '6': 6,
             // '7': 7,
-            '8': 8,
+            'test': 8,
         },
         neighborHandles: 'jumpover',
         tagsPositions: 'top',
