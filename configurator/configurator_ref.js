@@ -66,12 +66,33 @@ class ConfiguratorModel {
     }
 }
 class ConfiguratorView {
-    constructor(slider, testContainer) {
-        let a = new TagsPositionsGr(slider)
-        testContainer.innerHTML = ''
-        testContainer.append(a.group)
+    constructor(slider, container) {
+        this.slider = slider;
+        container.append(...this.getFormTemplate().map(elem => elem.group))
     }
+    getFormTemplate() {
+        this.form = [
+            new StepGr(),
+            new IsVerticalGr(),
+            new NeighborHandlesGr(),
+            new TagsPositionsGr(),
+            new AffixGr(),
+            new HandlesGr(this.slider.options.handles),
+            new ProgressBarsGr(this.slider)
+        ];
 
+        if(this.slider.options.dataType === 'number') {
+            this.form.unshift(new RangeGr());
+        }
+        if(this.slider.options.dataType === 'date') {
+            this.form.unshift(new RangeGr(), new StepMeasureGr);
+        }
+        if(this.slider.options.dataType === 'array') {
+            this.form.unshift(new RangeArrayGr());
+        }
+
+        return this.form;
+    }
 }
 class FromGroup {
     constructor(title) {
