@@ -77,7 +77,7 @@ class ConfiguratorView {
             new NeighborHandlesGr(),
             new TagsPositionsGr(),
             new AffixGr(),
-            new HandlesGr(this.slider.options.handles),
+            new HandlesGr(this.slider.options),
             new ProgressBarsGr(this.slider)
         ];
 
@@ -192,28 +192,43 @@ class AffixGr extends FromGroup {
     }
 }
 class HandlesGr extends FromGroup {
-    constructor(handles) {
+    constructor(sliderOptions) {
         super('Бегунки');
-        const subGroups = [];
+        this.sliderOptions = sliderOptions;
+        this.group.append(...this.createHandleSub(), this.createAddHandleSub());
+    }
 
-        for(let id in handles) {
-            const sub = this.createFormSubgroup(id);
-            sub.append(
-                this.createLabelInput('Начальное значение', [`name="handles-${id}"`]),
-                this.createRemoveBtn({handleId: id})
-            );
-            subGroups.push(sub);
-        }
+    createHandleSub() {
+        const handleSub = [];
+            for(let id in this.sliderOptions.handles) {
+                const sub = this.createFormSubgroup(id);
+                sub.append(
+                    this.sliderOptions.dataType === 'array' ? 
+                        this.createLabelSelect('Начальное значение', `handles-${id}`, this.sliderOptions.range) : 
+                        this.createLabelInput('Начальное значение', [
+                            `name="handles-${id}"`, 
+                            this.sliderOptions.dataType === 'date' ? 'type="date"' : null
+                        ]),
+                    this.createRemoveBtn({handleId: id})
+                );
+                handleSub.push(sub);
+            }
+        return handleSub;
+    }
 
-        const addHandleSub = this.createFormSubgroup('Добавить бегунок');
-        addHandleSub.append(
+    createAddHandleSub() {
+        const addSub = this.createFormSubgroup('Добавить бегунок');
+        addSub.append(
             this.createLabelInput('ID', [`data-add="id"`]),
-            this.createLabelInput('Начальное значение', [`data-add="value"`]),
+            this.sliderOptions.dataType === 'array' ? 
+                this.createLabelSelect('Начальное значение', `handles-add`, this.sliderOptions.range) :
+                this.createLabelInput('Начальное значение', [
+                    'data-add="value"',
+                    this.sliderOptions.dataType === 'date' ? 'type="date"' : null
+                ]),
             this.createAddBtn({btn: 'add'})
         )
-        subGroups.push(addHandleSub);
-
-        this.group.append(...subGroups);
+        return addSub;
     }
 }
 class ProgressBarsGr extends FromGroup {
