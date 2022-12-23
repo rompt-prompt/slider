@@ -68,31 +68,33 @@ class ConfiguratorModel {
 class ConfiguratorView {
     constructor(slider, container) {
         this.slider = slider;
-        container.append(...this.getFormTemplate().map(elem => elem.group))
+        this.form = document.createElement('form');
+        this.form.append(...this.getFormTemplate().map(elem => elem.group));
+        container.append(this.form);
     }
     getFormTemplate() {
-        this.form = [
-            // new StepGr(),
-            // new IsVerticalGr(),
-            // new NeighborHandlesGr(),
-            // new TagsPositionsGr(),
-            // new AffixGr(),
+        this.formGroups = [
+            new StepGr(),
+            new IsVerticalGr(),
+            new NeighborHandlesGr(),
+            new TagsPositionsGr(),
+            new AffixGr(),
             new HandlesGr(this.slider),
             new ProgressBarsGr(this.slider)
         ];
 
-        // if(this.slider.options.dataType === 'number') {
-        //     this.form.unshift(new RangeGr(this.slider.options));
-        // }
-        // if(this.slider.options.dataType === 'date') {
-        //     this.form.unshift(new RangeGr(this.slider.options), new StepMeasureGr);
-        // }
-        // if(this.slider.options.dataType === 'array') {
-        //     this.form.unshift(new RangeArrayGr());
-        // }
-
-        return this.form;
+        if(this.slider.options.dataType === 'number') {
+            this.formGroups.unshift(new RangeGr(this.slider.options));
+        }
+        if(this.slider.options.dataType === 'date') {
+            this.formGroups.unshift(new RangeGr(this.slider.options), new StepMeasureGr);
+        }
+        if(this.slider.options.dataType === 'array') {
+            this.formGroups.unshift(new RangeArrayGr());
+        }
+        return this.formGroups;
     }
+
 }
 class FromGroup {
     constructor(title) {
