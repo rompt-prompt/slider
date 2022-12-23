@@ -124,12 +124,12 @@ class FromGroup {
 
         return lab;
     }
-    createLabelSelect(label, name, optionsValues) {
+    createLabelSelect(label, attr, optionsValues) {
         const lab = document.createElement('label');
         lab.classList.add('option');
         lab.innerHTML = `
             <span class="option__name">${label}</span>
-            <select name="${name}">
+            <select ${attr.join(' ')}>
                 ${optionsValues.map(value => 
                     `<option value="${value}">${value}</option>`
                 ).join('')}
@@ -205,37 +205,39 @@ class HandlesGr extends FromGroup {
         const sliderRange = sliderOptions.range;
 
         this.handleSubsContainer = document.createElement('div');
-        this.handleSubsContainer.classList.add('js-handles-container');
 
         for(let id in sliderOptions.handles) {
-            this.handleSubsContainer.append(this.createHandleSub(dataType, id, sliderRange))
+            this.createHandleSubgroup(dataType, id, sliderRange);
         }
 
-        this.group.append(this.handleSubsContainer, this.createAddHandleSub(dataType, sliderRange));
+        this.group.append(this.handleSubsContainer, this.createExpandSubgroup(dataType, sliderRange));
     }
-
-    createHandleSub(dataType, id, sliderRange) {
+    removeHandleSub(id) {
+        this.handleSubsContainer
+            .querySelector(`[data-id="${id}"]`).remove();
+    }
+    createHandleSubgroup(dataType, id, sliderRange) {
         const sub = this.createFormSubgroup(id);
-        sub.dataset.handleSubgroupId = id;
+        sub.dataset.id = id;
         sub.append(
             dataType === 'array' ? 
-                this.createLabelSelect('Начальное значение', `handles-${id}`, sliderRange) : 
+                this.createLabelSelect('Начальное значение', ['name="handles"'], sliderRange) : 
                 this.createLabelInput('Начальное значение', [
-                    `name="handles-${id}"`,
+                    `name="handles"`,
+                    `data-id="${id}"`,
                     dataType === 'date' ? 'type="date"' : null
                 ]),
             this.createRemoveBtn({handleId: id})
         );
 
-        return sub;
+        this.handleSubsContainer.append(sub);
     }
-
-    createAddHandleSub(dataType, sliderRange) {
+    createExpandSubgroup(dataType, sliderRange) {
         const addSub = this.createFormSubgroup('Добавить бегунок');
         addSub.append(
             this.createLabelInput('ID', [`data-add="id"`]),
             dataType === 'array' ? 
-                this.createLabelSelect('Начальное значение', `handles-add`, sliderRange) :
+                this.createLabelSelect('Начальное значение', ['name="handles"'], sliderRange) :
                 this.createLabelInput('Начальное значение', [
                     'data-add="value"',
                     dataType === 'date' ? 'type="date"' : null
@@ -243,16 +245,6 @@ class HandlesGr extends FromGroup {
             this.createAddBtn({btn: 'add'})
         )
         return addSub;
-    }
-
-    removeHandleSub(id) {
-        this.handleSubsContainer
-            .querySelector(`[data-handle-subgroup-id="${id}"]`).remove();
-    }
-
-    addHandleSub(dataType, id, sliderRange) {
-        this.handleSubsContainer
-            .append(this.createHandleSub(dataType, id, sliderRange));
     }
 }
 class ProgressBarsGr extends FromGroup {
@@ -265,36 +257,31 @@ class ProgressBarsGr extends FromGroup {
             .find(option => option.name === 'progressBars').valid;
 
         this.barsContainer = document.createElement('div');
-        this.barsContainer.classList.add('js-bars-container');
 
         if(slider.options.progressBars) {
-            slider.options.progressBars.forEach(bar => this.addBarSub(bar))
+            slider.options.progressBars.forEach(bar => this.createBarSubgroup(bar))
         }
-        this.group.append(this.barsContainer, this.createAddBarSub(validAnchors));
+        this.group.append(this.barsContainer, this.createExpandSubgroup(validAnchors));
     }
-    createBarSub(bar) {
+    removeBarSubgroup(bar){
+        const id = bar[0] + '_' + bar[1];
+        this.barsContainer.querySelector(`[data-id="${id}"]`).remove();
+    }
+    createBarSubgroup(bar) {
         const id = bar[0] + '_' + bar[1];
         const sub = this.createFormSubgroup(id);
-        sub.dataset.barSubgroupId = id;
+        sub.dataset.id = id;
         sub.append(this.createRemoveBtn({anchor1: bar[0], anchor2: bar[1]}));
 
-        return sub;
+        this.barsContainer.append(sub);
     }
-    removeBarSub(bar){
-        const id = bar[0] + '_' + bar[1];
-        this.barsContainer.querySelector(`[data-bar-subgroup-id="${id}"]`).remove();
-    }
-    addBarSub(bar) {
-        this.barsContainer.append(this.createBarSub(bar));
-    }
-    createAddBarSub(validAnchors) {
+    createExpandSubgroup(validAnchors) {
         const sub = this.createFormSubgroup('Добавить progress bar');
         sub.append(
-            this.createLabelSelect('Начало', 'progressBars', validAnchors),
-            this.createLabelSelect('Конец', 'progressBars', validAnchors),
+            this.createLabelSelect('Начало', ['name="progressBars"'], validAnchors),
+            this.createLabelSelect('Конец', ['name="progressBars"'], validAnchors),
             this.createAddBtn({btn: 'add'})
         );
-
         return sub;
     }
 }
