@@ -163,8 +163,8 @@ class RangeGr extends FromGroup {
         super('Диапазон');
         const inputTypeAttr = sliderOptions.dataType === 'date' ? 'type="date"' : 'type="text"'
         this.group.append(
-            this.createLabelInput('Минимум', ['name="range-start"', inputTypeAttr]),
-            this.createLabelInput('Максимум', ['name="range-end"', inputTypeAttr])
+            this.createLabelInput('Минимум', ['name="range-start"', inputTypeAttr, 'data-option=true']),
+            this.createLabelInput('Максимум', ['name="range-end"', inputTypeAttr, 'data-option=true'])
         );
     }
 }
@@ -173,7 +173,7 @@ class RangeArrayGr extends FromGroup {
     constructor() {
         super('Диапазон');
         this.group.append(
-            this.createLabelInput('Массив (разделитель "|")', ['name="range-array"']),
+            this.createLabelInput('Массив (разделитель "|")', ['name="range-array"', 'data-option=true']),
         );
     }
 }
@@ -181,7 +181,7 @@ class StepGr extends FromGroup {
     constructor() {
         super('');
         this.group.append(
-            this.createLabelInput('Шаг', ['name="step"']),
+            this.createLabelInput('Шаг', ['name="step"', 'data-option=true']),
         );
     }
 }
@@ -189,8 +189,8 @@ class AffixGr extends FromGroup {
     constructor() {
         super('Префикс и постфикс');
         this.group.append(
-            this.createLabelInput('Префикс', ['name="tagsPrefix"']),
-            this.createLabelInput('Постфикс', ['name="tagsPostfix"']),
+            this.createLabelInput('Префикс', ['name="tagsPrefix"', 'data-option=true']),
+            this.createLabelInput('Постфикс', ['name="tagsPostfix"', 'data-option=true']),
         );
     }
 }
@@ -225,6 +225,7 @@ class HandlesGr extends FromGroup {
                 this.createLabelInput('Начальное значение', [
                     `name="handles"`,
                     `data-id="${id}"`,
+                    'data-option=true',
                     dataType === 'date' ? 'type="date"' : null
                 ]),
             this.createRemoveBtn({handleId: id})
@@ -288,41 +289,45 @@ class ProgressBarsGr extends FromGroup {
 class StepMeasureGr extends FromGroup {
     constructor() {
         super('Размерность шага');
+        const commonAttrs = ['type="radio"', 'name="stepMeasure"', 'data-option=true'];
         this.group.append(
-            this.createLabelInput('День', ['type="radio"', 'name="stepMeasure"', 'value="day"']),
-            this.createLabelInput('Месяц', ['type="radio"', 'name="stepMeasure"', 'value="month"']),
-            this.createLabelInput('Год', ['type="radio"', 'name="stepMeasure"', 'value="year"']),
+            this.createLabelInput('День', ['value="day"'].concat(commonAttrs)),
+            this.createLabelInput('Месяц', ['value="month"'].concat(commonAttrs)),
+            this.createLabelInput('Год', ['value="year"'].concat(commonAttrs)),
         );
     }
 }
 class IsVerticalGr extends FromGroup {
     constructor() {
         super('Ориентация');
+        const commonAttrs = ['type="radio"', 'name="isVertical"', 'data-option=true'];
         this.group.append(
-            this.createLabelInput('Вертикальная', ['type="radio"', 'name="isVertical"', 'value="true"']),
-            this.createLabelInput('Горизонтальная', ['type="radio"', 'name="isVertical"', 'value="false"']),
+            this.createLabelInput('Вертикальная', ['value="true"'].concat(commonAttrs)),
+            this.createLabelInput('Горизонтальная', ['value="false"'].concat(commonAttrs)),
         );
     }
 }
 class NeighborHandlesGr extends FromGroup {
     constructor() {
         super('Поведение соседних бегунков при одинаковых значениях');
+        const commonAttrs = ['type="radio"', 'name="neighborHandles"', 'data-option=true'];
         this.group.append(
-            this.createLabelInput('Не мешать', ['type="radio"', 'name="neighborHandles"', 'value="jumpover"']),
-            this.createLabelInput('Двигаться', ['type="radio"', 'name="neighborHandles"', 'value="move"']),
-            this.createLabelInput('Останавливать', ['type="radio"', 'name="neighborHandles"', 'value="stop"']),
+            this.createLabelInput('Не мешать', ['value="jumpover"'].concat(commonAttrs)),
+            this.createLabelInput('Двигаться', ['value="move"'].concat(commonAttrs)),
+            this.createLabelInput('Останавливать', ['value="stop"'].concat(commonAttrs)),
         );
     }
 }
 class TagsPositionsGr extends FromGroup {
     constructor() {
         super('Ярлыки');
+        const commonAttrs = ['type="radio"', 'name="tagsPositions"', 'data-option=true'];
         this.group.append(
-            this.createLabelInput('Не показывать', ['type="radio"', 'name="tagsPositions"', 'value="false"']),
-            this.createLabelInput('Сверху', ['type="radio"', 'name="tagsPositions"', 'value="top"']),
-            this.createLabelInput('Снизу', ['type="radio"', 'name="tagsPositions"', 'value="bottom"']),
-            this.createLabelInput('Справа', ['type="radio"', 'name="tagsPositions"', 'value="right"']),
-            this.createLabelInput('Слева', ['type="radio"', 'name="tagsPositions"', 'value="left"']),
+            this.createLabelInput('Не показывать', ['value="false"'].concat(commonAttrs)),
+            this.createLabelInput('Сверху', ['value="top"'].concat(commonAttrs)),
+            this.createLabelInput('Снизу', ['value="bottom"'].concat(commonAttrs)),
+            this.createLabelInput('Справа', ['value="right"'].concat(commonAttrs)),
+            this.createLabelInput('Слева', ['value="left"'].concat(commonAttrs)),
         );
     }
 }
