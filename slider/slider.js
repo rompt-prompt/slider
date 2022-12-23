@@ -562,7 +562,7 @@ class DateHandler {
         const m = addLeadingSymbol(date.getMonth() + 1, 2, 0);
         const y = date.getFullYear();
 
-        return [y, m, d].join('-')
+        return [d, m, y].join('.')
     }
 
     calcDaysAmount(date1, date2) {

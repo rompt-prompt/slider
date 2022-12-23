@@ -71,34 +71,42 @@ class ConfiguratorView {
         this.form = document.createElement('form');
         this.form.append(...this.getFormTemplate().map(elem => elem.group));
         container.append(this.form);
+        // this.setValue('range', slider.options.range)
     }
     getFormTemplate() {
         this.formGroups = [
-            new StepGr(),
-            new IsVerticalGr(),
-            new NeighborHandlesGr(),
-            new TagsPositionsGr(),
-            new AffixGr(),
+            new StepGr(this.slider),
+            new IsVerticalGr(this.slider),
+            new NeighborHandlesGr(this.slider),
+            new TagsPositionsGr(this.slider),
+            new AffixGr(this.slider),
             new HandlesGr(this.slider),
             new ProgressBarsGr(this.slider)
         ];
 
         if(this.slider.options.dataType === 'number') {
-            this.formGroups.unshift(new RangeGr(this.slider.options));
+            this.formGroups.unshift(new RangeGr(this.slider));
         }
         if(this.slider.options.dataType === 'date') {
-            this.formGroups.unshift(new RangeGr(this.slider.options), new StepMeasureGr);
+            this.formGroups.unshift(new RangeGr(this.slider), new StepMeasureGr(this.slider));
         }
         if(this.slider.options.dataType === 'array') {
-            this.formGroups.unshift(new RangeArrayGr());
+            this.formGroups.unshift(new RangeArrayGr(this.slider));
         }
         return this.formGroups;
     }
-
+    // setValue(optionName, val) {
+    //     let instance;
+    //     if(optionName === 'range' && this.slider.options.dataType !== 'array') {
+    //         instance = this.formGroups.find(group => group.constructor.name === 'RangeGr');
+    //     }
+    //     instance.setValue(val);
+    // }
 }
 class FromGroup {
-    constructor(title) {
+    constructor(title, slider) {
         this.group = this.createFormGroup(title);
+        this.slider = slider;
     }
     createFormGroup(title) {
         const group = document.createElement('div');
@@ -137,7 +145,6 @@ class FromGroup {
         `
 
         return lab;
-
     }
     createAddBtn(data) {
         const btn = document.createElement('i');
@@ -157,56 +164,125 @@ class FromGroup {
 
         return btn;
     }
+    convertDateToAttr(date) {
+        const addLeadingSymbol = (num, requiredCapacity, symbol) => {
+            let str = num.toString()
+            if(str.length >= requiredCapacity) return str;
+            return symbol.toString().repeat(requiredCapacity - str.length) + str;
+        }
+        const d = addLeadingSymbol(date.getDate(), 2, 0);
+        const m = addLeadingSymbol(date.getMonth() + 1, 2, 0);
+        const y = date.getFullYear();
+
+        return [y, m, d].join('-')
+    }
+    setRadioCheck(optionName) {
+        let current = 
+            this.slider.options[optionName] || 
+            this.slider.validator.unessentialOptions
+                .find(option => option.name === optionName).default;
+        current = current.toString();
+        
+        const inputs = this.group.querySelectorAll(`[name="${optionName}"]`);
+        inputs.forEach(input => {
+            if(input.value === current) {
+                input.setAttribute('checked', 'checked')
+            } else {
+                input.removeAttribute('checked')
+            }
+        })
+    }
 }
 class RangeGr extends FromGroup {
-    constructor(sliderOptions) {
-        super('Диапазон');
-        const inputTypeAttr = sliderOptions.dataType === 'date' ? 'type="date"' : 'type="text"'
+    constructor(slider) {
+        super('Диапазон', slider);
+        this.inputTypeAttr = this.slider.options.dataType === 'date' ? 'type="date"' : 'type="text"'
         this.group.append(
-            this.createLabelInput('Минимум', ['name="range-start"', inputTypeAttr, 'data-option=true']),
-            this.createLabelInput('Максимум', ['name="range-end"', inputTypeAttr, 'data-option=true'])
+            this.createLabelInput('Минимум', ['name="range-start"', this.inputTypeAttr, 'data-option=true']),
+            this.createLabelInput('Максимум', ['name="range-end"', this.inputTypeAttr, 'data-option=true'])
         );
+        this.setValue();
+    }
+    setValue() {
+        let rangeStart = this.slider.options.range[0];
+        let rangeEnd = this.slider.options.range[1];
+        if(this.slider.options.dataType === 'date') {
+            rangeStart = this.convertDateToAttr(rangeStart);
+            rangeEnd = this.convertDateToAttr(rangeEnd);
+        }
+        this.group.querySelector('[name="range-start"]').value = rangeStart;
+        this.group.querySelector('[name="range-end"]').value = rangeEnd;
     }
 }
 
 class RangeArrayGr extends FromGroup {
-    constructor() {
-        super('Диапазон');
+    constructor(slider) {
+        super('Диапазон', slider);
         this.group.append(
             this.createLabelInput('Массив (разделитель "|")', ['name="range-array"', 'data-option=true']),
         );
+        this.setValue();
+    }
+    setValue() {
+        const val = this.slider.options.range.join('|');
+        this.group.querySelector('[name="range-array"]').value = val;
     }
 }
 class StepGr extends FromGroup {
-    constructor() {
-        super('');
+    constructor(slider) {
+        super('', slider);
         this.group.append(
             this.createLabelInput('Шаг', ['name="step"', 'data-option=true']),
         );
+        this.setValue();
+    }
+    setValue() {
+        this.group.querySelector('[name="step"]').value = this.slider.options.step;;
     }
 }
 class AffixGr extends FromGroup {
-    constructor() {
-        super('Префикс и постфикс');
+    constructor(slider) {
+        super('Префикс и постфикс', slider);
         this.group.append(
             this.createLabelInput('Префикс', ['name="tagsPrefix"', 'data-option=true']),
             this.createLabelInput('Постфикс', ['name="tagsPostfix"', 'data-option=true']),
         );
+        this.setValue();
+    }
+    setValue() {
+        this.group.querySelector('[name="tagsPrefix"]').value = this.slider.options.tagsPrefix || '';
+        this.group.querySelector('[name="tagsPostfix"]').value = this.slider.options.tagsPostfix || '';
     }
 }
 class HandlesGr extends FromGroup {
     constructor(slider) {
-        super('Бегунки');
-        this.init(slider.options);
+        super('Бегунки', slider);
+        this.init();
+        this.setValue();
     }
 
-    init(sliderOptions) {
-        const dataType = sliderOptions.dataType;
-        const sliderRange = sliderOptions.range;
+    setValue() {
+        const handles = this.group.querySelectorAll('[name="handles"][data-option="true"]')
+        for(let id in this.slider.options.handles) {
+            const elem = this.group.querySelector(`[name="handles"][data-option="true"][data-id="${id}"]`);
+            let val = this.slider.options.handles[id];
+            if(this.slider.options.dataType === 'array') {
+                val = this.slider.typeHandler.getVerbalValue(val);
+            }
+            if(this.slider.options.dataType === 'date') {
+                val = this.convertDateToAttr(val);
+            }
+            elem.value = val;
+        }
+    }
+
+    init() {
+        const dataType = this.slider.options.dataType;
+        const sliderRange = this.slider.options.range;
 
         this.handleSubsContainer = document.createElement('div');
 
-        for(let id in sliderOptions.handles) {
+        for(let id in this.slider.options.handles) {
             this.createHandleSubgroup(dataType, id, sliderRange);
         }
 
@@ -221,7 +297,11 @@ class HandlesGr extends FromGroup {
         sub.dataset.id = id;
         sub.append(
             dataType === 'array' ? 
-                this.createLabelSelect('Начальное значение', ['name="handles"'], sliderRange) : 
+                this.createLabelSelect('Начальное значение', [
+                    'name="handles"',
+                    `data-id="${id}"`,
+                    'data-option=true',
+                ], sliderRange) : 
                 this.createLabelInput('Начальное значение', [
                     `name="handles"`,
                     `data-id="${id}"`,
@@ -250,17 +330,17 @@ class HandlesGr extends FromGroup {
 }
 class ProgressBarsGr extends FromGroup {
     constructor(slider) {
-        super('Progress bars');
-        this.init(slider);
+        super('Progress bars', slider);
+        this.init();
     }
-    init(slider) {
-        const validAnchors = slider.validator.unessentialOptions
+    init() {
+        const validAnchors = this.slider.validator.unessentialOptions
             .find(option => option.name === 'progressBars').valid;
 
         this.barsContainer = document.createElement('div');
 
-        if(slider.options.progressBars) {
-            slider.options.progressBars.forEach(bar => this.createBarSubgroup(bar))
+        if(this.slider.options.progressBars) {
+            this.slider.options.progressBars.forEach(bar => this.createBarSubgroup(bar))
         }
         this.group.append(this.barsContainer, this.createExpandSubgroup(validAnchors));
     }
@@ -287,40 +367,52 @@ class ProgressBarsGr extends FromGroup {
     }
 }
 class StepMeasureGr extends FromGroup {
-    constructor() {
-        super('Размерность шага');
+    constructor(slider) {
+        super('Размерность шага', slider);
         const commonAttrs = ['type="radio"', 'name="stepMeasure"', 'data-option=true'];
         this.group.append(
             this.createLabelInput('День', ['value="day"'].concat(commonAttrs)),
             this.createLabelInput('Месяц', ['value="month"'].concat(commonAttrs)),
             this.createLabelInput('Год', ['value="year"'].concat(commonAttrs)),
         );
+        this.setValue();
+    }
+    setValue() {
+        this.setRadioCheck('stepMeasure');
     }
 }
 class IsVerticalGr extends FromGroup {
-    constructor() {
-        super('Ориентация');
+    constructor(slider) {
+        super('Ориентация', slider);
         const commonAttrs = ['type="radio"', 'name="isVertical"', 'data-option=true'];
         this.group.append(
             this.createLabelInput('Вертикальная', ['value="true"'].concat(commonAttrs)),
             this.createLabelInput('Горизонтальная', ['value="false"'].concat(commonAttrs)),
         );
+        this.setValue();
+    }
+    setValue() {
+        this.setRadioCheck('isVertical');
     }
 }
 class NeighborHandlesGr extends FromGroup {
-    constructor() {
-        super('Поведение соседних бегунков при одинаковых значениях');
+    constructor(slider) {
+        super('Поведение соседних бегунков при одинаковых значениях', slider);
         const commonAttrs = ['type="radio"', 'name="neighborHandles"', 'data-option=true'];
         this.group.append(
             this.createLabelInput('Не мешать', ['value="jumpover"'].concat(commonAttrs)),
             this.createLabelInput('Двигаться', ['value="move"'].concat(commonAttrs)),
             this.createLabelInput('Останавливать', ['value="stop"'].concat(commonAttrs)),
         );
+        this.setValue();
+    }
+    setValue() {
+        this.setRadioCheck('neighborHandles');
     }
 }
 class TagsPositionsGr extends FromGroup {
-    constructor() {
-        super('Ярлыки');
+    constructor(slider) {
+        super('Ярлыки', slider);
         const commonAttrs = ['type="radio"', 'name="tagsPositions"', 'data-option=true'];
         this.group.append(
             this.createLabelInput('Не показывать', ['value="false"'].concat(commonAttrs)),
@@ -329,5 +421,9 @@ class TagsPositionsGr extends FromGroup {
             this.createLabelInput('Справа', ['value="right"'].concat(commonAttrs)),
             this.createLabelInput('Слева', ['value="left"'].concat(commonAttrs)),
         );
+        this.setValue();
+    }
+    setValue() {
+        this.setRadioCheck('tagsPositions');
     }
 }
