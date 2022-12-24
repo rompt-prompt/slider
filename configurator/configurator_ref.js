@@ -19,6 +19,7 @@ class Configurator2 {
         this.view.form.onclick = event => {
 console.log(event.target.name, event.target.dataset)
             if(event.target.dataset.action === 'remove') this.removeHandler(event.target);
+            else if(event.target.dataset.action === 'add') this.addHandler(event.target);
         }
     }
 
@@ -32,11 +33,31 @@ console.log(event.target.name, event.target.dataset)
                 this.model.removeHandle(id).then(this.slider.reset());
                 break;
             case 'progressBars':
-                console.log('pb')
                 this.model.removeProgressBar(target.dataset.anchor1, target.dataset.anchor2)
                     .then(this.slider.reset());
                 break;
         }
+    }
+
+    addHandler(target) {
+        const container = target.parentElement;
+        switch (target.dataset.name) {
+            case 'handles':
+                const id = container.querySelector('[data-name="handles-id"]').value;
+                let value = container.querySelector('[data-name="handles-value"]').value;
+                if(!id || !value) break;
+                value = this.slider.options.dataType === 'date' ? new Date(value) : +value;
+        
+                this.model.addNewHandle(id, value).then(this.slider.reset());
+                break;
+            case 'progressBars':
+                const anchor1 = container.querySelector('[data-name="progressBars-start"]').value;
+                const anchor2 = container.querySelector('[data-name="progressBars-end"]').value;
+
+                this.model.addNewProgressBar(anchor1, anchor2).then(this.slider.reset());
+                break;
+        }
+
     }
 
     onChangeHandler(target) {
@@ -109,17 +130,16 @@ class ConfiguratorModel {
         })
     }
 
-    addNewValue(optionName, value) {
-        let optionCopy;
+    addNewHandle(id, value) {
+        let optionCopy = Object.assign({}, this.slider.options.handles, {[id]: value});
+        return this.updateOption('handles', optionCopy);
+    }
 
-        if(optionName === 'handles') {
-            optionCopy = Object.assign({}, this.slider.options.handles, value);
-        } else if(optionName === 'progressBars') {
-            optionCopy = [].concat(this.slider.options.progressBars || []);
-            optionCopy.push(value);
-        } else return;
+    addNewProgressBar(anchor1, anchor2) {
+        let optionCopy = [].concat(this.slider.options.progressBars || []);
+        optionCopy.push([anchor1, anchor2]);
 
-        return this.updateOption(optionName, optionCopy)
+        return this.updateOption('progressBars', optionCopy);
     }
 
     removeHandle(id) {
@@ -221,11 +241,11 @@ class FromGroup {
             `<option value="${option.value}">${option.content}</option>`
         ).join('')}`;
     }
-    createAddBtn(data) {
+    createAddBtn(attr) {
         const btn = document.createElement('i');
         btn.classList.add('bi', 'bi-plus-square');
-        for(let key in data) {
-            btn.dataset[key] = data[key];
+        for(let name in attr) {
+            btn.setAttribute(name, attr[name]);
         }
 
         return btn;
@@ -235,7 +255,6 @@ class FromGroup {
         btn.classList.add('bi', 'bi-trash');
         for(let name in attr) {
             btn.setAttribute(name, attr[name]);
-            // btn.dataset[key] = data[key];
         }
 
         return btn;
@@ -334,7 +353,7 @@ class HandlesGr extends FromGroup {
     constructor(slider) {
         super('Бегунки', slider);
         this.init();
-        this.updateHandlesSelect(slider.options);
+        this.updateHandlesSelect();
         this.setValue();
     }
 
@@ -349,10 +368,10 @@ class HandlesGr extends FromGroup {
             elem.value = val;
         }
     }
-    updateHandlesSelect(sliderOptions) {
+    updateHandlesSelect() {
         if(this.slider.options.dataType !== 'array') return;
 
-        const optionsValues = sliderOptions.range.map((elem, index) => {
+        const optionsValues = this.slider.options.range.map((elem, index) => {
             return {value: index, content: elem}
         });
 
@@ -360,26 +379,23 @@ class HandlesGr extends FromGroup {
             .forEach(select => this.renderSelectOptions(select, optionsValues));
     }
     init() {
-        const dataType = this.slider.options.dataType;
-        const sliderRange = this.slider.options.range;
-
         this.handleSubsContainer = document.createElement('div');
 
         for(let id in this.slider.options.handles) {
-            this.createHandleSubgroup(dataType, id, sliderRange);
+            this.createHandleSubgroup(id);
         }
 
-        this.group.append(this.handleSubsContainer, this.createExpandSubgroup(dataType, sliderRange));
+        this.group.append(this.handleSubsContainer, this.createExpandSubgroup());
     }
     removeHandleSub(id) {
         this.handleSubsContainer
             .querySelector(`[data-id="${id}"]`).remove();
     }
-    createHandleSubgroup(dataType, id, sliderRange) {
+    createHandleSubgroup(id) {
         const sub = this.createFormSubgroup(id);
         sub.dataset.id = id;
         sub.append(
-            dataType === 'array' ? 
+            this.slider.options.dataType === 'array' ? 
                 this.createLabelSelect('Начальное значение', [
                     'name="handles"',
                     `data-id="${id}"`,
@@ -389,24 +405,28 @@ class HandlesGr extends FromGroup {
                     `name="handles"`,
                     `data-id="${id}"`,
                     'data-action=optionChange',
-                    dataType === 'date' ? 'type="date"' : null
+                    this.slider.options.dataType === 'date' ? 'type="date"' : null
                 ]),
             this.createRemoveBtn({'data-name': 'handles', 'data-id': id, 'data-action': 'remove'})
         );
 
         this.handleSubsContainer.append(sub);
     }
-    createExpandSubgroup(dataType, sliderRange) {
+    createExpandSubgroup() {
         const addSub = this.createFormSubgroup('Добавить бегунок');
         addSub.append(
-            this.createLabelInput('ID', [`data-add="id"`]),
-            dataType === 'array' ? 
-                this.createLabelSelect('Начальное значение', ['name="handles"']) :
+            this.createLabelInput('ID', ['data-name="handles-id"']),
+            this.slider.options.dataType === 'array' ? 
+                this.createLabelSelect('Начальное значение', [
+                    'name="handles"',
+                    'data-name="handles-value"',
+                ]) :
                 this.createLabelInput('Начальное значение', [
-                    'data-add="value"',
-                    dataType === 'date' ? 'type="date"' : null
+                    'name="handles"',
+                    'data-name="handles-value"',
+                    this.slider.options.dataType === 'date' ? 'type="date"' : null
                 ]),
-            this.createAddBtn({btn: 'add'})
+            this.createAddBtn({'data-name': 'handles', 'data-action': 'add'})
         )
         return addSub;
     }
@@ -415,31 +435,31 @@ class ProgressBarsGr extends FromGroup {
     constructor(slider) {
         super('Progress bars', slider);
         this.init();
-        this.updateValidAnchorsSelect(slider.options);
+        this.updateValidAnchorsSelect();
     }
-    updateValidAnchorsSelect(sliderOptions) {
+    updateValidAnchorsSelect() {
         const validAnchors = this.slider.validator.unessentialOptions
             .find(option => option.name === 'progressBars').valid
             .map(anchor => {
                 return {value: anchor, content: anchor};
             });
 
-        this.group.querySelectorAll('select[name="progressBars"]')
-            .forEach(select => this.renderSelectOptions(select, validAnchors));
+        this.renderSelectOptions(
+            this.group.querySelector('select[data-name="progressBars-start"]'), 
+            validAnchors
+        );
+        this.renderSelectOptions(
+            this.group.querySelector('select[data-name="progressBars-end"]'), 
+            validAnchors
+        )
     }
     init() {
-        const validAnchors = this.slider.validator.unessentialOptions
-            .find(option => option.name === 'progressBars').valid
-            .map(anchor => {
-                return {value: anchor, content: anchor};
-            });
-
         this.barsContainer = document.createElement('div');
 
         if(this.slider.options.progressBars) {
             this.slider.options.progressBars.forEach(bar => this.createBarSubgroup(bar))
         }
-        this.group.append(this.barsContainer, this.createExpandSubgroup(validAnchors));
+        this.group.append(this.barsContainer, this.createExpandSubgroup());
     }
     removeBarSubgroup(bar){
         const id = bar[0] + '_' + bar[1];
@@ -456,12 +476,12 @@ class ProgressBarsGr extends FromGroup {
             'data-action': 'remove'}));
         this.barsContainer.append(sub);
     }
-    createExpandSubgroup(validAnchors) {
+    createExpandSubgroup() {
         const sub = this.createFormSubgroup('Добавить progress bar');
         sub.append(
-            this.createLabelSelect('Начальный id', ['name="progressBars"']),
-            this.createLabelSelect('Конечный id', ['name="progressBars"']),
-            this.createAddBtn({btn: 'add'})
+            this.createLabelSelect('Начальный id', ['data-name="progressBars-start"']),
+            this.createLabelSelect('Конечный id', ['data-name="progressBars-end"']),
+            this.createAddBtn({'data-name': 'progressBars', 'data-action': 'add'})
         );
         return sub;
     }
