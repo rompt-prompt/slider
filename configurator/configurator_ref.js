@@ -187,14 +187,18 @@ class FromGroup {
         lab.classList.add('option');
         lab.innerHTML = `
             <span class="option__name">${label}</span>
-            <select ${attr.join(' ')}>
-                ${optionsValues.map(value => 
-                    `<option value="${value}">${value}</option>`
-                ).join('')}
-            </select>
+            <select ${attr.join(' ')}></select>
         `
+        if(optionsValues) {
+            this.renderSelectOptions(lab.querySelector('select'), optionsValues);
+        }
 
         return lab;
+    }
+    renderSelectOptions(parentElem, optionsValues) {
+        parentElem.innerHTML = `${optionsValues.map(option => 
+            `<option value="${option.value}">${option.content}</option>`
+        ).join('')}`;
     }
     createAddBtn(data) {
         const btn = document.createElement('i');
@@ -308,6 +312,7 @@ class HandlesGr extends FromGroup {
     constructor(slider) {
         super('Бегунки', slider);
         this.init();
+        this.updateHandlesSelect(slider.options);
         this.setValue();
     }
 
@@ -316,16 +321,22 @@ class HandlesGr extends FromGroup {
         for(let id in this.slider.options.handles) {
             const elem = this.group.querySelector(`[name="handles"][data-action=optionChange][data-id="${id}"]`);
             let val = this.slider.options.handles[id];
-            if(this.slider.options.dataType === 'array') {
-                val = this.slider.typeHandler.getVerbalValue(val);
-            }
             if(this.slider.options.dataType === 'date') {
                 val = this.convertDateToAttr(val);
             }
             elem.value = val;
         }
     }
+    updateHandlesSelect(sliderOptions) {
+        if(this.slider.options.dataType !== 'array') return;
 
+        const optionsValues = sliderOptions.range.map((elem, index) => {
+            return {value: index, content: elem}
+        });
+
+        this.group.querySelectorAll('select[name="handles"]')
+            .forEach(select => this.renderSelectOptions(select, optionsValues));
+    }
     init() {
         const dataType = this.slider.options.dataType;
         const sliderRange = this.slider.options.range;
@@ -351,7 +362,7 @@ class HandlesGr extends FromGroup {
                     'name="handles"',
                     `data-id="${id}"`,
                     'data-action=optionChange',
-                ], sliderRange) : 
+                ]) : 
                 this.createLabelInput('Начальное значение', [
                     `name="handles"`,
                     `data-id="${id}"`,
@@ -368,7 +379,7 @@ class HandlesGr extends FromGroup {
         addSub.append(
             this.createLabelInput('ID', [`data-add="id"`]),
             dataType === 'array' ? 
-                this.createLabelSelect('Начальное значение', ['name="handles"'], sliderRange) :
+                this.createLabelSelect('Начальное значение', ['name="handles"']) :
                 this.createLabelInput('Начальное значение', [
                     'data-add="value"',
                     dataType === 'date' ? 'type="date"' : null
@@ -382,10 +393,24 @@ class ProgressBarsGr extends FromGroup {
     constructor(slider) {
         super('Progress bars', slider);
         this.init();
+        this.updateValidAnchorsSelect(slider.options);
+    }
+    updateValidAnchorsSelect(sliderOptions) {
+        const validAnchors = this.slider.validator.unessentialOptions
+            .find(option => option.name === 'progressBars').valid
+            .map(anchor => {
+                return {value: anchor, content: anchor};
+            });
+
+        this.group.querySelectorAll('select[name="progressBars"]')
+            .forEach(select => this.renderSelectOptions(select, validAnchors));
     }
     init() {
         const validAnchors = this.slider.validator.unessentialOptions
-            .find(option => option.name === 'progressBars').valid;
+            .find(option => option.name === 'progressBars').valid
+            .map(anchor => {
+                return {value: anchor, content: anchor};
+            });
 
         this.barsContainer = document.createElement('div');
 
@@ -409,8 +434,8 @@ class ProgressBarsGr extends FromGroup {
     createExpandSubgroup(validAnchors) {
         const sub = this.createFormSubgroup('Добавить progress bar');
         sub.append(
-            this.createLabelSelect('Начало', ['name="progressBars"'], validAnchors),
-            this.createLabelSelect('Конец', ['name="progressBars"'], validAnchors),
+            this.createLabelSelect('Начальный id', ['name="progressBars"']),
+            this.createLabelSelect('Конечный id', ['name="progressBars"']),
             this.createAddBtn({btn: 'add'})
         );
         return sub;
