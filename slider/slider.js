@@ -506,12 +506,21 @@ class ArrayHandler {
 class DateHandler {
     constructor(options) {
         this.options = options;
+        this.parseDate();
         if(this.options.stepMeasure === 'month') {
             this.outputDay = this.isLastDayOfMonth(this.options.range[0]) ?
                 'last' : this.options.range[0].getDate();
         }
     }
-
+    parseDate() {
+        this.options.range = [
+            new Date(this.options.range[0]),
+            new Date(this.options.range[1]),
+        ];
+        for(let id in this.options.handles) {
+            this.options.handles[id] = new Date(this.options.handles[id]);
+        }
+    }
     resolveOptionsForModel() {
         const modelOptions = {
             mode: this.options.mode,
