@@ -6,7 +6,65 @@ class Configurator2 {
         this.configContainer = container;
 
         this.model = new ConfiguratorModel(slider);
-        this.view = new ConfiguratorView(slider, container)
+        this.view = new ConfiguratorView(slider, container);
+        this.view.form.onsubmit = () => false;
+        this.view.form.onkeyup = (event) => {
+            if(event.key === 'Enter') {
+                event.target.blur();
+            }
+        }
+        this.view.form.onchange = (event) => {
+            this.onChangeHandler(event.target);
+        };
+    }
+
+    onChangeHandler(target) {
+        if(target.dataset.action !== 'optionChange') return
+    
+        let optionName = target.name;
+        let value = target.value;
+
+        switch (optionName) {
+            case 'range-start':
+                optionName = 'range';
+                value = [
+                    this.slider.options.dataType === 'date' ? new Date(value) : +value, 
+                    this.slider.options.range[1]
+                ];
+                break;
+            case 'range-end':
+                optionName = 'range';
+                value = [
+                    this.slider.options.range[0],
+                    this.slider.options.dataType === 'date' ? new Date(value) : +value
+                ];
+                break;
+            case 'range-array': // TODO обновлять select в view бегунках
+                optionName = 'range';
+                value = value.split('|');
+                break;
+            case 'step':
+                value = +value;
+                break;
+            case 'isVertical':
+            case 'tagsPositions':
+                value = 
+                    value === 'true' ? true :
+                    value === 'false' ? false  :
+                    value;
+                break;
+            case 'handles':
+                const id = target.dataset.id;
+                const handlesCopy = Object.assign({}, this.slider.options.handles);
+                handlesCopy[id] = 
+                    this.slider.options.dataType === 'number' ? +value :
+                    this.slider.options.dataType === 'date' ? new Date(value) : null // TODO fix array
+                value = handlesCopy;
+                break;
+        }
+    
+        this.model.updateOption(optionName, value)
+            .then(this.slider.reset())
     }
 }
 
@@ -71,7 +129,6 @@ class ConfiguratorView {
         this.form = document.createElement('form');
         this.form.append(...this.getFormTemplate().map(elem => elem.group));
         container.append(this.form);
-        // this.setValue('range', slider.options.range)
     }
     getFormTemplate() {
         this.formGroups = [
@@ -95,13 +152,6 @@ class ConfiguratorView {
         }
         return this.formGroups;
     }
-    // setValue(optionName, val) {
-    //     let instance;
-    //     if(optionName === 'range' && this.slider.options.dataType !== 'array') {
-    //         instance = this.formGroups.find(group => group.constructor.name === 'RangeGr');
-    //     }
-    //     instance.setValue(val);
-    // }
 }
 class FromGroup {
     constructor(title, slider) {
@@ -198,8 +248,8 @@ class RangeGr extends FromGroup {
         super('Диапазон', slider);
         this.inputTypeAttr = this.slider.options.dataType === 'date' ? 'type="date"' : 'type="text"'
         this.group.append(
-            this.createLabelInput('Минимум', ['name="range-start"', this.inputTypeAttr, 'data-option=true']),
-            this.createLabelInput('Максимум', ['name="range-end"', this.inputTypeAttr, 'data-option=true'])
+            this.createLabelInput('Минимум', ['name="range-start"', this.inputTypeAttr, 'data-action=optionChange']),
+            this.createLabelInput('Максимум', ['name="range-end"', this.inputTypeAttr, 'data-action=optionChange'])
         );
         this.setValue();
     }
@@ -219,7 +269,7 @@ class RangeArrayGr extends FromGroup {
     constructor(slider) {
         super('Диапазон', slider);
         this.group.append(
-            this.createLabelInput('Массив (разделитель "|")', ['name="range-array"', 'data-option=true']),
+            this.createLabelInput('Массив (разделитель "|")', ['name="range-array"', 'data-action=optionChange']),
         );
         this.setValue();
     }
@@ -232,7 +282,7 @@ class StepGr extends FromGroup {
     constructor(slider) {
         super('', slider);
         this.group.append(
-            this.createLabelInput('Шаг', ['name="step"', 'data-option=true']),
+            this.createLabelInput('Шаг', ['name="step"', 'data-action=optionChange']),
         );
         this.setValue();
     }
@@ -244,8 +294,8 @@ class AffixGr extends FromGroup {
     constructor(slider) {
         super('Префикс и постфикс', slider);
         this.group.append(
-            this.createLabelInput('Префикс', ['name="tagsPrefix"', 'data-option=true']),
-            this.createLabelInput('Постфикс', ['name="tagsPostfix"', 'data-option=true']),
+            this.createLabelInput('Префикс', ['name="tagsPrefix"', 'data-action=optionChange']),
+            this.createLabelInput('Постфикс', ['name="tagsPostfix"', 'data-action=optionChange']),
         );
         this.setValue();
     }
@@ -262,9 +312,9 @@ class HandlesGr extends FromGroup {
     }
 
     setValue() {
-        const handles = this.group.querySelectorAll('[name="handles"][data-option="true"]')
+        const handles = this.group.querySelectorAll('[name="handles"][data-action=optionChange]')
         for(let id in this.slider.options.handles) {
-            const elem = this.group.querySelector(`[name="handles"][data-option="true"][data-id="${id}"]`);
+            const elem = this.group.querySelector(`[name="handles"][data-action=optionChange][data-id="${id}"]`);
             let val = this.slider.options.handles[id];
             if(this.slider.options.dataType === 'array') {
                 val = this.slider.typeHandler.getVerbalValue(val);
@@ -300,12 +350,12 @@ class HandlesGr extends FromGroup {
                 this.createLabelSelect('Начальное значение', [
                     'name="handles"',
                     `data-id="${id}"`,
-                    'data-option=true',
+                    'data-action=optionChange',
                 ], sliderRange) : 
                 this.createLabelInput('Начальное значение', [
                     `name="handles"`,
                     `data-id="${id}"`,
-                    'data-option=true',
+                    'data-action=optionChange',
                     dataType === 'date' ? 'type="date"' : null
                 ]),
             this.createRemoveBtn({handleId: id})
@@ -369,7 +419,7 @@ class ProgressBarsGr extends FromGroup {
 class StepMeasureGr extends FromGroup {
     constructor(slider) {
         super('Размерность шага', slider);
-        const commonAttrs = ['type="radio"', 'name="stepMeasure"', 'data-option=true'];
+        const commonAttrs = ['type="radio"', 'name="stepMeasure"', 'data-action=optionChange'];
         this.group.append(
             this.createLabelInput('День', ['value="day"'].concat(commonAttrs)),
             this.createLabelInput('Месяц', ['value="month"'].concat(commonAttrs)),
@@ -384,7 +434,7 @@ class StepMeasureGr extends FromGroup {
 class IsVerticalGr extends FromGroup {
     constructor(slider) {
         super('Ориентация', slider);
-        const commonAttrs = ['type="radio"', 'name="isVertical"', 'data-option=true'];
+        const commonAttrs = ['type="radio"', 'name="isVertical"', 'data-action=optionChange'];
         this.group.append(
             this.createLabelInput('Вертикальная', ['value="true"'].concat(commonAttrs)),
             this.createLabelInput('Горизонтальная', ['value="false"'].concat(commonAttrs)),
@@ -398,7 +448,7 @@ class IsVerticalGr extends FromGroup {
 class NeighborHandlesGr extends FromGroup {
     constructor(slider) {
         super('Поведение соседних бегунков при одинаковых значениях', slider);
-        const commonAttrs = ['type="radio"', 'name="neighborHandles"', 'data-option=true'];
+        const commonAttrs = ['type="radio"', 'name="neighborHandles"', 'data-action=optionChange'];
         this.group.append(
             this.createLabelInput('Не мешать', ['value="jumpover"'].concat(commonAttrs)),
             this.createLabelInput('Двигаться', ['value="move"'].concat(commonAttrs)),
@@ -413,7 +463,7 @@ class NeighborHandlesGr extends FromGroup {
 class TagsPositionsGr extends FromGroup {
     constructor(slider) {
         super('Ярлыки', slider);
-        const commonAttrs = ['type="radio"', 'name="tagsPositions"', 'data-option=true'];
+        const commonAttrs = ['type="radio"', 'name="tagsPositions"', 'data-action=optionChange'];
         this.group.append(
             this.createLabelInput('Не показывать', ['value="false"'].concat(commonAttrs)),
             this.createLabelInput('Сверху', ['value="top"'].concat(commonAttrs)),
