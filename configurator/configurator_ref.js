@@ -4,8 +4,8 @@ class Configurator2 {
     constructor(slider, container) {
         this.slider = slider;
         this.configContainer = container;
+        this.optionsCopy = this.makeOptionsCopy(slider.options);
 
-        this.model = new ConfiguratorModel(slider);
         this.view = new ConfiguratorView(slider, container);
         this.view.form.onsubmit = () => false;
         this.view.form.onkeyup = (event) => {
@@ -17,57 +17,73 @@ class Configurator2 {
             this.onChangeHandler(event.target);
         };
         this.view.form.onclick = event => {
-console.log(event.target.name, event.target.dataset)
             if(event.target.dataset.action === 'remove') this.removeHandler(event.target);
             else if(event.target.dataset.action === 'add') this.addHandler(event.target);
         }
+    }
+
+    makeOptionsCopy(options) {
+        const copy = JSON.parse(JSON.stringify(options));
+        copy.root = options.root;
+        return copy;
+    }
+    updateOptions() {
+        const validator = new Validator(this.optionsCopy, false)
+        const isValid  = validator.isValidOptions();
+
+        return new Promise((resolve, reject) => {
+            if(isValid) {
+                this.slider.options = this.makeOptionsCopy(this.optionsCopy);
+                this.slider.reset();
+                resolve();
+            } else {
+                reject(validator.errors)
+            }
+        })
     }
 
     removeHandler(target) {
         switch (target.dataset.name) {
             case 'handles':
                 const id = target.dataset.id;
+                delete this.optionsCopy.handles[id];
 
-                this.slider.options.progressBars?.forEach(bar => {
-                    bar.includes(id) ? this.model.removeProgressBar(bar[0], bar[1]) : null;
-                });
+                if(this.optionsCopy.progressBars) {
+                    this.optionsCopy.progressBars = this.optionsCopy.progressBars.filter(bar => {
+                        return !(bar.includes(id));
+                    });
+                }
 
-                if(this.slider.options.handlesTextContent) {
-                    const optionCopy = Object.assign({}, this.slider.options.handlesTextContent);
-
-                    for(let textId in this.slider.options.handlesTextContent) {
+                if(this.optionsCopy.handlesTextContent) {
+                    for(let textId in this.optionsCopy.handlesTextContent) {
                         if(textId === id) {
-                            delete optionCopy[id];
+                            delete this.optionsCopy.handlesTextContent[id];
                         }
                     }
-                    this.model.updateOption('handlesTextContent', optionCopy);
                 }
 
-                if(this.slider.options.tagsPositions) {
-                    const tagsPositions = this.slider.options.tagsPositions;
-                    if(tagsPositions.constructor.name === 'Array') {
-                        const optionCopy = [].concat(tagsPositions);
-                        console.log('before', optionCopy, tagsPositions)
-                        optionCopy.forEach(item => {
-                            
-                            if(item.constructor.name === 'Object') {
-                                delete item[id];
-                            }
-                        })
-                        console.log('after', optionCopy, tagsPositions)
-                    };
-                    
+                if(this.optionsCopy.tagsPositions?.constructor.name === 'Array') {
+                    const objIndex = this.optionsCopy.tagsPositions
+                        .findIndex(elem => elem.constructor.name === 'Object');
+                    if(objIndex == -1) break;
+                    const obj = this.optionsCopy.tagsPositions[objIndex];
 
+                    Object.keys(obj).length == 1 ? 
+                        this.optionsCopy.tagsPositions.splice(objIndex, 1) : 
+                        delete obj[id];
                 }
-
-                this.model.removeHandle(id).then(this.slider.reset());
-
                 break;
             case 'progressBars':
-                this.model.removeProgressBar(target.dataset.anchor1, target.dataset.anchor2)
-                    .then(this.slider.reset());
+                this.optionsCopy.progressBars = 
+                    this.optionsCopy.progressBars.filter(bar => {
+                        return !(
+                            bar.includes(target.dataset.anchor1) && 
+                            bar.includes(target.dataset.anchor2)
+                        );
+                    });
                 break;
         }
+        this.updateOptions().catch(errors => console.log(errors));
     }
 
     addHandler(target) {
@@ -77,18 +93,22 @@ console.log(event.target.name, event.target.dataset)
                 const id = container.querySelector('[data-name="handles-id"]').value;
                 let value = container.querySelector('[data-name="handles-value"]').value;
                 if(!id || !value) break;
-                value = this.slider.options.dataType === 'date' ? new Date(value) : +value;
-        
-                this.model.addNewHandle(id, value).then(this.slider.reset());
+
+                this.optionsCopy.handles[id] = 
+                    this.optionsCopy.dataType === 'date' ? new Date(value) : +value;
                 break;
             case 'progressBars':
                 const anchor1 = container.querySelector('[data-name="progressBars-start"]').value;
                 const anchor2 = container.querySelector('[data-name="progressBars-end"]').value;
 
-                this.model.addNewProgressBar(anchor1, anchor2).then(this.slider.reset());
+                if(this.optionsCopy.progressBars) {
+                    this.optionsCopy.progressBars.push([anchor1, anchor2]);
+                } else {
+                    this.optionsCopy.progressBars = [[anchor1, anchor2]];
+                }
                 break;
         }
-
+        this.updateOptions().catch(errors => console.log(errors));
     }
 
     onChangeHandler(target) {
@@ -96,105 +116,41 @@ console.log(event.target.name, event.target.dataset)
     
         let optionName = target.name;
         let value = target.value;
-
         switch (optionName) {
             case 'range-start':
-                optionName = 'range';
-                value = [
-                    this.slider.options.dataType === 'date' ? new Date(value) : +value, 
-                    this.slider.options.range[1]
-                ];
+                this.optionsCopy.range[0] = 
+                    this.slider.options.dataType === 'date' ? new Date(value) : +value;
                 break;
             case 'range-end':
-                optionName = 'range';
-                value = [
-                    this.slider.options.range[0],
-                    this.slider.options.dataType === 'date' ? new Date(value) : +value
-                ];
+                this.optionsCopy.range[1] = 
+                    this.slider.options.dataType === 'date' ? new Date(value) : +value;
                 break;
             case 'range-array': // TODO обновлять select в view бегунках
-                optionName = 'range';
-                value = value.split('|');
+                this.optionsCopy.range = value.split('|');
                 break;
             case 'step':
-                value = +value;
+                this.optionsCopy.step = +value;
                 break;
             case 'isVertical':
             case 'tagsPositions':
-                value = 
+                this.optionsCopy[optionName] =  
                     value === 'true' ? true :
                     value === 'false' ? false  :
                     value;
                 break;
             case 'handles':
                 const id = target.dataset.id;
-                const handlesCopy = Object.assign({}, this.slider.options.handles);
-                handlesCopy[id] = 
-                    this.slider.options.dataType === 'date' ? new Date(value) : 
+                this.optionsCopy.handles[id] = 
+                    this.optionsCopy.dataType === 'date' ? new Date(value) : 
                     +value
-                value = handlesCopy;
                 break;
+            default: 
+                this.optionsCopy[optionName] = value;
         }
-    
-        this.model.updateOption(optionName, value)
-            .then(this.slider.reset())
+        this.updateOptions().catch(errors => console.log(errors))
     }
 }
 
-class ConfiguratorModel {
-    constructor(slider) {
-        this.slider = slider;
-    }
-
-    updateOption(optionName, value) {
-        let optionsCopy = Object.assign({}, this.slider.options);
-        optionsCopy[optionName] = value;
-        const errors = this.getOptionsErrors(optionsCopy);
-        return new Promise((resolve, reject) => {
-            if(!errors) {
-                this.slider.options = optionsCopy;
-                resolve(this.slider.options);
-            } else {
-                optionsCopy = undefined;
-                reject(errors)
-            }
-        })
-    }
-
-    addNewHandle(id, value) {
-        let optionCopy = Object.assign({}, this.slider.options.handles, {[id]: value});
-        return this.updateOption('handles', optionCopy);
-    }
-
-    addNewProgressBar(anchor1, anchor2) {
-        let optionCopy = [].concat(this.slider.options.progressBars || []);
-        optionCopy.push([anchor1, anchor2]);
-
-        return this.updateOption('progressBars', optionCopy);
-    }
-
-    removeHandle(id) {
-        let optionCopy = Object.assign({}, this.slider.options.handles);
-        delete optionCopy[id];
-
-        return this.updateOption('handles', optionCopy)
-    }
-
-    removeProgressBar(anchor1, anchor2) {
-        let optionCopy = this.slider.options.progressBars.filter(bar => {
-            return !(bar.includes(anchor1) && bar.includes(anchor2));
-        });
-
-        return this.updateOption('progressBars', optionCopy)
-    }
-
-    getOptionsErrors(options) {
-        const validator = new Validator(options, false);
-        validator.isValidOptions();
-
-        return validator.errors;
-    }
-}
 class ConfiguratorView {
     constructor(slider, container) {
         this.slider = slider;

@@ -40,47 +40,47 @@ const demoSliders = [
             'test': new Date('2021-10-30')
         },
         neighborHandles: 'move',
-        // isVertical: false,
-        // progressBars: [
-        //     ['sliderstart', '1'], ['sliderend', '2']
-        // ],
+        isVertical: false,
+        progressBars: [
+            ['sliderstart', '1'], ['sliderend', '2']
+        ],
         tagsPositions: ['top', {2: 'bottom'}],
         handlesTextContent: {
             1: '1', 2: '2'
         },
     },
-    {
-        name: 'slider3',
-        mode: 'select',
-        dataType: 'array',
-        range: ['Австралия', 'Австрия', 'Азербайджан', 'Албания', 
-        'Алжир', 'Ангола', 'Андорра', 'Антигуа и Барбуда', 'Аргентина', 'Армения'],
-        step: 1,
-        handles: {
-            '1': 1,
+    // {
+    //     name: 'slider3',
+    //     mode: 'select',
+    //     dataType: 'array',
+    //     range: ['Австралия', 'Австрия', 'Азербайджан', 'Албания', 
+    //     'Алжир', 'Ангола', 'Андорра', 'Антигуа и Барбуда', 'Аргентина', 'Армения'],
+    //     step: 1,
+    //     handles: {
+    //         '1': 1,
             // '2': 2,
             // '3': 3,
             // '4': 4,
             // '5': 5,
-            '6': 6,
+            // '6': 6,
             // '7': 7,
-            'test': 8,
-        },
-        neighborHandles: 'jumpover',
-        tagsPositions: 'top',
-    },
-    // {
-    //     name: 'slider4',
-    //     mode: 'select',
-    //     dataType: 'array',
-    //     range: ['Австралия', 'Австрия'],
-    //     step: 1,
-    //     handles: {
-    //         '1': 0
+            // 'test': 8,
     //     },
+    //     neighborHandles: 'jumpover',
     //     tagsPositions: 'top',
-    //     isVertical: true,
-    // }
+    // },
+    {
+        name: 'slider4',
+        mode: 'select',
+        dataType: 'array',
+        range: ['Австралия', 'Австрия'],
+        step: 1,
+        handles: {
+            '1': 0
+        },
+        tagsPositions: 'top',
+        isVertical: true,
+    }
 ]
 
 nav.onclick = event => {
@@ -142,7 +142,7 @@ class Demo {
         return elem;
     }
 
-    renderOutput(obj) {
+    renderOutput(obj) { //TODO добавлять output
         for(let id in obj) {
             this.outputs[id].textContent = obj[id];
         }
