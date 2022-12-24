@@ -20,9 +20,12 @@ const demoSliders = [
             ['sliderend', 'max'],
         ],
         neighborHandles: 'jumpover',
-        tagsPositions: 'right',
+        tagsPositions: ['right', {min: 'left'}],
         tagsPostfix: ' ₽',
-        isVertical: true
+        isVertical: true,
+        handlesTextContent: {
+            min: '1', max: '2'
+        },
     },
     {
         name: 'slider2',

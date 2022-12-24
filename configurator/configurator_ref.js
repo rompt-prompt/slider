@@ -27,10 +27,41 @@ console.log(event.target.name, event.target.dataset)
         switch (target.dataset.name) {
             case 'handles':
                 const id = target.dataset.id;
+
                 this.slider.options.progressBars?.forEach(bar => {
                     bar.includes(id) ? this.model.removeProgressBar(bar[0], bar[1]) : null;
-                })
+                });
+
+                if(this.slider.options.handlesTextContent) {
+                    const optionCopy = Object.assign({}, this.slider.options.handlesTextContent);
+
+                    for(let textId in this.slider.options.handlesTextContent) {
+                        if(textId === id) {
+                            delete optionCopy[id];
+                        }
+                    }
+                    this.model.updateOption('handlesTextContent', optionCopy);
+                }
+
+                if(this.slider.options.tagsPositions) {
+                    const tagsPositions = this.slider.options.tagsPositions;
+                    if(tagsPositions.constructor.name === 'Array') {
+                        const optionCopy = [].concat(tagsPositions);
+                        console.log('before', optionCopy, tagsPositions)
+                        optionCopy.forEach(item => {
+                            
+                            if(item.constructor.name === 'Object') {
+                                delete item[id];
+                            }
+                        })
+                        console.log('after', optionCopy, tagsPositions)
+                    };
+                    
+
+                }
+
                 this.model.removeHandle(id).then(this.slider.reset());
+
                 break;
             case 'progressBars':
                 this.model.removeProgressBar(target.dataset.anchor1, target.dataset.anchor2)
