@@ -57,8 +57,8 @@ class Configurator2 {
                 const id = target.dataset.id;
                 const handlesCopy = Object.assign({}, this.slider.options.handles);
                 handlesCopy[id] = 
-                    this.slider.options.dataType === 'number' ? +value :
-                    this.slider.options.dataType === 'date' ? new Date(value) : null // TODO fix array
+                    this.slider.options.dataType === 'date' ? new Date(value) : 
+                    +value
                 value = handlesCopy;
                 break;
         }
