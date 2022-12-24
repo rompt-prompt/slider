@@ -16,6 +16,27 @@ class Configurator2 {
         this.view.form.onchange = (event) => {
             this.onChangeHandler(event.target);
         };
+        this.view.form.onclick = event => {
+console.log(event.target.name, event.target.dataset)
+            if(event.target.dataset.action === 'remove') this.removeHandler(event.target);
+        }
+    }
+
+    removeHandler(target) {
+        switch (target.dataset.name) {
+            case 'handles':
+                const id = target.dataset.id;
+                this.slider.options.progressBars?.forEach(bar => {
+                    bar.includes(id) ? this.model.removeProgressBar(bar[0], bar[1]) : null;
+                })
+                this.model.removeHandle(id).then(this.slider.reset());
+                break;
+            case 'progressBars':
+                console.log('pb')
+                this.model.removeProgressBar(target.dataset.anchor1, target.dataset.anchor2)
+                    .then(this.slider.reset());
+                break;
+        }
     }
 
     onChangeHandler(target) {
@@ -209,11 +230,12 @@ class FromGroup {
 
         return btn;
     }
-    createRemoveBtn(data) {
+    createRemoveBtn(attr) {
         const btn = document.createElement('i');
         btn.classList.add('bi', 'bi-trash');
-        for(let key in data) {
-            btn.dataset[key] = data[key];
+        for(let name in attr) {
+            btn.setAttribute(name, attr[name]);
+            // btn.dataset[key] = data[key];
         }
 
         return btn;
@@ -369,7 +391,7 @@ class HandlesGr extends FromGroup {
                     'data-action=optionChange',
                     dataType === 'date' ? 'type="date"' : null
                 ]),
-            this.createRemoveBtn({handleId: id})
+            this.createRemoveBtn({'data-name': 'handles', 'data-id': id, 'data-action': 'remove'})
         );
 
         this.handleSubsContainer.append(sub);
@@ -427,8 +449,11 @@ class ProgressBarsGr extends FromGroup {
         const id = bar[0] + '_' + bar[1];
         const sub = this.createFormSubgroup(id);
         sub.dataset.id = id;
-        sub.append(this.createRemoveBtn({anchor1: bar[0], anchor2: bar[1]}));
-
+        sub.append(this.createRemoveBtn({
+            'data-name': 'progressBars', 
+            'data-anchor1': bar[0], 
+            'data-anchor2': bar[1], 
+            'data-action': 'remove'}));
         this.barsContainer.append(sub);
     }
     createExpandSubgroup(validAnchors) {
