@@ -28,7 +28,7 @@ class Configurator2 {
         return copy;
     }
     updateOptions() {
-        const validator = new Validator(this.optionsCopy, false)
+        const validator = new Validator(this.optionsCopy, false);
         const isValid  = validator.isValidOptions();
 
         return new Promise((resolve, reject) => {
@@ -37,7 +37,7 @@ class Configurator2 {
                 this.slider.reset();
                 resolve();
             } else {
-                reject(validator.errors)
+                reject(validator.errors);
             }
         })
     }
@@ -83,7 +83,15 @@ class Configurator2 {
                     });
                 break;
         }
-        this.updateOptions().catch(errors => console.log(errors));
+        this.updateOptions()
+            .then(() => {
+                if(target.dataset.name === 'handles') {
+                    const progressBarsGr = this.view.formGroups
+                        .find(group => group.constructor.name === 'ProgressBarsGr');
+                    progressBarsGr.updateValidAnchorsSelect();
+                }
+            })    
+        .catch(errors => console.log(errors));
     }
 
     addHandler(target) {
@@ -125,7 +133,7 @@ class Configurator2 {
                 this.optionsCopy.range[1] = 
                     this.slider.options.dataType === 'date' ? new Date(value) : +value;
                 break;
-            case 'range-array': // TODO обновлять select в view бегунках
+            case 'range-array':
                 this.optionsCopy.range = value.split('|');
                 break;
             case 'step':
@@ -147,7 +155,15 @@ class Configurator2 {
             default: 
                 this.optionsCopy[optionName] = value;
         }
-        this.updateOptions().catch(errors => console.log(errors))
+        this.updateOptions()
+            .then(() => {
+                if(optionName === 'range-array') {
+                    const handlesGr = this.view.formGroups
+                        .find(group => group.constructor.name === 'HandlesGr');
+                    handlesGr.updateHandlesSelect();
+                }
+            })
+            .catch(errors => console.log(errors)) // TODO ERR HANDLER
     }
 }
 
