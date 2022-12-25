@@ -31,7 +31,7 @@ const demoSliders = [
         name: 'slider2',
         mode: 'select',
         dataType: 'date',
-        range: [new Date('2021-01-01'), new Date('2021-12-31')],
+        range: [new Date('2021-01-01'), new Date('2023-12-31')],
         step: 1,
         stepMeasure: 'month',
         handles: {
@@ -143,9 +143,9 @@ class Demo {
     }
 
     renderOutput(obj) { //TODO добавлять output
-        for(let id in obj) {
-            this.outputs[id].textContent = obj[id];
-        }
+        // for(let id in obj) {
+        //     this.outputs[id].textContent = obj[id];
+        // }
     }
 }
 

@@ -45,7 +45,7 @@ class Configurator2 {
     removeHandler(target) {
         switch (target.dataset.name) {
             case 'handles':
-                const id = target.dataset.id;
+                var id = target.dataset.id;
                 delete this.optionsCopy.handles[id];
 
                 if(this.optionsCopy.progressBars) {
@@ -76,31 +76,27 @@ class Configurator2 {
             case 'progressBars':
                 this.optionsCopy.progressBars = 
                     this.optionsCopy.progressBars.filter(bar => {
-                        return !(
-                            bar.includes(target.dataset.anchor1) && 
-                            bar.includes(target.dataset.anchor2)
-                        );
+                        return !(bar[0] === target.dataset.anchor1 && 
+                                bar[1] === target.dataset.anchor2)
+                        ;
                     });
                 break;
         }
         this.updateOptions()
-            .then(() => {
-                if(target.dataset.name === 'handles') {
-                    const progressBarsGr = this.view.formGroups
-                        .find(group => group.constructor.name === 'ProgressBarsGr');
-                    progressBarsGr.updateValidAnchorsSelect();
-                }
-            })    
-        .catch(errors => console.log(errors));
+            .then(() => this.view.updateFormOnSuccess(target))
+            .catch(errors => console.log(errors));
     }
 
     addHandler(target) {
         const container = target.parentElement;
+        let extra;
         switch (target.dataset.name) {
             case 'handles':
                 const id = container.querySelector('[data-name="handles-id"]').value;
-                let value = container.querySelector('[data-name="handles-value"]').value;
-                if(!id || !value) break;
+                const value = container.querySelector('[data-name="handles-value"]').value;
+                if(!id || !value) return;
+
+                extra = {id};
 
                 this.optionsCopy.handles[id] = 
                     this.optionsCopy.dataType === 'date' ? new Date(value) : +value;
@@ -108,6 +104,9 @@ class Configurator2 {
             case 'progressBars':
                 const anchor1 = container.querySelector('[data-name="progressBars-start"]').value;
                 const anchor2 = container.querySelector('[data-name="progressBars-end"]').value;
+                if(anchor1 === anchor2) return;
+
+                extra = {anchor1, anchor2}
 
                 if(this.optionsCopy.progressBars) {
                     this.optionsCopy.progressBars.push([anchor1, anchor2]);
@@ -116,10 +115,14 @@ class Configurator2 {
                 }
                 break;
         }
-        this.updateOptions().catch(errors => console.log(errors));
+        this.updateOptions()
+            .then(() => this.view.updateFormOnSuccess(target, extra))
+            .catch(errors => console.log(errors));
     }
 
     onChangeHandler(target) {
+        console.log(target)
+
         if(target.dataset.action !== 'optionChange') return
     
         let optionName = target.name;
@@ -149,20 +152,15 @@ class Configurator2 {
             case 'handles':
                 const id = target.dataset.id;
                 this.optionsCopy.handles[id] = 
-                    this.optionsCopy.dataType === 'date' ? new Date(value) : 
-                    +value
+                    this.optionsCopy.dataType === 'date' ? 
+                        new Date(value) : 
+                        +value
                 break;
             default: 
                 this.optionsCopy[optionName] = value;
         }
         this.updateOptions()
-            .then(() => {
-                if(optionName === 'range-array') {
-                    const handlesGr = this.view.formGroups
-                        .find(group => group.constructor.name === 'HandlesGr');
-                    handlesGr.updateHandlesSelect();
-                }
-            })
+            .then(() => this.view.updateFormOnSuccess(target))
             .catch(errors => console.log(errors)) // TODO ERR HANDLER
     }
 }
@@ -196,6 +194,58 @@ class ConfiguratorView {
         }
         return this.formGroups;
     }
+    updateFormOnSuccess(target, extra) {
+        const action = target.dataset.action;
+        if(action === 'optionChange') {
+            if(target.name === 'range-array') {
+                const handlesGr = this.formGroups
+                    .find(group => group.constructor.name === 'HandlesGr');
+                handlesGr.updateHandlesSelect();
+            }
+        } else if(action === 'remove') {
+            if(target.dataset.name === 'handles') {
+                const progressBarsGr = this.formGroups
+                    .find(group => group.constructor.name === 'ProgressBarsGr');
+                progressBarsGr.updateValidAnchorsSelect();
+                progressBarsGr.removeBarSubgroup(undefined, target.dataset.id)
+
+                const handlesGr = this.formGroups
+                    .find(group => group.constructor.name === 'HandlesGr');
+                handlesGr.removeHandleSub(target.dataset.id);
+            }
+
+            if(target.dataset.name === 'progressBars') {
+                const progressBarsGr = this.formGroups
+                    .find(group => group.constructor.name === 'ProgressBarsGr');
+                progressBarsGr.removeBarSubgroup([
+                    target.dataset.anchor1,
+                    target.dataset.anchor2
+                ]);
+            }
+        } else if(action === 'add') {
+            if(target.dataset.name === 'handles') {
+                const progressBarsGr = this.formGroups
+                    .find(group => group.constructor.name === 'ProgressBarsGr');
+                progressBarsGr.updateValidAnchorsSelect();
+
+                const handlesGr = this.formGroups
+                    .find(group => group.constructor.name === 'HandlesGr');
+                handlesGr.createHandleSubgroup(extra.id);
+                handlesGr.updateHandlesSelect();
+                handlesGr.setValue(); 
+            }
+
+            if(target.dataset.name === 'progressBars') {
+                const progressBarsGr = this.formGroups
+                    .find(group => group.constructor.name === 'ProgressBarsGr');
+                progressBarsGr.createBarSubgroup([
+                    extra.anchor1, 
+                    extra.anchor2
+                ]);
+            }
+        }
+    }
+    
 }
 class FromGroup {
     constructor(title, slider) {
@@ -464,9 +514,15 @@ class ProgressBarsGr extends FromGroup {
         }
         this.group.append(this.barsContainer, this.createExpandSubgroup());
     }
-    removeBarSubgroup(bar){
-        const id = bar[0] + '_' + bar[1];
-        this.barsContainer.querySelector(`[data-id="${id}"]`).remove();
+    removeBarSubgroup(bar, handleId){
+        if(handleId) {
+            Array.from(this.barsContainer.children).forEach(elem => {
+                if(elem.dataset.id.includes(handleId)) elem.remove();
+            })
+        } else {
+            const id = bar[0] + '_' + bar[1];
+            this.barsContainer.querySelector(`[data-id="${id}"]`).remove();
+        }
     }
     createBarSubgroup(bar) {
         const id = bar[0] + '_' + bar[1];
