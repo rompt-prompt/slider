@@ -1,5 +1,13 @@
+.demo-container,
+.slider-container,
+.output,
+.config {
+  outline: 1px dotted red;
+}
+
 * {
   font-family: "Roboto", sans-serif;
+  color: #4b4a4d;
   padding: 0;
   margin: 0;
   box-sizing: border-box;
@@ -21,11 +29,13 @@ body {
 .nav__list {
   font-size: 40px;
   text-align: center;
-  color: #becedd;
 }
 .nav__item {
   cursor: pointer;
   margin-top: 50px;
+}
+.nav__item i {
+  color: #becedd;
 }
 .nav__item:hover {
   background-color: #1d4572;
@@ -75,7 +85,6 @@ body {
   margin-right: 5px;
 }
 .content .page .demo-container .config {
-  outline: 1px dotted red;
   flex: 1 0 auto;
 }
 .content .page .card {

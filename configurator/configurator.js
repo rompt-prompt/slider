@@ -15,10 +15,12 @@ class Configurator {
         }
         this.view.form.onchange = (event) => {
             this.onChangeHandler(event.target);
+            this.view.hideError();
         };
         this.view.form.onclick = event => {
             if(event.target.dataset.action === 'remove') this.removeHandler(event.target);
             else if(event.target.dataset.action === 'add') this.addHandler(event.target);
+            this.view.hideError();
         }
     }
 
@@ -181,7 +183,7 @@ class ConfiguratorView {
             this.form.append(this.formGroups[key].group)
         }
         this.errorContainer = document.createElement('div');
-        this.errorContainer.classList.add('error');
+        this.errorContainer.classList.add('config__group', 'group', 'group_error');
         container.append(this.form, this.errorContainer);
     }
     createFormGroups() {
@@ -216,7 +218,6 @@ class ConfiguratorView {
     }
     updateFormOnSuccess(target, extra) {
         const action = target.dataset.action;
-        this.errorContainer.innerHTML = '';
         if(action === 'optionChange') {
             if(target.name === 'range-array') {
                 this.formGroups.HandlesGr.updateHandlesSelect();
@@ -269,12 +270,15 @@ class ConfiguratorView {
         message = message.replaceAll('>', '&gt;').replaceAll('<', '&lt;');
         this.errorContainer.classList.add('error_show');
         this.errorContainer.innerHTML = `
-                <h3 class="group__name">Ошибка</h3>
                 <pre class="error__message">
                     ${message}
                 </pre>
         `
-        setTimeout(() => this.errorContainer.classList.remove('error_show'), 10000) // TODO ???
+        // setTimeout(() => this.errorContainer.classList.remove('error_show'), 10000) // TODO ???
+    }
+    hideError() {
+        this.errorContainer.innerHTML = '';
+        this.errorContainer.classList.remove('error_show');
     }
 }
 class FromGroup {
@@ -300,9 +304,17 @@ class FromGroup {
         const lab = document.createElement('label');
         lab.classList.add('option');
         lab.innerHTML = `
-            <span class="option__name">${label}</span>
             <input ${attr.join(' ')} data-instance="${this.constructor.name}">
         `
+        if(attr.includes('type="radio"')) {
+            lab.insertAdjacentHTML('beforeend',`
+                <span class="option__name">${label}</span>
+            `)
+        } else {
+            lab.insertAdjacentHTML('afterbegin',`
+                <span class="option__name">${label}</span>
+            `)
+        }
 
         return lab;
     }
@@ -408,9 +420,9 @@ class RangeArrayGr extends FromGroup {
 }
 class StepGr extends FromGroup {
     constructor(slider) {
-        super('', slider);
+        super('Шаг', slider);
         this.group.append(
-            this.createLabelInput('Шаг', ['name="step"', 'data-action=optionChange']),
+            this.createLabelInput('', ['name="step"', 'data-action=optionChange']),
         );
         this.setValue();
     }
@@ -476,6 +488,7 @@ class HandlesGr extends FromGroup {
     }
     createHandleSubgroup(id) {
         const sub = this.createFormSubgroup(id);
+        sub.classList.add('subgroup_body');
         sub.dataset.id = id;
         sub.append(
             this.slider.options.dataType === 'array' ? 
@@ -497,6 +510,7 @@ class HandlesGr extends FromGroup {
     }
     createExpandSubgroup() {
         const addSub = this.createFormSubgroup('Добавить бегунок');
+        addSub.classList.add('subgroup_footer');
         addSub.append(
             this.createLabelInput('ID', ['data-name="handles-id"']),
             this.slider.options.dataType === 'array' ? 
@@ -557,6 +571,7 @@ class ProgressBarsGr extends FromGroup {
     createBarSubgroup(bar) {
         const id = bar[0] + '_' + bar[1];
         const sub = this.createFormSubgroup(id);
+        sub.classList.add('subgroup_body');
         sub.dataset.id = id;
         sub.append(this.createRemoveBtn({
             'data-name': 'progressBars', 
@@ -567,6 +582,7 @@ class ProgressBarsGr extends FromGroup {
     }
     createExpandSubgroup() {
         const sub = this.createFormSubgroup('Добавить progress bar');
+        sub.classList.add('subgroup_footer');
         sub.append(
             this.createLabelSelect('Начальный id', ['data-name="progressBars-start"']),
             this.createLabelSelect('Конечный id', ['data-name="progressBars-end"']),

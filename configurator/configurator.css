@@ -1,3 +1,58 @@
 .config__group {
-  outline: 1px dotted red;
+  margin: 15px;
+}
+.config .group {
+  min-height: 50px;
+  padding: 15px 15px 7px;
+  border: 1px dashed #becedd;
+  border-radius: 4px;
+  position: relative;
+}
+.config .group__name {
+  position: absolute;
+  left: 25px;
+  top: -11px;
+  background-color: #f3f3f7;
+  padding: 0 5px;
+}
+.config .group .option:not(:first-of-type) {
+  margin-left: 15px;
+}
+.config .group .subgroup {
+  padding: 10px 0;
+}
+.config .group .subgroup_body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.config .group .subgroup_footer {
+  border-top: 1px dashed #becedd;
+}
+.config .group .subgroup_footer .subgroup__name {
+  padding-bottom: 10px;
+}
+.config .group input:not([type=radio]), .config .group select {
+  width: 100px;
+}
+.config .group .bi.bi-trash, .config .group .bi.bi-plus-square {
+  cursor: pointer;
+}
+.config .group_error {
+  display: none;
+  background-color: #FFBABA;
+  padding: 7px;
+  border-color: #D8000C;
+}
+.config .group_error .group__name {
+  position: unset;
+  left: 0;
+  top: "";
+}
+.config .group_error .error__message {
+  min-height: 10px;
+  color: #D8000C;
+}
+.config .group_error.error_show {
+  display: block;
 }/*# sourceMappingURL=configurator.css.map */

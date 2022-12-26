@@ -1,3 +1,76 @@
-.config__group {
-    outline: 1px dotted red;
-} 
+$dark: #132c48;
+$lite: #becedd;
+$accent: #1d4572;
+$font-color: #4b4a4d;
+$bg: #f3f3f7;
+$error-color: #D8000C;
+$error-bg: #FFBABA;
+
+.config {
+    &__group {
+        margin: 15px;
+    }
+    .group {
+        min-height: 50px;
+        padding: 15px 15px 7px;
+        border: 1px dashed $lite;
+        border-radius: 4px;
+        position: relative;
+
+        &__name {
+            position: absolute;
+            left: 25px;
+            top: -11px;
+            background-color: $bg;
+            padding: 0 5px;
+        }
+        .option:not(:first-of-type) {
+            margin-left: 15px;
+        }
+        .subgroup {
+            padding: 10px 0;
+
+            &_body {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            &_footer {
+                border-top: 1px dashed $lite;
+
+                .subgroup__name {
+                    padding-bottom: 10px;
+                }
+            }
+        }
+        input:not([type="radio"]), select {
+            width: 100px;
+        }
+        .bi.bi-trash, .bi.bi-plus-square {
+            cursor: pointer;
+        }
+        &_error {
+            display: none;
+            background-color: $error-bg;
+            padding: 7px;
+            border-color: $error-color;
+
+
+            .group__name {
+                position: unset;
+                left: 0;
+                top: '';
+            }
+
+            .error__message {
+                min-height: 10px;
+                color: $error-color;
+            }
+
+            &.error_show {
+                display: block;
+            }
+        }
+    }
+}
