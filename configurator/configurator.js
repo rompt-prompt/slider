@@ -240,6 +240,9 @@ class ConfiguratorView {
                 this.formGroups.HandlesGr.createHandleSubgroup(extra.id);
                 this.formGroups.HandlesGr.updateHandlesSelect();
                 this.formGroups.HandlesGr.setValue(); 
+                target.parentElement.querySelectorAll('input').forEach(elem => {
+                    elem.value = '';
+                })
             }
 
             if(target.dataset.name === 'progressBars') {
