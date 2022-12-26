@@ -226,7 +226,7 @@ class SliderModel {
 
                 coresToGlue.forEach(id => {
                     this.cores[id].pcnt = pcnt;
-                    this.cores[id].value = this.formatValueCapacity(this.calcValueFromPcnt(pcnt));
+                    this.cores[id].value = value;
                 })
 
                 break;
