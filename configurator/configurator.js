@@ -4,446 +4,632 @@ class Configurator {
     constructor(slider, container) {
         this.slider = slider;
         this.configContainer = container;
+        this.optionsCopy = this.makeOptionsCopy(slider.options);
 
-        this.createConfigInstances();
-        this.createForm();
-        this.form.onsubmit = () => false;
-        this.form.onkeyup = (event) => {
+        this.view = new ConfiguratorView(slider, container);
+        this.view.form.onsubmit = () => false;
+        this.view.form.onkeyup = (event) => {
             if(event.key === 'Enter') {
-                this.onChange(event.target);
                 event.target.blur();
             }
         }
-        this.form.onchange = (event) => {
-            this.onChange(event.target);
+        this.view.form.onchange = (event) => {
+            this.onChangeHandler(event.target);
         };
+        this.view.form.onclick = event => {
+            if(event.target.dataset.action === 'remove') this.removeHandler(event.target);
+            else if(event.target.dataset.action === 'add') this.addHandler(event.target);
+        }
     }
 
-    createForm() {
+    makeOptionsCopy(options) {
+        const copy = JSON.parse(JSON.stringify(options));
+        copy.root = options.root;
+        return copy;
+    }
+    updateOptions() {
+        const validator = new Validator(this.optionsCopy, false);
+        const isValid  = validator.isValidOptions();
+
+        return new Promise((resolve, reject) => {
+            if(isValid) {
+                this.slider.options = this.makeOptionsCopy(this.optionsCopy);
+                this.slider.reset();
+                resolve();
+            } else {
+                this.optionsCopy = this.makeOptionsCopy(this.slider.options);
+                reject(validator.errors);
+            }
+        })
+    }
+
+    removeHandler(target) {
+        switch (target.dataset.name) {
+            case 'handles':
+                const id = target.dataset.id;
+                delete this.optionsCopy.handles[id];
+
+                if(this.optionsCopy.progressBars) {
+                    this.optionsCopy.progressBars = this.optionsCopy.progressBars.filter(bar => {
+                        return !(bar.includes(id));
+                    });
+                }
+
+                if(this.optionsCopy.handlesTextContent) {
+                    for(let textId in this.optionsCopy.handlesTextContent) {
+                        if(textId === id) {
+                            delete this.optionsCopy.handlesTextContent[id];
+                        }
+                    }
+                }
+
+                if(this.optionsCopy.tagsPositions?.constructor.name === 'Array') {
+                    const objIndex = this.optionsCopy.tagsPositions
+                        .findIndex(elem => elem.constructor.name === 'Object');
+                    if(objIndex == -1) break;
+                    const obj = this.optionsCopy.tagsPositions[objIndex];
+
+                    Object.keys(obj).length == 1 ? 
+                        this.optionsCopy.tagsPositions.splice(objIndex, 1) : 
+                        delete obj[id];
+                }
+                break;
+            case 'progressBars':
+                this.optionsCopy.progressBars = 
+                    this.optionsCopy.progressBars.filter(bar => {
+                        return !(bar[0] === target.dataset.anchor1 && 
+                                bar[1] === target.dataset.anchor2)
+                        ;
+                    });
+                break;
+        }
+        this.updateOptions()
+            .then(() => this.view.updateFormOnSuccess(target))
+            .catch(errors => {
+                this.view.showError(errors);
+            });
+    }
+
+    addHandler(target) {
+        const container = target.parentElement;
+        let extra;
+        switch (target.dataset.name) {
+            case 'handles':
+                const id = container.querySelector('[data-name="handles-id"]').value;
+                const value = container.querySelector('[data-name="handles-value"]').value;
+                if(!id || !value) return;
+
+                extra = {id};
+
+                this.optionsCopy.handles[id] = 
+                    this.optionsCopy.dataType === 'date' ? new Date(value) : +value;
+                break;
+            case 'progressBars':
+                const anchor1 = container.querySelector('[data-name="progressBars-start"]').value;
+                const anchor2 = container.querySelector('[data-name="progressBars-end"]').value;
+                if(anchor1 === anchor2) return;
+
+                extra = {anchor1, anchor2}
+
+                if(this.optionsCopy.progressBars) {
+                    this.optionsCopy.progressBars.push([anchor1, anchor2]);
+                } else {
+                    this.optionsCopy.progressBars = [[anchor1, anchor2]];
+                }
+                break;
+        }
+        this.updateOptions()
+            .then(() => this.view.updateFormOnSuccess(target, extra))
+            .catch(errors => {
+                this.view.returnValuesOnChangeFail(target)
+                this.view.showError(errors);
+            });
+    }
+
+    onChangeHandler(target) {
+        if(target.dataset.action !== 'optionChange') return
+    
+        let optionName = target.name;
+        let value = target.value;
+        switch (optionName) {
+            case 'range-start':
+                this.optionsCopy.range[0] = 
+                    this.slider.options.dataType === 'date' ? new Date(value) : +value;
+                break;
+            case 'range-end':
+                this.optionsCopy.range[1] = 
+                    this.slider.options.dataType === 'date' ? new Date(value) : +value;
+                break;
+            case 'range-array':
+                this.optionsCopy.range = value.split('|');
+                break;
+            case 'step':
+                this.optionsCopy.step = +value;
+                break;
+            case 'isVertical':
+            case 'tagsPositions':
+                this.optionsCopy[optionName] =  
+                    value === 'true' ? true :
+                    value === 'false' ? false  :
+                    value;
+                break;
+            case 'handles':
+                const id = target.dataset.id;
+                this.optionsCopy.handles[id] = 
+                    this.optionsCopy.dataType === 'date' ? 
+                        new Date(value) : 
+                        +value
+                break;
+            default: 
+                this.optionsCopy[optionName] = value;
+        }
+        this.updateOptions()
+            .then(() => this.view.updateFormOnSuccess(target))
+            .catch(errors => {
+                this.view.returnValuesOnChangeFail(target)
+                this.view.showError(errors);
+            });
+    }
+}
+
+class ConfiguratorView {
+    constructor(slider, container) {
+        this.slider = slider;
         this.form = document.createElement('form');
-        this.configContainer.append(this.form);
-
-        this.config.forEach(option => {
-            this.form.append(this.createFormGroup(option.groupTitle, option.elements))
-        });
+        this.createFormGroups();
+        for(let key in this.formGroups) {
+            this.form.append(this.formGroups[key].group)
+        }
+        this.errorContainer = document.createElement('div');
+        this.errorContainer.classList.add('error');
+        container.append(this.form, this.errorContainer);
     }
+    createFormGroups() {
+        const createInstance = (ClassName) => {
+            const instance = new ClassName(this.slider)
+            return {[instance.constructor.name]: instance}
+        };
+        this.formGroups = {};
+        if(this.slider.options.dataType === 'number') {
+            Object.assign(this.formGroups, createInstance(RangeGr));
+        }
+        if(this.slider.options.dataType === 'date') {
+            Object.assign(this.formGroups, 
+                createInstance(RangeGr),
+                createInstance(StepMeasureGr)
+                );
+        }
+        if(this.slider.options.dataType === 'array') {
+            Object.assign(this.formGroups, createInstance(RangeArrayGr));
+        }
+        
+        Object.assign(this.formGroups,
+            createInstance(StepGr),
+            createInstance(IsVerticalGr),
+            createInstance(NeighborHandlesGr),
+            createInstance(TagsPositionsGr),
+            createInstance(AffixGr),
+            createInstance(HandlesGr),
+            createInstance(ProgressBarsGr),
+        );
 
-    createFormGroup(title, elements) {
+    }
+    updateFormOnSuccess(target, extra) {
+        const action = target.dataset.action;
+        this.errorContainer.innerHTML = '';
+        if(action === 'optionChange') {
+            if(target.name === 'range-array') {
+                this.formGroups.HandlesGr.updateHandlesSelect();
+            }
+        } else if(action === 'remove') {
+            if(target.dataset.name === 'handles') {
+                this.formGroups.ProgressBarsGr.updateValidAnchorsSelect();
+                this.formGroups.ProgressBarsGr.removeBarSubgroup(undefined, target.dataset.id)
+                this.formGroups.HandlesGr.removeHandleSub(target.dataset.id);
+            }
+
+            if(target.dataset.name === 'progressBars') {
+                this.formGroups.ProgressBarsGr.removeBarSubgroup([
+                    target.dataset.anchor1,
+                    target.dataset.anchor2
+                ]);
+            }
+        } else if(action === 'add') {
+            if(target.dataset.name === 'handles') {
+                this.formGroups.ProgressBarsGr.updateValidAnchorsSelect();
+                this.formGroups.HandlesGr.createHandleSubgroup(extra.id);
+                this.formGroups.HandlesGr.updateHandlesSelect();
+                this.formGroups.HandlesGr.setValue(); 
+            }
+
+            if(target.dataset.name === 'progressBars') {
+                this.formGroups.ProgressBarsGr.createBarSubgroup([
+                    extra.anchor1, 
+                    extra.anchor2
+                ]);
+            }
+        }
+    }
+    returnValuesOnChangeFail(target) {
+        const action = target.dataset.action;
+        if(action === 'optionChange') {
+            const className = target.dataset.instance;
+            this.formGroups[className].setValue();
+        }
+        if(action === 'add' && target.dataset.name === 'handles') {
+            const container = target.parentElement;
+            container.querySelector('[data-name="handles-id"]').value = '';
+            container.querySelector('[data-name="handles-value"]').value = '';
+        }
+    }
+    showError(message) {
+        message = message.replaceAll('>', '&gt;').replaceAll('<', '&lt;');
+        this.errorContainer.classList.add('error_show');
+        this.errorContainer.innerHTML = `
+                <h3 class="group__name">Ошибка</h3>
+                <pre class="error__message">
+                    ${message}
+                </pre>
+        `
+        setTimeout(() => this.errorContainer.classList.remove('error_show'), 10000) // TODO ???
+    }
+}
+class FromGroup {
+    constructor(title, slider) {
+        this.group = this.createFormGroup(title);
+        this.slider = slider;
+    }
+    createFormGroup(title) {
         const group = document.createElement('div');
         group.classList.add('config__group', 'group');
-        group.innerHTML = `
-            <h3 class="group__name">${title}</h3>
-        `;
-
-        elements.forEach(elem => group.append(elem));
+        if(title) group.innerHTML = `<h3 class="group__name">${title}</h3>`;
 
         return group;
     }
-
-    createConfigInstances() {
-        this.config = [
-            
-            new Option(this.slider, 'step', 'Шаг', [
-                {
-                    attributes: {type: 'number', value: this.slider.options.step},
-                },
-            ], (val) => +val),
-            new RadioOption(this.slider, 'isVertical', 'Ориентация', [
-                {
-                    title: 'Вертикальная', 
-                    attributes: {value: true}
-                },
-                {
-                    title: 'Горизонтальная', 
-                    attributes: {value: false}
-                }
-            ], val => val === 'true' && !(val === 'false')
-            ),
-            new RadioOption(this.slider, 'neighborHandles', 'Поведение соседних бегунков при одинаковых значениях', [
-                {
-                    title: 'Не мешать', 
-                    attributes: {value: 'jumpover'}
-                },
-                {   title: 'Двигаться', 
-                    attributes: {value: 'move'}
-                },
-                {   title: 'Останавливать', 
-                    attributes: {value: 'stop'}
-                },
-            ]),
-            new RadioOption(this.slider,'tagsPositions', 'Ярлыки', [
-                {
-                    title: 'Не показывать', 
-                    attributes: {value: false}
-                },
-                {   
-                    title: 'Сверху', 
-                    attributes: {value: 'top'}
-                },
-                {   
-                    title: 'Снизу', 
-                    attributes: {value: 'bottom'}
-                },
-                {   
-                    title: 'Справа', 
-                    attributes: {value: 'right'}
-                },
-                {
-                    title: 'Слева', 
-                    attributes: {value: 'left'}
-                },
-            ]),
-            new Option(this.slider, 'tagsPrefix', 'Префикс', [
-                {
-                    attributes: {value: this.slider.options.tagsPrefix || ''}
-                },
-            ]),
-            new Option(this.slider, 'tagsPostfix', 'Постфикс', [
-                {
-                    attributes: {value: this.slider.options.tagsPostfix || ''}
-                },
-            ]),
-            new HandlesConfig(this.slider),
-            new ProgressBarConfig(this.slider)
-        ];
-
-        if(this.slider.options.dataType === 'number') {
-            this.config.unshift(
-                new RangeOption(this.slider),
-            )
-        }
-
-        if(this.slider.options.dataType === 'date') {
-            this.config.unshift(
-                new RangeOption(this.slider),
-                new RadioOption(this.slider, 'stepMeasure', 'Размерность шага', [
-                    {
-                        title: 'День', 
-                        attributes: {value: 'day'}
-                    },
-                    {
-                        title: 'Месяц', 
-                        attributes: {value: 'month'}
-                    },
-                    {
-                        title: 'Год', 
-                        attributes: {value: 'year'}
-                    }
-                ])
-            )
-        }
-        if(this.slider.options.dataType === 'array') {
-            this.config.unshift(
-                new RangeArrayOption(this.slider),
-            )
-        }
-    }
-
-    calcRangeLimits(slider) {
-        const minCore = slider.model.getClosestId(0);
-        const maxCore = slider.model.getClosestId(100);
-
-        let min = slider.model.cores[minCore].verbalValue;
-        let max = slider.model.cores[maxCore].verbalValue;
-
-        return {min, max}
-    }
-
-    onChange(target) {
-        let optionsBackUp = Object.assign({}, this.slider.options)
-
-        // this.config.find(option => {
-        //     if(option.optionName === name) {
-        //         option.update()
-        //         if(this.slider.validator.isValidOptions(this.slider.options)) {
-        //             this.slider.reset()
-        //         } else {
-        //             this.slider.options = Object.assign(this.slider.options, optionsBackUp);
-        //             option.setValueAttr();
-        //             console.log(this.slider.validator.errors); // TODO in div output
-        //         }
-        //     }
-        // })
-        this.config.find(option => {
-            if(option.optionName === target.name) {
-                option.update(target).then(this.slider.reset());
-            }
-        })
-    }
-
-}
-class Option {
-    constructor(slider, optionName, groupTitle, inputs, converter) {
-        this.groupTitle = groupTitle;
-        this.optionName = optionName;
-        this.slider = slider;
-        this.converter = converter;
-        this.createInputs(inputs);
-    }
-
-    createInputs(inputs) {
-        this.elements = [];
-        inputs.forEach(input => {
-            const labelElem = document.createElement('label');
-            labelElem.classList.add('option');
-            input.title ? labelElem.innerHTML = `<span class="option__name">${input.title}</span>` : null;
-
-            const inputElem = document.createElement('input');
-            for(let attr in input.attributes) {
-                inputElem.setAttribute(attr, input.attributes[attr]);
-            }
-            inputElem.setAttribute('name', this.optionName)
-            labelElem.append(inputElem);
-
-            this.elements.push(labelElem)
-        })
-    }
-    update(target, value) {
-        let val = target.value || value;
-        if(this.converter) val = this.converter(val);
-        return new Promise(resolve => this.slider.options[this.optionName] = val);
-    }
-}
-class RangeOption extends Option {
-    constructor(slider) {
-        const optionName = 'range';
-        const groupTitle = 'Диапазон';
-        const calcLimit = (pcnt) => {
-            return slider.model.cores[slider.model.getClosestId(pcnt)].verbalValue;
-        };
-        const formatValue = (value) => {
-            return slider.options.dataType === 'date' ?
-                        slider.typeHandler.formatDate(value) :
-                        +value;
-        }
-        const type = slider.options.dataType === 'date' ? 'date' : 'number';
-
-        const inputs = [
-            {
-                title: 'Минимум', 
-                attributes: {
-                    type, 'data-range': 'start', 
-                    value: formatValue(slider.options.range[0]), 
-                    // max: calcLimit(0), // TODO fix update limits
-                }
-            }, 
-            {
-                title: 'Максимум', 
-                attributes: {
-                    type, 'data-range': 'end', 
-                    value: formatValue(slider.options.range[1]), 
-                    // min: calcLimit(100), // TODO fix update limits
-                }
-            }
-        ]
-        if(type === 'number') inputs.forEach(input => {
-            Object.assign(input.attributes, {step: 0.25})
-        })
-            
-        super(slider, optionName, groupTitle, inputs);
-    }
-
-    update(target) {
-        const value = 
-            this.slider.options.dataType === 'date' ?
-            new Date(target.value) :
-            this.slider.options.dataType === 'number' ?
-            +target.value :
-            null;
-
-        return new Promise(resolve => {
-            if(target.dataset.range === 'start') this.slider.options.range[0] = value;
-            if(target.dataset.range === 'end') this.slider.options.range[1] = value;
-        })
+    createFormSubgroup(title) {
+        const sub = document.createElement('div');
+        sub.classList.add('subgroup');
+        sub.innerHTML = `<h4 class="subgroup__name">${title}</h4>`;
         
+        return sub;
     }
-}
-
-class RangeArrayOption extends Option {
-    constructor(slider) {
-        const optionName = 'range-array';
-        const groupTitle = 'Диапазон';
-        const value = slider.options.range.join('|')
-        const inputs = [{
-            title: 'Массив (разделитель "|")', 
-            attributes: {type: 'text', value}
-        }]
-        super(slider, optionName, groupTitle, inputs)
-    }
-
-    update(target) {
-        const value = target.value.split('|');
-        value.forEach(item => item.trim());
-
-        return new Promise(resolve => {
-            this.slider.options.range = value;
-        })
-    }
-}
-
-class RadioOption extends Option {
-    constructor(slider, optionName, groupTitle, inputs, converter) {
-        const isChecked = inputValue => {
-            const current = 
-                slider.options[optionName] || 
-                slider.validator.unessentialOptions
-                    .find(option => option.name === optionName).default;
-            return inputValue.toString() === current.toString();
-        }
-        inputs.forEach(input => {
-            Object.assign(input.attributes, {type: 'radio'},
-                isChecked(input.attributes.value) ? {checked: true} : null)
-        });
-        super(slider, optionName, groupTitle, inputs, converter);
-        this.setCheckedAttr
-    }
-}
-
-class HandlesConfig {
-    constructor(slider) {
-        this.groupTitle = 'Бегунки';
-        this.optionName = 'handles';
-        this.slider = slider;
-
-        this.craeteHandleTamplate();
-    }
-
-    craeteHandleTamplate() {
-        const formatValue = (value) => {
-            return this.slider.options.dataType === 'date' ?
-                        this.slider.typeHandler.formatDate(value) :
-                        +value;
-        }
-
-        this.elements = [];
-        for(let id in this.slider.options.handles) {
-            const elem = document.createElement('div');
-            elem.classList.add('subgroup');
-
-            const subGroup = document.createElement('div');
-            subGroup.classList.add('subgroup__name');
-            subGroup.innerHTML = `<h4 class="subgroup__name">${id}</h4>`;
-            elem.append(subGroup);
-
-
-            const type = this.slider.options.dataType === 'date' ? 'date' : 'text';
-            const inputStartVal = new Option(this.slider, this.optionName, null, [
-                {
-                    title: 'Начальное значение',
-                    attributes: {
-                        type, value: formatValue(this.slider.options.handles[id]),
-                        'data-id': id, 'data-type': 'start',
-                        // min: formatValue(this.slider.options.range[0]), // TODO fix update limits
-                        // max: formatValue(this.slider.options.range[1]), // TODO fix update limits
-                    }
-                }
-            ]);
-            subGroup.append(...inputStartVal.elements);
-
-            this.elements.push(elem);
-        }
-    }
-
-    update(target) {
-        const value = 
-            this.slider.options.dataType === 'date' ?
-            new Date(target.value) :
-            this.slider.options.dataType === 'number' ?
-            +target.value :
-            null;
-
-        return new Promise(resolve => this.slider.options.handles[target.dataset.id] = value);
-    }   
-}
-
-class ProgressBarConfig {
-    constructor(slider) {
-        this.groupTitle = 'Progress bars';
-        this.optionName = 'progressBars';
-        this.slider = slider;
-
-        this.craeteProgressBarsTamplate();
-        this.createNewPBTemplate();
-    }
-
-    craeteProgressBarsTamplate() {
-        this.elements = [];
-        this.slider.options.progressBars?.forEach(progressBar => {
-            const id = progressBar[0] + '_' + progressBar[1];
-            const elem = document.createElement('div');
-            elem.classList.add('subgroup');
-
-            const subGroup = document.createElement('div');
-            subGroup.classList.add('subgroup__name');
-            subGroup.innerHTML = `<h4 class="subgroup__name">${id}</h4>`;
-
-            const delBtn = document.createElement('i');
-            delBtn.classList.add('bi', 'bi-trash');
-            delBtn.dataset.id = id;
-            delBtn.onclick = () => {
-                const delIndex = this.slider.options.progressBars
-                    .findIndex(progressBar => {
-                        return progressBar[0] === id.split('_')[0] && 
-                                progressBar[1] === id.split('_')[1];
-                });
-                this.slider.options.progressBars.splice(delIndex, 1)
-                console.log(delIndex)
-
-                this.slider.reset();
-            }
-            subGroup.append(delBtn);
-
-
-            elem.append(subGroup);
-
-            this.elements.push(elem);
-        });
-    }
-
-    createNewPBTemplate() {
-        const subGroup = document.createElement('div');
-        subGroup.classList.add('subgroup');
-        subGroup.innerHTML = `<h4 class="subgroup__name">Добавить progress bar</h4>`;
-
-        const progressStart = this.cerateSelect('Начало', 
-            this.slider.validator.unessentialOptions
-                .find(option => option.name === 'progressBars').valid);
-        const progressEnd = this.cerateSelect('Конец', 
-            this.slider.validator.unessentialOptions
-                .find(option => option.name === 'progressBars').valid);
-        
-
-
-        const addBtn = document.createElement('i');
-        addBtn.classList.add('bi', 'bi-plus-square');
-        addBtn.onclick = () => {
-            if(!this.slider.options.progressBars) this.slider.options.progressBars = [];
-            this.slider.options.progressBars.push([
-                progressStart.querySelector('select').value, 
-                progressEnd.querySelector('select').value
-            ]);
-
-            this.slider.reset();
-        }
-        
-        subGroup.append(progressStart, progressEnd, addBtn);
-
-        this.elements.push(subGroup);
-    }
-
-    cerateSelect(title, options) {
-        const selectElem = document.createElement('label');
-        const optionsHTML = options.map(option => {
-            return `<option value="${option}">${option}</option>`
-        })
-
-        selectElem.classList.add('option');
-        selectElem.innerHTML = `
-            <span class="option__name">${title}</span>
-            <select name="${this.optionName}">
-                ${optionsHTML.join('')}
-            </select>
+    createLabelInput(label, attr) {
+        const lab = document.createElement('label');
+        lab.classList.add('option');
+        lab.innerHTML = `
+            <span class="option__name">${label}</span>
+            <input ${attr.join(' ')} data-instance="${this.constructor.name}">
         `
-        return selectElem;
+
+        return lab;
+    }
+    createLabelSelect(label, attr, optionsValues) {
+        const lab = document.createElement('label');
+        lab.classList.add('option');
+        lab.innerHTML = `
+            <span class="option__name">${label}</span>
+            <select ${attr.join(' ')} data-instance="${this.constructor.name}"></select>
+        `
+        if(optionsValues) {
+            this.renderSelectOptions(lab.querySelector('select'), optionsValues);
+        }
+
+        return lab;
+    }
+    renderSelectOptions(parentElem, optionsValues) {
+        parentElem.innerHTML = `${optionsValues.map(option => 
+            `<option value="${option.value}">${option.content}</option>`
+        ).join('')}`;
+    }
+    createAddBtn(attr) {
+        const btn = document.createElement('i');
+        btn.classList.add('bi', 'bi-plus-square');
+        for(let name in attr) {
+            btn.setAttribute(name, attr[name]);
+        }
+
+        return btn;
+    }
+    createRemoveBtn(attr) {
+        const btn = document.createElement('i');
+        btn.classList.add('bi', 'bi-trash');
+        for(let name in attr) {
+            btn.setAttribute(name, attr[name]);
+        }
+
+        return btn;
+    }
+    convertDateToAttr(date) {
+        const addLeadingSymbol = (num, requiredCapacity, symbol) => {
+            let str = num.toString()
+            if(str.length >= requiredCapacity) return str;
+            return symbol.toString().repeat(requiredCapacity - str.length) + str;
+        }
+        const d = addLeadingSymbol(date.getDate(), 2, 0);
+        const m = addLeadingSymbol(date.getMonth() + 1, 2, 0);
+        const y = date.getFullYear();
+
+        return [y, m, d].join('-')
+    }
+    setRadioCheck(optionName) {
+        let current = 
+            this.slider.options[optionName] || 
+            this.slider.validator.unessentialOptions
+                .find(option => option.name === optionName).default;
+        current = current.toString();
+        
+        const inputs = this.group.querySelectorAll(`[name="${optionName}"]`);
+        inputs.forEach(input => {
+            if(input.value === current) {
+                input.setAttribute('checked', 'checked')
+            } else {
+                input.removeAttribute('checked')
+            }
+        })
+    }
+}
+class RangeGr extends FromGroup {
+    constructor(slider) {
+        super('Диапазон', slider);
+        this.inputTypeAttr = this.slider.options.dataType === 'date' ? 'type="date"' : 'type="text"'
+        this.group.append(
+            this.createLabelInput('Минимум', ['name="range-start"', this.inputTypeAttr, 'data-action=optionChange']),
+            this.createLabelInput('Максимум', ['name="range-end"', this.inputTypeAttr, 'data-action=optionChange'])
+        );
+        this.setValue();
+    }
+    setValue() {
+        let rangeStart = this.slider.options.range[0];
+        let rangeEnd = this.slider.options.range[1];
+        if(this.slider.options.dataType === 'date') {
+            rangeStart = this.convertDateToAttr(rangeStart);
+            rangeEnd = this.convertDateToAttr(rangeEnd);
+        }
+        this.group.querySelector('[name="range-start"]').value = rangeStart;
+        this.group.querySelector('[name="range-end"]').value = rangeEnd;
+    }
+}
+
+class RangeArrayGr extends FromGroup {
+    constructor(slider) {
+        super('Диапазон', slider);
+        this.group.append(
+            this.createLabelInput('Массив (разделитель "|")', ['name="range-array"', 'data-action=optionChange']),
+        );
+        this.setValue();
+    }
+    setValue() {
+        const val = this.slider.options.range.join('|');
+        this.group.querySelector('[name="range-array"]').value = val;
+    }
+}
+class StepGr extends FromGroup {
+    constructor(slider) {
+        super('', slider);
+        this.group.append(
+            this.createLabelInput('Шаг', ['name="step"', 'data-action=optionChange']),
+        );
+        this.setValue();
+    }
+    setValue() {
+        this.group.querySelector('[name="step"]').value = this.slider.options.step;;
+    }
+}
+class AffixGr extends FromGroup {
+    constructor(slider) {
+        super('Префикс и постфикс', slider);
+        this.group.append(
+            this.createLabelInput('Префикс', ['name="tagsPrefix"', 'data-action=optionChange']),
+            this.createLabelInput('Постфикс', ['name="tagsPostfix"', 'data-action=optionChange']),
+        );
+        this.setValue();
+    }
+    setValue() {
+        this.group.querySelector('[name="tagsPrefix"]').value = this.slider.options.tagsPrefix || '';
+        this.group.querySelector('[name="tagsPostfix"]').value = this.slider.options.tagsPostfix || '';
+    }
+}
+class HandlesGr extends FromGroup {
+    constructor(slider) {
+        super('Бегунки', slider);
+        this.init();
+        this.updateHandlesSelect();
+        this.setValue();
+    }
+
+    setValue() {
+        const handles = this.group.querySelectorAll('[name="handles"][data-action=optionChange]')
+        for(let id in this.slider.options.handles) {
+            const elem = this.group.querySelector(`[name="handles"][data-action=optionChange][data-id="${id}"]`);
+            let val = this.slider.options.handles[id];
+            if(this.slider.options.dataType === 'date') {
+                val = this.convertDateToAttr(val);
+            }
+            elem.value = val;
+        }
+    }
+    updateHandlesSelect() {
+        if(this.slider.options.dataType !== 'array') return;
+
+        const optionsValues = this.slider.options.range.map((elem, index) => {
+            return {value: index, content: elem}
+        });
+
+        this.group.querySelectorAll('select[name="handles"]')
+            .forEach(select => this.renderSelectOptions(select, optionsValues));
+    }
+    init() {
+        this.handleSubsContainer = document.createElement('div');
+
+        for(let id in this.slider.options.handles) {
+            this.createHandleSubgroup(id);
+        }
+
+        this.group.append(this.handleSubsContainer, this.createExpandSubgroup());
+    }
+    removeHandleSub(id) {
+        this.handleSubsContainer
+            .querySelector(`[data-id="${id}"]`).remove();
+    }
+    createHandleSubgroup(id) {
+        const sub = this.createFormSubgroup(id);
+        sub.dataset.id = id;
+        sub.append(
+            this.slider.options.dataType === 'array' ? 
+                this.createLabelSelect('Начальное значение', [
+                    'name="handles"',
+                    `data-id="${id}"`,
+                    'data-action=optionChange',
+                ]) : 
+                this.createLabelInput('Начальное значение', [
+                    `name="handles"`,
+                    `data-id="${id}"`,
+                    'data-action=optionChange',
+                    this.slider.options.dataType === 'date' ? 'type="date"' : null
+                ]),
+            this.createRemoveBtn({'data-name': 'handles', 'data-id': id, 'data-action': 'remove'})
+        );
+
+        this.handleSubsContainer.append(sub);
+    }
+    createExpandSubgroup() {
+        const addSub = this.createFormSubgroup('Добавить бегунок');
+        addSub.append(
+            this.createLabelInput('ID', ['data-name="handles-id"']),
+            this.slider.options.dataType === 'array' ? 
+                this.createLabelSelect('Начальное значение', [
+                    'name="handles"',
+                    'data-name="handles-value"',
+                ]) :
+                this.createLabelInput('Начальное значение', [
+                    'name="handles"',
+                    'data-name="handles-value"',
+                    this.slider.options.dataType === 'date' ? 'type="date"' : null
+                ]),
+            this.createAddBtn({'data-name': 'handles', 'data-action': 'add'})
+        )
+        return addSub;
+    }
+}
+class ProgressBarsGr extends FromGroup {
+    constructor(slider) {
+        super('Progress bars', slider);
+        this.init();
+        this.updateValidAnchorsSelect();
+    }
+    updateValidAnchorsSelect() {
+        const validAnchors = this.slider.validator.unessentialOptions
+            .find(option => option.name === 'progressBars').valid
+            .map(anchor => {
+                return {value: anchor, content: anchor};
+            });
+
+        this.renderSelectOptions(
+            this.group.querySelector('select[data-name="progressBars-start"]'), 
+            validAnchors
+        );
+        this.renderSelectOptions(
+            this.group.querySelector('select[data-name="progressBars-end"]'), 
+            validAnchors
+        )
+    }
+    init() {
+        this.barsContainer = document.createElement('div');
+
+        if(this.slider.options.progressBars) {
+            this.slider.options.progressBars.forEach(bar => this.createBarSubgroup(bar))
+        }
+        this.group.append(this.barsContainer, this.createExpandSubgroup());
+    }
+    removeBarSubgroup(bar, handleId){
+        if(handleId) {
+            Array.from(this.barsContainer.children).forEach(elem => {
+                if(elem.dataset.id.includes(handleId)) elem.remove();
+            })
+        } else {
+            const id = bar[0] + '_' + bar[1];
+            this.barsContainer.querySelector(`[data-id="${id}"]`).remove();
+        }
+    }
+    createBarSubgroup(bar) {
+        const id = bar[0] + '_' + bar[1];
+        const sub = this.createFormSubgroup(id);
+        sub.dataset.id = id;
+        sub.append(this.createRemoveBtn({
+            'data-name': 'progressBars', 
+            'data-anchor1': bar[0], 
+            'data-anchor2': bar[1], 
+            'data-action': 'remove'}));
+        this.barsContainer.append(sub);
+    }
+    createExpandSubgroup() {
+        const sub = this.createFormSubgroup('Добавить progress bar');
+        sub.append(
+            this.createLabelSelect('Начальный id', ['data-name="progressBars-start"']),
+            this.createLabelSelect('Конечный id', ['data-name="progressBars-end"']),
+            this.createAddBtn({'data-name': 'progressBars', 'data-action': 'add'})
+        );
+        return sub;
+    }
+}
+class StepMeasureGr extends FromGroup {
+    constructor(slider) {
+        super('Размерность шага', slider);
+        const commonAttrs = ['type="radio"', 'name="stepMeasure"', 'data-action=optionChange'];
+        this.group.append(
+            this.createLabelInput('День', ['value="day"'].concat(commonAttrs)),
+            this.createLabelInput('Месяц', ['value="month"'].concat(commonAttrs)),
+            this.createLabelInput('Год', ['value="year"'].concat(commonAttrs)),
+        );
+        this.setValue();
+    }
+    setValue() {
+        this.setRadioCheck('stepMeasure');
+    }
+}
+class IsVerticalGr extends FromGroup {
+    constructor(slider) {
+        super('Ориентация', slider);
+        const commonAttrs = ['type="radio"', 'name="isVertical"', 'data-action=optionChange'];
+        this.group.append(
+            this.createLabelInput('Вертикальная', ['value="true"'].concat(commonAttrs)),
+            this.createLabelInput('Горизонтальная', ['value="false"'].concat(commonAttrs)),
+        );
+        this.setValue();
+    }
+    setValue() {
+        this.setRadioCheck('isVertical');
+    }
+}
+class NeighborHandlesGr extends FromGroup {
+    constructor(slider) {
+        super('Поведение соседних бегунков при одинаковых значениях', slider);
+        const commonAttrs = ['type="radio"', 'name="neighborHandles"', 'data-action=optionChange'];
+        this.group.append(
+            this.createLabelInput('Не мешать', ['value="jumpover"'].concat(commonAttrs)),
+            this.createLabelInput('Двигаться', ['value="move"'].concat(commonAttrs)),
+            this.createLabelInput('Останавливать', ['value="stop"'].concat(commonAttrs)),
+        );
+        this.setValue();
+    }
+    setValue() {
+        this.setRadioCheck('neighborHandles');
+    }
+}
+class TagsPositionsGr extends FromGroup {
+    constructor(slider) {
+        super('Ярлыки', slider);
+        const commonAttrs = ['type="radio"', 'name="tagsPositions"', 'data-action=optionChange'];
+        this.group.append(
+            this.createLabelInput('Не показывать', ['value="false"'].concat(commonAttrs)),
+            this.createLabelInput('Сверху', ['value="top"'].concat(commonAttrs)),
+            this.createLabelInput('Снизу', ['value="bottom"'].concat(commonAttrs)),
+            this.createLabelInput('Справа', ['value="right"'].concat(commonAttrs)),
+            this.createLabelInput('Слева', ['value="left"'].concat(commonAttrs)),
+        );
+        this.setValue();
+    }
+    setValue() {
+        this.setRadioCheck('tagsPositions');
     }
 }

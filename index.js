@@ -111,7 +111,7 @@ class Demo {
         this.page.style.display = 'flex';
         this.slider = new SliderController(this.options, this.renderOutput.bind(this));
         this.page.style.display = '';
-        this.configurator = new Configurator2(this.slider, this.configContainer)
+        this.configurator = new Configurator(this.slider, this.configContainer)
     }
     createTemplate() {
         this.container = this.createElem(this.page, 'div', ['demo-container', 'card']);
