@@ -111,41 +111,44 @@ class Demo {
         this.page.style.display = 'flex';
         this.slider = new SliderController(this.options, this.renderOutput.bind(this));
         this.page.style.display = '';
-        this.configurator = new Configurator(this.slider, this.configContainer)
+        this.configurator = new Configurator(this.slider, this.configContainer);
+
+        this.renderOutput(this.slider.getValues());
     }
     createTemplate() {
         this.container = this.createElem(this.page, 'div', ['demo-container', 'card']);
         this.sliderRoot = this.createElem(this.container, 'div', ['slider-container']);
-        
-        this.createOutput();
+        this.outputContainer = this.createElem(this.container, 'div', ['output']);
         this.configContainer = this.createElem(this.container, 'div', ['config']);
     }
 
-    createOutput() {
-        this.outputs = {};
-        this.outputContainer = this.createElem(this.container, 'div', ['output']);
-        
-        for(let id in this.options.handles) {
-            const handleElem = this.createElem(this.outputContainer, 'div', ['output__handle', 'handle']);
-            const handleNameElem = this.createElem(handleElem, 'span', ['handle__name']);
-            handleNameElem.textContent = id;
-            this.outputs[id] = this.createElem(handleElem, 'span', ['handle__value']);
-        }
+    createOutput(id, value) {
+        const handleContainer = this.createElem(undefined, 'div', ['output__handle', 'handle']);
+        handleContainer.innerHTML = `
+            <span class="handle__name">${id}</span>
+            <span class="handle__value">${value}</span>
+        `
+        return handleContainer;
     }
 
     createElem(parent, tag, cls, dataset) {
         const elem = document.createElement(tag);
         if(cls) elem.classList.add(...cls);
-        if(dataset) elem.dataset = dataset;
-        parent.append(elem);
+        if(dataset) {
+            for(let name in dataset) {
+                elem.dataset[name] = dataset[name]
+            }
+        };
+        if(parent) parent.append(elem);
 
         return elem;
     }
 
-    renderOutput(obj) { //TODO добавлять output
-        // for(let id in obj) {
-        //     this.outputs[id].textContent = obj[id];
-        // }
+    renderOutput(obj) {
+        this.outputContainer.innerHTML = '';
+        for(let id in obj) {
+            this.outputContainer.append(this.createOutput(id, obj[id]));
+        }
     }
 }
 
