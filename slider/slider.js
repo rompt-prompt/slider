@@ -939,7 +939,7 @@ class Validator {
             }
             if(max - min < step) {
                 const delta = Math.floor(max - min);
-                this.addError(`Step should be >= ${delta} ${
+                this.addError(`Step should be <= ${delta} ${
                     delta === 1 ? this.options.stepMeasure :
                     this.options.stepMeasure + 's'
                 }.`);
