@@ -37,6 +37,7 @@ class Configurator2 {
                 this.slider.reset();
                 resolve();
             } else {
+                this.optionsCopy = this.makeOptionsCopy(this.slider.options);
                 reject(validator.errors);
             }
         })
@@ -45,7 +46,7 @@ class Configurator2 {
     removeHandler(target) {
         switch (target.dataset.name) {
             case 'handles':
-                var id = target.dataset.id;
+                const id = target.dataset.id;
                 delete this.optionsCopy.handles[id];
 
                 if(this.optionsCopy.progressBars) {
@@ -84,7 +85,9 @@ class Configurator2 {
         }
         this.updateOptions()
             .then(() => this.view.updateFormOnSuccess(target))
-            .catch(errors => console.log(errors));
+            .catch(errors => {
+                this.view.showError(errors);
+            });
     }
 
     addHandler(target) {
@@ -117,12 +120,13 @@ class Configurator2 {
         }
         this.updateOptions()
             .then(() => this.view.updateFormOnSuccess(target, extra))
-            .catch(errors => console.log(errors));
+            .catch(errors => {
+                this.view.returnValuesOnChangeFail(target)
+                this.view.showError(errors);
+            });
     }
 
     onChangeHandler(target) {
-        console.log(target)
-
         if(target.dataset.action !== 'optionChange') return
     
         let optionName = target.name;
@@ -161,7 +165,10 @@ class Configurator2 {
         }
         this.updateOptions()
             .then(() => this.view.updateFormOnSuccess(target))
-            .catch(errors => console.log(errors)) // TODO ERR HANDLER
+            .catch(errors => {
+                this.view.returnValuesOnChangeFail(target)
+                this.view.showError(errors);
+            });
     }
 }
 
@@ -169,83 +176,103 @@ class ConfiguratorView {
     constructor(slider, container) {
         this.slider = slider;
         this.form = document.createElement('form');
-        this.form.append(...this.getFormTemplate().map(elem => elem.group));
-        container.append(this.form);
+        this.createFormGroups();
+        for(let key in this.formGroups) {
+            this.form.append(this.formGroups[key].group)
+        }
+        this.errorContainer = document.createElement('div');
+        this.errorContainer.classList.add('error');
+        container.append(this.form, this.errorContainer);
     }
-    getFormTemplate() {
-        this.formGroups = [
-            new StepGr(this.slider),
-            new IsVerticalGr(this.slider),
-            new NeighborHandlesGr(this.slider),
-            new TagsPositionsGr(this.slider),
-            new AffixGr(this.slider),
-            new HandlesGr(this.slider),
-            new ProgressBarsGr(this.slider)
-        ];
-
+    createFormGroups() {
+        const createInstance = (ClassName) => {
+            const instance = new ClassName(this.slider)
+            return {[instance.constructor.name]: instance}
+        };
+        this.formGroups = {};
         if(this.slider.options.dataType === 'number') {
-            this.formGroups.unshift(new RangeGr(this.slider));
+            Object.assign(this.formGroups, createInstance(RangeGr));
         }
         if(this.slider.options.dataType === 'date') {
-            this.formGroups.unshift(new RangeGr(this.slider), new StepMeasureGr(this.slider));
+            Object.assign(this.formGroups, 
+                createInstance(RangeGr),
+                createInstance(StepMeasureGr)
+                );
         }
         if(this.slider.options.dataType === 'array') {
-            this.formGroups.unshift(new RangeArrayGr(this.slider));
+            Object.assign(this.formGroups, createInstance(RangeArrayGr));
         }
-        return this.formGroups;
+        
+        Object.assign(this.formGroups,
+            createInstance(StepGr),
+            createInstance(IsVerticalGr),
+            createInstance(NeighborHandlesGr),
+            createInstance(TagsPositionsGr),
+            createInstance(AffixGr),
+            createInstance(HandlesGr),
+            createInstance(ProgressBarsGr),
+        );
+
     }
     updateFormOnSuccess(target, extra) {
         const action = target.dataset.action;
+        this.errorContainer.innerHTML = '';
         if(action === 'optionChange') {
             if(target.name === 'range-array') {
-                const handlesGr = this.formGroups
-                    .find(group => group.constructor.name === 'HandlesGr');
-                handlesGr.updateHandlesSelect();
+                this.formGroups.HandlesGr.updateHandlesSelect();
             }
         } else if(action === 'remove') {
             if(target.dataset.name === 'handles') {
-                const progressBarsGr = this.formGroups
-                    .find(group => group.constructor.name === 'ProgressBarsGr');
-                progressBarsGr.updateValidAnchorsSelect();
-                progressBarsGr.removeBarSubgroup(undefined, target.dataset.id)
-
-                const handlesGr = this.formGroups
-                    .find(group => group.constructor.name === 'HandlesGr');
-                handlesGr.removeHandleSub(target.dataset.id);
+                this.formGroups.ProgressBarsGr.updateValidAnchorsSelect();
+                this.formGroups.ProgressBarsGr.removeBarSubgroup(undefined, target.dataset.id)
+                this.formGroups.HandlesGr.removeHandleSub(target.dataset.id);
             }
 
             if(target.dataset.name === 'progressBars') {
-                const progressBarsGr = this.formGroups
-                    .find(group => group.constructor.name === 'ProgressBarsGr');
-                progressBarsGr.removeBarSubgroup([
+                this.formGroups.ProgressBarsGr.removeBarSubgroup([
                     target.dataset.anchor1,
                     target.dataset.anchor2
                 ]);
             }
         } else if(action === 'add') {
             if(target.dataset.name === 'handles') {
-                const progressBarsGr = this.formGroups
-                    .find(group => group.constructor.name === 'ProgressBarsGr');
-                progressBarsGr.updateValidAnchorsSelect();
-
-                const handlesGr = this.formGroups
-                    .find(group => group.constructor.name === 'HandlesGr');
-                handlesGr.createHandleSubgroup(extra.id);
-                handlesGr.updateHandlesSelect();
-                handlesGr.setValue(); 
+                this.formGroups.ProgressBarsGr.updateValidAnchorsSelect();
+                this.formGroups.HandlesGr.createHandleSubgroup(extra.id);
+                this.formGroups.HandlesGr.updateHandlesSelect();
+                this.formGroups.HandlesGr.setValue(); 
             }
 
             if(target.dataset.name === 'progressBars') {
-                const progressBarsGr = this.formGroups
-                    .find(group => group.constructor.name === 'ProgressBarsGr');
-                progressBarsGr.createBarSubgroup([
+                this.formGroups.ProgressBarsGr.createBarSubgroup([
                     extra.anchor1, 
                     extra.anchor2
                 ]);
             }
         }
     }
-    
+    returnValuesOnChangeFail(target) {
+        const action = target.dataset.action;
+        if(action === 'optionChange') {
+            const className = target.dataset.instance;
+            this.formGroups[className].setValue();
+        }
+        if(action === 'add' && target.dataset.name === 'handles') {
+            const container = target.parentElement;
+            container.querySelector('[data-name="handles-id"]').value = '';
+            container.querySelector('[data-name="handles-value"]').value = '';
+        }
+    }
+    showError(message) {
+        message = message.replaceAll('>', '&gt;').replaceAll('<', '&lt;');
+        this.errorContainer.classList.add('error_show');
+        this.errorContainer.innerHTML = `
+                <h3 class="group__name">Ошибка</h3>
+                <pre class="error__message">
+                    ${message}
+                </pre>
+        `
+        setTimeout(() => this.errorContainer.classList.remove('error_show'), 10000) // TODO ???
+    }
 }
 class FromGroup {
     constructor(title, slider) {
@@ -271,7 +298,7 @@ class FromGroup {
         lab.classList.add('option');
         lab.innerHTML = `
             <span class="option__name">${label}</span>
-            <input ${attr.join(' ')}>
+            <input ${attr.join(' ')} data-instance="${this.constructor.name}">
         `
 
         return lab;
@@ -281,7 +308,7 @@ class FromGroup {
         lab.classList.add('option');
         lab.innerHTML = `
             <span class="option__name">${label}</span>
-            <select ${attr.join(' ')}></select>
+            <select ${attr.join(' ')} data-instance="${this.constructor.name}"></select>
         `
         if(optionsValues) {
             this.renderSelectOptions(lab.querySelector('select'), optionsValues);
