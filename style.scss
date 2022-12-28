@@ -25,28 +25,60 @@ li {
 }
 
 body {
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
+
+    &.show-overlay {
+        overflow: hidden;
+
+        .overlay {
+            display: block;
+        }
+    }
+    .overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background-color: rgba($color: black, $alpha: 0.75);
+        z-index: 9000;
+    }
 }
 
 .nav {
     flex: 0 0 60px;
     background-color: $dark;
+    font-size: 40px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 
-    &__list {
-        font-size: 40px;
-        text-align: center;
-    }
     &__item {
         cursor: pointer;
         margin-top: 50px;
 
-        i {
-            color: $lite;
-        }
-
         &:hover {
             background-color: $accent;
+        }
+    }
+
+    i {
+        color: $lite;
+    }
+
+    .config-btn {
+        margin-bottom: 50px;
+        cursor: pointer;
+        display: none;
+        
+        &:hover {
+            background-color: $accent;
+        }
+
+        @media  screen and (max-width: 926px) {
+            display: unset;
+            position: relative;
+            z-index: 10000;
         }
     }
 }
@@ -55,60 +87,97 @@ body {
     flex: 1 1 auto;
     & .page {
         display: none;
-        height: 100vh;
+        height: 100%;
         padding: 15px;
         background-color: $bg;
+        position: relative;
 
         &_active {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+            display: block;
+
+            @media  screen and (max-width: 926px) {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
         }
 
         .demo-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
+            font-size: 0.8em;
+
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            grid-template-rows: 320px auto;
+            grid-template-areas: 
+                "slider config"
+                "output config";
+            gap: 10px;
+
+            @media  screen and (max-width: 926px) {
+                grid-template-columns: 1fr;
+                grid-template-rows: 320px auto;
+                grid-template-areas: 
+                    "slider"
+                    "output";
+            }
 
             .slider-container {
-                width: 320px;
-                height: 320px;
-
-                display: flex;
-                align-items: center;
-                justify-content: center;
+                grid-area: slider;
+                justify-self: center;
+                align-self: center;
             }
 
             .output {
-                flex: 0 1 150px;
-                font-size: 1em;
+                grid-area: output;
+                display: flex;
+                align-content: flex-start;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 10px;
                 
-                &__handle {
-                    &:not(:first-child) {
-                        margin: 10px 0;
-                    }
-
-                    &.handle {
-                        border: 1px dashed $lite;
-                        border-radius: 4px;
-                        padding: 7px;
-                        display: flex;
-                        
-                        .handle__name {
-                            font-weight: 700;
-                            margin-right: 5px;
-                        }
+                .handle {
+                    border: 1px dashed $lite;
+                    border-radius: 4px;
+                    padding: 7px;
+                    display: flex;
+                    
+                    .handle__name {
+                        font-weight: 700;
+                        margin-right: 5px;
                     }
                 }
             }
 
             .config {
-                flex: 1 0 auto;
+                grid-area: config;
+
+                @media  screen and (max-width: 926px) {
+                    display: none;
+
+                    border-radius: 6px;
+                    padding-top: 20px;
+                    background-color: #fff;
+                    position: absolute;
+                    overflow-y: scroll;
+                    inset: 0;
+                    max-width: 640px;
+                    margin: 30px auto 0;
+                    z-index: 10000;
+
+                    &_mobile-show {
+                        display: block;
+                    }
+
+                    @media screen and (max-width: 740px) {
+                        margin: 0;
+                        border-radius: 0;
+                        max-width: 100%;
+                    }
+                }
             }
         }
         .card {
             width: 100%;
-            min-height: 320px;
             background-color: #fff;
             border-radius: 8px;
             border: 1px solid rgba(19, 44, 72, 0.1);
@@ -116,4 +185,6 @@ body {
         }
     }
 }
+
+
 

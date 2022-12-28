@@ -17,16 +17,31 @@ $error-bg: #FFBABA;
         border-radius: 4px;
         position: relative;
 
+        @media screen and (max-width: 550px) {
+            padding: 7px;
+        }
+
         &__name {
             position: absolute;
             left: 25px;
             top: -11px;
-            background-color: $bg;
+            background-color: #fff;
             padding: 0 5px;
+
+            @media screen and (max-width: 550px) {
+                position: relative;
+                padding: 0;
+                inset: 0;
+                margin-bottom: 10px;
+            }
         }
-        .option:not(:first-of-type) {
-            margin-left: 15px;
+        .option {
+            display: inline-block;
+            margin: 5px;
+
+
         }
+
         .subgroup {
             padding: 10px 0;
 
@@ -38,9 +53,13 @@ $error-bg: #FFBABA;
 
             &_footer {
                 border-top: 1px dashed $lite;
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
 
                 .subgroup__name {
-                    padding-bottom: 10px;
+                    flex: 100%;
+                    margin-bottom: 5px;
                 }
             }
         }
@@ -49,6 +68,11 @@ $error-bg: #FFBABA;
         }
         .bi.bi-trash, .bi.bi-plus-square {
             cursor: pointer;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            font-size: 20px;
         }
         &_error {
             display: none;

@@ -11,26 +11,34 @@
     <link rel="stylesheet" href="style.css">
     <title>Slider</title>
 </head>
-<body>
-    <nav class="nav">
-        <ul class="nav__list">
-            <li class="nav__item js-nav-btn-num" data-link="number">
-                <i class="bi bi-123"></i>
-            </li>
-            <li class="nav__item js-nav-btn-date" data-link="date">
-                <i class="bi bi-calendar-date"></i>
-            </li>
-            <li class="nav__item js-nav-btn-array" data-link="array">
-                <i class="bi bi-collection"></i>
-            </li>
-        </ul>
-    </nav>
-    <main class="content">
-        <div class="page page_active" data-link="number">Number</div>
-        <div class="page" data-link="date">Date</div>
-        <div class="page" data-link="array">Array</div>
-    </main>
-
+<body class="show-overlay">
+    <div class="overlay"></div>
+        <nav class="nav">
+            <ul class="nav__list">
+                <li class="nav__item" data-link="number">
+                    <i class="bi bi-123"></i>
+                </li>
+                <li class="nav__item" data-link="date">
+                    <i class="bi bi-calendar-date"></i>
+                </li>
+                <li class="nav__item" data-link="array">
+                    <i class="bi bi-collection"></i>
+                </li>
+            </ul>
+            <i class="bi bi-gear config-btn"></i>
+        </nav>
+        <main class="content">
+            <div class="page page_active" data-link="number">
+                <h2>Number</h2>
+            </div>
+            <div class="page" data-link="date">
+                <h2>Date</h2>
+            </div>
+            <div class="page" data-link="array">
+                <h2>Array</h2>
+            </div>
+        </main>
+    </div>
 
     <script src="./slider/slider.js"></script>
     <script src="./configurator/configurator.js"></script>
