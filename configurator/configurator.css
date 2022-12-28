@@ -66,13 +66,9 @@
   background-color: #FFBABA;
   padding: 7px;
   border-color: #D8000C;
-}
-@media screen and (max-width: 926px) {
-  .config .group_error {
-    position: -webkit-sticky;
-    position: sticky;
-    bottom: 0;
-  }
+  position: -webkit-sticky;
+  position: sticky;
+  bottom: 0;
 }
 .config .group_error.error_show {
   display: block;

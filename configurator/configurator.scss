@@ -79,11 +79,9 @@ $error-bg: #FFBABA;
             background-color: $error-bg;
             padding: 7px;
             border-color: $error-color;
+            position: sticky;
+            bottom: 0;
 
-            @media screen and (max-width: 926px) {
-                position: sticky;
-                bottom: 0;
-            }
             &.error_show {
                 display: block;
             }
