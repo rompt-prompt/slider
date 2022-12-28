@@ -67,6 +67,16 @@
   padding: 7px;
   border-color: #D8000C;
 }
+@media screen and (max-width: 926px) {
+  .config .group_error {
+    position: -webkit-sticky;
+    position: sticky;
+    bottom: 0;
+  }
+}
+.config .group_error.error_show {
+  display: block;
+}
 .config .group_error .group__name {
   position: unset;
   left: 0;
@@ -75,7 +85,5 @@
 .config .group_error .error__message {
   min-height: 10px;
   color: #D8000C;
-}
-.config .group_error.error_show {
-  display: block;
+  white-space: break-spaces;
 }/*# sourceMappingURL=configurator.css.map */

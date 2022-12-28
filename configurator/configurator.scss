@@ -80,7 +80,13 @@ $error-bg: #FFBABA;
             padding: 7px;
             border-color: $error-color;
 
-
+            @media screen and (max-width: 926px) {
+                position: sticky;
+                bottom: 0;
+            }
+            &.error_show {
+                display: block;
+            }
             .group__name {
                 position: unset;
                 left: 0;
@@ -90,10 +96,7 @@ $error-bg: #FFBABA;
             .error__message {
                 min-height: 10px;
                 color: $error-color;
-            }
-
-            &.error_show {
-                display: block;
+                white-space: break-spaces;
             }
         }
     }

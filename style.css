@@ -1,10 +1,3 @@
-.demo-container,
-.slider-container,
-.output,
-.config {
-  outline: 1px dotted red;
-}
-
 * {
   font-family: "Roboto", sans-serif;
   color: #4b4a4d;
@@ -24,8 +17,18 @@ body {
 body.show-overlay {
   overflow: hidden;
 }
+@media screen and (min-width: 926px) {
+  body.show-overlay {
+    overflow: unset;
+  }
+}
 body.show-overlay .overlay {
   display: block;
+}
+@media screen and (min-width: 926px) {
+  body.show-overlay .overlay {
+    display: none;
+  }
 }
 body .overlay {
   display: none;

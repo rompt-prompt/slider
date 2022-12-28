@@ -4,20 +4,12 @@ $accent: #1d4572;
 $font-color: #4b4a4d;
 $bg: #f3f3f7;
 
-.demo-container,
-.slider-container,
-.output,
-.config {
-    outline: 1px dotted red;
-}
 * {
     font-family: 'Roboto', sans-serif;
     color: $font-color;
     padding: 0;
     margin: 0;
     box-sizing: border-box;
-
-    // outline: 1px dotted red;
 }
 
 li {
@@ -31,8 +23,16 @@ body {
     &.show-overlay {
         overflow: hidden;
 
+        @media screen and (min-width: 926px) {
+            overflow: unset;
+        }
+
         .overlay {
             display: block;
+
+            @media screen and (min-width: 926px) {
+                display: none;
+            }
         }
     }
     .overlay {

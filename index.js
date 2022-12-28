@@ -2,6 +2,7 @@
 
 const nav = document.querySelector('.nav');
 const pages = document.querySelectorAll('.page');
+const configBtn = nav.querySelector('.config-btn');
 const demoSliders = [
     {
         name: 'slider1',
@@ -91,6 +92,23 @@ nav.onclick = event => {
             page.classList.add('page_active') : 
             page.classList.remove('page_active');
     })
+}
+
+configBtn.onclick = event => {
+    const config = document.querySelector('.page_active .config');
+    const overlay = document.querySelector('.overlay');
+    const overlayHandler = event => {
+        if(event.target !== overlay) return;
+        toggleConfig();
+        document.removeEventListener('click', overlayHandler);
+    }
+    const toggleConfig = () => {
+        config.classList.toggle('config_mobile-show');
+        document.body.classList.toggle('show-overlay');
+    }
+
+    toggleConfig();
+    document.addEventListener('click', overlayHandler)
 }
 
 function getPage (dataType) {
