@@ -24,6 +24,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  touch-action: none;
 }
 .slider__tag-container {
   cursor: default;

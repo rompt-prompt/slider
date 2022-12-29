@@ -68,7 +68,7 @@
   border-color: #D8000C;
   position: -webkit-sticky;
   position: sticky;
-  bottom: 0;
+  bottom: 10%;
 }
 .config .group_error.error_show {
   display: block;

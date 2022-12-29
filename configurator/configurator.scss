@@ -80,7 +80,7 @@ $error-bg: #FFBABA;
             padding: 7px;
             border-color: $error-color;
             position: sticky;
-            bottom: 0;
+            bottom: 10%;
 
             &.error_show {
                 display: block;
