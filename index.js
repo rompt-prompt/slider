@@ -8,25 +8,19 @@ const demoSliders = [
         name: 'slider1',
         mode: 'select',
         dataType: 'number',
-        range: [0, 170],
-        step: 10,
+        range: [0, 42000],
+        step: 1000.5,
         handles: {
-            'min': 50,
-            'max': 100,
-            'test': 70
+            'min': 10000,
+            'max': 30000,
         },
         progressBars: [
             ['min', 'max'],
-            ['sliderstart', 'min'],
-            ['sliderend', 'max'],
         ],
         neighborHandles: 'jumpover',
         tagsPositions: ['right', {min: 'left'}],
         tagsPostfix: ' ₽',
         isVertical: true,
-        handlesTextContent: {
-            min: '1', max: '2'
-        },
     },
     {
         name: 'slider2',
@@ -36,51 +30,27 @@ const demoSliders = [
         step: 1,
         stepMeasure: 'month',
         handles: {
-            '1': new Date('2021-02-28'),
-            '2': new Date('2021-10-31'),
-            'test': new Date('2021-10-30')
+            'Date1': new Date('2021-02-28'),
+            'Date2': new Date('2022-10-31'),
+            'Date3': new Date('2023-10-30')
         },
         neighborHandles: 'move',
         isVertical: false,
         progressBars: [
-            ['sliderstart', '1'], ['sliderend', '2']
+            ['sliderstart', 'Date1'], ['sliderend', 'Date2']
         ],
-        tagsPositions: ['top', {2: 'bottom'}],
-        handlesTextContent: {
-            1: '1', 2: '2'
-        },
+        tagsPositions: ['top', {'Date2': 'bottom'}],
     },
-    // {
-    //     name: 'slider3',
-    //     mode: 'select',
-    //     dataType: 'array',
-    //     range: ['Австралия', 'Австрия', 'Азербайджан', 'Албания', 
-    //     'Алжир', 'Ангола', 'Андорра', 'Антигуа и Барбуда', 'Аргентина', 'Армения'],
-    //     step: 1,
-    //     handles: {
-    //         '1': 1,
-            // '2': 2,
-            // '3': 3,
-            // '4': 4,
-            // '5': 5,
-            // '6': 6,
-            // '7': 7,
-            // 'test': 8,
-    //     },
-    //     neighborHandles: 'jumpover',
-    //     tagsPositions: 'top',
-    // },
     {
-        name: 'slider4',
+        name: 'slider3',
         mode: 'select',
         dataType: 'array',
-        range: ['Австралия', 'Австрия'],
+        range: ['😀', '🎿',  '😕', '🚀', '😁', '😅', '😎', '⛄'],
         step: 1,
         handles: {
-            '1': 0
+            'Selected': 0
         },
         tagsPositions: 'top',
-        isVertical: true,
     }
 ]
 
